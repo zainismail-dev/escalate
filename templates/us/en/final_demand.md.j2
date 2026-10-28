@@ -1,0 +1,19 @@
+Subject: Final demand: order {{ order_id }}
+
+Dear {{ seller_name }},
+
+This is my final demand about order {{ order_id }}, placed on {{ order_date }}, for which I paid {{ amount | money(currency) }}.
+
+The problem: {{ defect_description }}
+{% if return_shipped_on %}
+I returned the item on {{ return_shipped_on }}{% if return_tracking %} (tracking number {{ return_tracking }}){% endif %}.
+{% endif %}
+I have already asked you in writing to resolve this, and it is still not resolved.
+
+I ask you to provide the following: {{ remedy_wanted }}.
+
+If this is not done by {{ reply_by }}, I will file a complaint with my state attorney general's consumer protection office and consider a claim in small claims court, without further notice.
+
+Sincerely,
+{{ buyer_name }}{% if buyer_address %}
+{{ buyer_address }}{% endif %}

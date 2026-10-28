@@ -1,0 +1,61 @@
+# India starter pack. Not yet verified against official sources.
+# TODO(verify, from official government sources, before removing this block):
+#  - the time limit for filing a consumer complaint (the deadline below assumes two years from
+#    the cause of action; confirm, and add the section reference only once verified);
+#  - whether a legal notice before filing is required or only customary;
+#  - the pecuniary limits that decide District vs State vs National Commission;
+#  - the official URLs for the National Consumer Helpline and for online filing.
+# Changelog:
+#  - 0.1.0 (2026-10-28): starter version, unreviewed.
+id: in-general-refund-refused
+version: 0.1.0
+country: IN
+case_type: refund_refused
+last_verified: 2026-10-28
+required_facts: [buyer_name, seller_name, seller_contact, order_id, order_date, amount,
+                 currency, defect_description, remedy_wanted]
+optional_facts: [buyer_address, seller_address, buyer_contact, return_shipped_on,
+                 return_tracking, platform_name, last_promise_on, last_promise_text,
+                 notice_delivered_on, cause_of_action_on, commission_name]
+deadlines:
+  - id: complaint_filing_limit
+    rule: "TODO verify: complaint within two years from the cause of action"
+    days: 730
+    from_fact: cause_of_action_on
+    from_step: s2_legal_notice
+    warn_when_days_left: 30
+steps:
+  - id: s1_written_demand
+    name: written demand to the seller
+    channel: email
+    recipient_role: the seller
+    recipient_fact: seller_contact
+    template: intl/written_demand.md.j2
+    wait_days: 7
+    on_no_reply: s2_legal_notice
+    on_refused: s2_legal_notice
+    on_partial: s2_legal_notice
+  - id: s2_legal_notice
+    name: legal notice
+    channel: post
+    recipient_role: the seller
+    recipient_fact: seller_address
+    requires: [seller_address]
+    template: in/legal_notice.md.j2
+    wait_days: 15
+    proof_required: delivery_receipt
+    on_no_reply: s3_consumer_commission
+    on_refused: s3_consumer_commission
+    on_partial: s3_consumer_commission
+  - id: s3_consumer_commission
+    name: consumer commission complaint
+    channel: court
+    recipient_role: the District Consumer Disputes Redressal Commission
+    requires: [buyer_address, seller_address]
+    template: in/consumer_commission_complaint.md.j2
+    attachments: [timeline_pdf, legal_notice, delivery_receipt, evidence_all]
+sources:
+  - title: "Consumer Protection Act, 2019 (Government of India)"
+    note: "TODO: add the official URL from a government site."
+  - title: "National Consumer Helpline (Department of Consumer Affairs)"
+    note: "TODO: add the official URL and number from a government site."

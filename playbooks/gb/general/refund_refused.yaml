@@ -1,0 +1,49 @@
+# United Kingdom starter pack. Not yet verified against official sources.
+# TODO(verify, from official government sources, before removing this block):
+#  - the court route per nation: England & Wales, Scotland and Northern Ireland differ
+#    (consider region files for GB-ENG, GB-SCT, GB-WLS, GB-NIR);
+#  - the time limit for bringing a claim in each nation (no deadline is set below);
+#  - the wording expected in a "letter before action";
+#  - official URLs for Citizens Advice consumer help and for starting a small claim.
+# Changelog:
+#  - 0.1.0 (2026-10-28): starter version, unreviewed.
+id: gb-general-refund-refused
+version: 0.1.0
+country: GB
+case_type: refund_refused
+last_verified: 2026-10-28
+required_facts: [buyer_name, seller_name, seller_contact, order_id, order_date, amount,
+                 currency, defect_description, remedy_wanted]
+optional_facts: [buyer_address, seller_address, buyer_contact, return_shipped_on,
+                 return_tracking, last_promise_on, last_promise_text]
+steps:
+  - id: s1_written_demand
+    name: written complaint to the trader
+    channel: email
+    recipient_role: the trader
+    recipient_fact: seller_contact
+    template: intl/written_demand.md.j2
+    wait_days: 14
+    on_no_reply: s2_letter_before_action
+    on_refused: s2_letter_before_action
+    on_partial: s2_letter_before_action
+  - id: s2_letter_before_action
+    name: letter before action
+    channel: email
+    recipient_role: the trader
+    recipient_fact: seller_contact
+    template: gb/letter_before_action.md.j2
+    wait_days: 14
+    on_no_reply: s3_small_claim
+    on_refused: s3_small_claim
+    on_partial: s3_small_claim
+  - id: s3_small_claim
+    name: small claims guide
+    channel: info
+    recipient_role: you (a filing guide)
+    template: gb/small_claim_guide.md.j2
+sources:
+  - title: "Consumer Rights Act 2015 (legislation.gov.uk)"
+    note: "TODO: add the official URL and check which parts apply to this case type."
+  - title: "Citizens Advice consumer service"
+    note: "TODO: add the official URL."

@@ -102,8 +102,28 @@ def check_playbook(pb: Playbook, templates_dir: Path, report: Report, today: dat
             report.error(where, f"deadline {dl.id}: from_fact uses undeclared fact")
 
 
+def check_checklists(root: Path, report: Report) -> None:
+    """Scam checklists must load and keep the two safety warnings."""
+    from pydantic import ValidationError
+
+    from escalate.agent.checklist import Checklist
+
+    for path in sorted(Path(root).rglob("scam_checklist.yaml")):
+        try:
+            cl = Checklist.model_validate(read_raw(path))
+        except (PlaybookError, ValidationError) as exc:
+            report.error(path, f"bad checklist: {exc}")
+            continue
+        text = " ".join(cl.warnings).lower()
+        if "otp" not in text or "recovery" not in text:
+            report.error(path, "checklist must warn about OTPs/passwords and recovery scammers")
+        if not cl.items:
+            report.error(path, "checklist has no items")
+
+
 def validate(root: Path, templates_dir: Path, today: date | None = None) -> Report:
     report = Report()
+    check_checklists(root, report)
     today = today or date.today()
     seen: dict[str, Path] = {}
     files = playbook_files(root)

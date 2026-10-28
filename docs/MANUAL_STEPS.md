@@ -30,3 +30,7 @@ that was not available. Each item names the task it came from.
   resolve the `TODO(verify …)` list at the top of `playbooks/pk/ecommerce/refund_refused.yaml`
   (Act names per province, filing limit, notice requirement).
 - [ ] **3.1 — Native Urdu speaker review** of `templates/pk/ur/*` and the Urdu disclaimer line.
+- [ ] **3.3 — Verify the India, UK and US packs** (and the PK scam checklist) from official
+  government sites: resolve every `TODO(verify)` in `playbooks/{in,gb,us}/**` and
+  `playbooks/{pk,in,gb,us}/scam_checklist.yaml` (authority names, URLs, helpline numbers, time
+  limits), or open issues labelled `country:<cc>` and `good first issue` for contributors.

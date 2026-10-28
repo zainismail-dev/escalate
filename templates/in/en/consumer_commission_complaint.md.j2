@@ -1,0 +1,26 @@
+Subject: Consumer complaint: {{ buyer_name }} versus {{ seller_name }}
+
+BEFORE THE {% if commission_name %}{{ commission_name | upper }}{% else %}DISTRICT CONSUMER DISPUTES REDRESSAL COMMISSION{% endif %}
+
+Complainant: {{ buyer_name }}, {{ buyer_address }}
+Opposite party: {{ seller_name }}, {{ seller_address }}
+
+COMPLAINT UNDER THE CONSUMER PROTECTION ACT, 2019
+
+The complainant respectfully submits:
+
+1. On {{ order_date }} the complainant bought from the opposite party under order {{ order_id }} and paid {{ amount | money(currency) }}.
+2. The goods/service were defective: {{ defect_description }}
+{% if return_shipped_on %}3. The complainant returned the item on {{ return_shipped_on }}{% if return_tracking %} (tracking number {{ return_tracking }}){% endif %}.
+{% endif %}{% if last_promise_on %}4. On {{ last_promise_on }} the opposite party stated{% if last_promise_text %}: "{{ last_promise_text }}"{% else %} that the matter would be resolved{% endif %}, but did not do so.
+{% endif %}5. The complainant asked the opposite party in writing for the following: {{ remedy_wanted }}.
+6. The complainant served a legal notice{% if notice_delivered_on %}, delivered on {{ notice_delivered_on }}{% endif %}. The opposite party did not comply.
+
+PRAYER
+
+The complainant prays that the Commission direct the opposite party to provide the following: {{ remedy_wanted }}; to pay the costs of this complaint; and grant any other relief the Commission considers just.
+
+Documents attached: proof of purchase, all correspondence, the legal notice and proof of delivery, case timeline.
+
+Complainant: {{ buyer_name }}
+Date: {{ today }}

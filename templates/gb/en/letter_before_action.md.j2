@@ -1,0 +1,21 @@
+Subject: Letter before action: order {{ order_id }}
+
+Dear {{ seller_name }},
+
+LETTER BEFORE ACTION
+
+On {{ order_date }} I bought from you under order {{ order_id }} and paid {{ amount | money(currency) }}.
+
+The problem: {{ defect_description }}
+{% if return_shipped_on %}
+I returned the item on {{ return_shipped_on }}{% if return_tracking %} (tracking number {{ return_tracking }}){% endif %}.
+{% endif %}
+I have already complained to you in writing and the matter is not resolved.
+
+I ask you to provide the following: {{ remedy_wanted }}.
+
+If this is not done by {{ reply_by }}, I intend to start a small claim against you in court without further notice, and to ask the court for the costs of the claim.
+
+Yours sincerely,
+{{ buyer_name }}{% if buyer_address %}
+{{ buyer_address }}{% endif %}

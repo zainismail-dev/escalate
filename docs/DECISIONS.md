@@ -194,3 +194,17 @@ Defaults chosen during the autonomous build, with the reason for each.
 - Scam ladder: bank/card-issuer fraud report (email, 10 days) -> police report (post) ->
   national fraud-reporting body (web form). Subscription ladder: cancel request (7 days) ->
   final notice listing charges (14) -> card-issuer dispute (30) -> consumer authority.
+
+## India, UK, US packs (task 3.3)
+- Each pack is country-wide (`playbooks/<cc>/general/refund_refused.yaml`) and reuses the
+  generic written-demand template for step 1, with its own template for the distinctive later
+  steps (IN legal notice + Consumer Commission complaint; GB letter before action + small-claim
+  guide; US final demand + state attorney general complaint + small-claims guide).
+- Named only institutions and laws I am certain exist (Consumer Protection Act 2019 and the
+  District Consumer Disputes Redressal Commission in India; Consumer Rights Act 2015, Citizens
+  Advice, Action Fraud, Police Scotland in the UK; FTC and FBI IC3 in the US). **No URLs, phone
+  numbers or section numbers**; a test fails if one appears. The PK scam checklist does not name
+  the cybercrime agency (it changed recently and I could not verify the current name).
+- India's filing deadline (730 days) is marked `TODO verify` in its rule text and warns at 30
+  days left. GB and US set no deadline (it varies by nation/state).
+- The validator now also checks scam checklists (load, have items, keep both safety warnings).

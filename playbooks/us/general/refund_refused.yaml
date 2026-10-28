@@ -1,0 +1,59 @@
+# United States starter pack. Not yet verified against official sources.
+# TODO(verify, from official government sources, before removing this block):
+#  - consumer rights and small-claims limits differ by state: add region files
+#    (e.g. playbooks/us/<sector>/refund_refused.yaml with regions: [US-CA]);
+#  - time limits for small-claims filing per state (no deadline is set below);
+#  - card-dispute rights and timelines for credit cards;
+#  - official URLs for state attorney general consumer offices and for federal reporting.
+# Changelog:
+#  - 0.1.0 (2026-10-28): starter version, unreviewed.
+id: us-general-refund-refused
+version: 0.1.0
+country: US
+case_type: refund_refused
+last_verified: 2026-10-28
+required_facts: [buyer_name, seller_name, seller_contact, order_id, order_date, amount,
+                 currency, defect_description, remedy_wanted]
+optional_facts: [buyer_address, seller_address, buyer_contact, return_shipped_on,
+                 return_tracking, last_promise_on, last_promise_text, authority_name,
+                 authority_contact]
+steps:
+  - id: s1_written_demand
+    name: written demand to the seller
+    channel: email
+    recipient_role: the seller
+    recipient_fact: seller_contact
+    template: intl/written_demand.md.j2
+    wait_days: 10
+    on_no_reply: s2_final_demand
+    on_refused: s2_final_demand
+    on_partial: s2_final_demand
+  - id: s2_final_demand
+    name: final demand letter
+    channel: email
+    recipient_role: the seller
+    recipient_fact: seller_contact
+    template: us/final_demand.md.j2
+    wait_days: 14
+    on_no_reply: s3_attorney_general
+    on_refused: s3_attorney_general
+    on_partial: s3_attorney_general
+  - id: s3_attorney_general
+    name: complaint to your state attorney general
+    channel: web_form
+    recipient_role: your state attorney general's consumer protection office
+    recipient_fact: authority_contact
+    requires: [authority_name]
+    template: us/attorney_general_complaint.md.j2
+    wait_days: 30
+    on_no_reply: s4_small_claims
+    on_refused: s4_small_claims
+    on_partial: s4_small_claims
+  - id: s4_small_claims
+    name: small claims guide
+    channel: info
+    recipient_role: you (a filing guide)
+    template: us/small_claims_guide.md.j2
+sources:
+  - title: "Your state attorney general's consumer protection office"
+    note: "TODO: list official URLs per state in region files."

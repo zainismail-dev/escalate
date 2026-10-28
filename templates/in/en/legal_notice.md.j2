@@ -1,0 +1,20 @@
+Subject: Legal notice: order {{ order_id }}
+
+LEGAL NOTICE
+
+From: {{ buyer_name }}{% if buyer_address %}, {{ buyer_address }}{% endif %}
+To: {{ seller_name }}, {{ seller_address }}
+Date: {{ today }}
+
+1. On {{ order_date }} I bought from you under order {{ order_id }} and paid {{ amount | money(currency) }}.
+2. The goods/service were defective: {{ defect_description }}
+{% if return_shipped_on %}3. I returned the item on {{ return_shipped_on }}{% if return_tracking %} (tracking number {{ return_tracking }}){% endif %}.
+{% endif %}{% if last_promise_on %}4. On {{ last_promise_on }} you told me{% if last_promise_text %}: "{{ last_promise_text }}"{% else %} that the matter would be resolved{% endif %}. You did not keep this promise.
+{% endif %}
+Despite my written request, you have not provided the remedy I asked for.
+
+I call upon you to provide the following within fifteen (15) days of receiving this notice: {{ remedy_wanted }}.
+
+If you fail to do so, I will file a complaint before the District Consumer Disputes Redressal Commission under the Consumer Protection Act, 2019, claiming the remedy above and the costs of the proceedings, without further notice.
+
+{{ buyer_name }}
