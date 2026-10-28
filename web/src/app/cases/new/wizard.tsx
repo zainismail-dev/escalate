@@ -18,6 +18,7 @@ import { displayFact } from "@/lib/facts";
 import { caseLocale } from "@/lib/format";
 import type { CaseDetail, Country, Evidence } from "@/lib/types";
 import { useAction, useApi } from "@/lib/use-api";
+import { useLetterLanguages } from "@/lib/letter-languages";
 import { cn } from "@/lib/utils";
 
 const STEPS = ["where", "what", "evidence", "missing", "review"] as const;
@@ -48,6 +49,7 @@ export function Wizard() {
   const params = useSearchParams();
   const label = useFactLabel();
   const countries = useApi(() => api.countries(), []);
+  const letterLanguages = useLetterLanguages();
   const settings = useApi(() => api.settings(), []);
 
   const [step, setStep] = useState<Step>("where");
@@ -106,7 +108,7 @@ export function Wizard() {
         description,
         country: country || undefined,
         region: region ? region.toUpperCase() : undefined,
-        language: language || undefined,
+        language: letterLanguages.length > 1 ? language || undefined : undefined, // API default
         company: company || undefined,
       }),
     );
@@ -175,7 +177,7 @@ export function Wizard() {
         <Card>
           <CardContent className="space-y-6">
             <CountryPicker countries={countries.data ?? []} value={country} onChange={setCountry} />
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className={cn("grid gap-4", letterLanguages.length > 1 && "sm:grid-cols-2")}>
               <div className="space-y-1.5">
                 <Label htmlFor="region">{t("region")}</Label>
                 <Input
@@ -193,10 +195,12 @@ export function Wizard() {
                 </datalist>
                 <FieldHint id="region-hint">{regionOk ? t("regionHint") : t("regionInvalid")}</FieldHint>
               </div>
-              <div className="space-y-1.5">
-                <LanguagePicker id="letter-language" value={language || ui} onChange={setLanguage} label={t("letterLanguage")} />
-                <FieldHint>{t("letterLanguageHint")}</FieldHint>
-              </div>
+              {letterLanguages.length > 1 && (
+                <div className="space-y-1.5">
+                  <LanguagePicker id="letter-language" value={language || ui} onChange={setLanguage} label={t("letterLanguage")} />
+                  <FieldHint>{t("letterLanguageHint")}</FieldHint>
+                </div>
+              )}
             </div>
             <div className="flex justify-end">
               <Button variant="lime" size="lg" disabled={!regionOk} onClick={() => setStep("what")}>

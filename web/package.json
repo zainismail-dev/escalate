@@ -5,13 +5,17 @@
   "description": "Escalate web app: a Next.js front end on the Escalate API.",
   "license": "MIT",
   "scripts": {
-    "dev": "next dev --port 3000",
+    "prebuild": "node scripts/gen-locales.mjs",
     "build": "next build",
-    "start": "next start --port 3000",
+    "predev": "node scripts/gen-locales.mjs",
+    "dev": "next dev --port 3000",
+    "prelint": "node scripts/gen-locales.mjs",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "screenshots": "playwright test --project=screenshots",
+    "start": "next start --port 3000",
     "test:e2e": "playwright test",
-    "screenshots": "playwright test --project=screenshots"
+    "pretypecheck": "node scripts/gen-locales.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "engines": {
     "node": ">=20.9.0"

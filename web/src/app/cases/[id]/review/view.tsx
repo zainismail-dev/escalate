@@ -18,6 +18,7 @@ import { dirFor, primaryLanguage } from "@/i18n/config";
 import { api } from "@/lib/api";
 import { languageName } from "@/lib/format";
 import type { Preview, Review } from "@/lib/types";
+import { useLetterLanguages } from "@/lib/letter-languages";
 import { useAction, useApi } from "@/lib/use-api";
 import { cn } from "@/lib/utils";
 import { CaseHeader } from "../case-header";
@@ -30,6 +31,8 @@ export function ReviewDraft({ id }: { id: number }) {
   const router = useRouter();
   const factLabel = useFactLabel();
   const caseQ = useApi(() => api.getCase(id), [id]);
+  // v0.1 is English-only: the language pickers and side-by-side view stay hidden (see DECISIONS).
+  const multiLanguage = useLetterLanguages().length > 1;
   const msgId = caseQ.data?.pending_draft?.id;
   const reviewQ = useApi<Review | null>(() => (msgId ? api.review(msgId) : Promise.resolve(null)), [msgId]);
   const act = useAction();
@@ -142,6 +145,7 @@ export function ReviewDraft({ id }: { id: number }) {
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         {/* Letter */}
         <div className="min-w-0 space-y-4">
+          {multiLanguage && (
           <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-card p-3">
             <div className="min-w-44 flex-1">
               <LanguagePicker
@@ -184,6 +188,7 @@ export function ReviewDraft({ id }: { id: number }) {
               {t("edit")}
             </Button>
           </div>
+          )}
 
           <div className="flex flex-wrap gap-3 text-xs text-text-2">
             <span className="inline-flex items-center gap-1.5">

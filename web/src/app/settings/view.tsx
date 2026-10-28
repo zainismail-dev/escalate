@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { FieldHint, Input, Label, NativeSelect } from "@/components/ui/input";
+import { ENABLED_LOCALES } from "@/i18n/config";
 import { api } from "@/lib/api";
 import { countryName } from "@/lib/format";
 import type { Settings } from "@/lib/types";
@@ -273,17 +274,19 @@ function RegionSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => 
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Globe2 className="size-5" aria-hidden />
-          {t("title")}
+          {ENABLED_LOCALES.length > 1 || s.enabled_letter_languages.length > 1 ? t("title") : t("titleRegion")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="settings-ui-language">{t("appLanguage")}</Label>
-          <div>
-            <UiLanguageSelect id="settings-ui-language" className="h-10 w-full text-sm" />
+        {ENABLED_LOCALES.length > 1 && (
+          <div className="space-y-1.5">
+            <Label htmlFor="settings-ui-language">{t("appLanguage")}</Label>
+            <div>
+              <UiLanguageSelect id="settings-ui-language" className="h-10 w-full text-sm" />
+            </div>
+            <FieldHint>{t("appLanguageHint")}</FieldHint>
           </div>
-          <FieldHint>{t("appLanguageHint")}</FieldHint>
-        </div>
+        )}
         <div className="space-y-1.5">
           <Label htmlFor="default-country">{t("country")}</Label>
           <NativeSelect id="default-country" value={country} onChange={(e) => (setCountry(e.target.value), setSaved(false))}>
@@ -295,14 +298,18 @@ function RegionSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => 
             ))}
           </NativeSelect>
         </div>
-        <LanguagePicker id="default-letter-language" value={language} onChange={(v) => (setLanguage(v), setSaved(false))} label={t("letterLanguage")} />
+        {s.enabled_letter_languages.length > 1 && (
+          <LanguagePicker id="default-letter-language" value={language} onChange={(v) => (setLanguage(v), setSaved(false))} label={t("letterLanguage")} />
+        )}
         {act.error && <ErrorState error={act.error} />}
         <div className="flex items-center gap-2">
           <Button
             variant="ink"
             disabled={act.busy}
             onClick={async () => {
-              const out = await act.run(() => api.saveSettings({ default_country: country, default_language: language }));
+              const body: Record<string, string> = { default_country: country };
+              if (s.enabled_letter_languages.length > 1) body.default_language = language;
+              const out = await act.run(() => api.saveSettings(body));
               if (out) {
                 onSaved(out);
                 setSaved(true);

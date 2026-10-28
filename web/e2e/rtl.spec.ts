@@ -1,6 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { demoCases, settled } from "./helpers";
 
+// v0.1 ships English-only (ENABLED_LOCALES=["en"]), so the Arabic UI cannot be selected. RTL
+// support stays in the code; re-enable this spec with NEXT_PUBLIC_ENABLED_LOCALES=en,ar.
+test.skip(
+  !(process.env.NEXT_PUBLIC_ENABLED_LOCALES || "en").split(",").includes("ar"),
+  "v0.1 is English-only; build with NEXT_PUBLIC_ENABLED_LOCALES=en,ar to run the RTL spec",
+);
+
 test.beforeEach(async ({ context, baseURL }) => {
   await context.addCookies([{ name: "NEXT_LOCALE", value: "ar", url: baseURL! }]);
 });

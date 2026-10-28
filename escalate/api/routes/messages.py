@@ -27,7 +27,7 @@ from escalate.api.schemas import (
 )
 from escalate.config import get_settings
 from escalate.export.pdf import letter_pdf
-from escalate.i18n.countries import is_rtl, normalize_language, primary_language
+from escalate.i18n.countries import is_rtl, letter_language, primary_language
 from escalate.i18n.formatting import locale_for
 from escalate.playbooks.loader import get_playbook
 from escalate.playbooks.models import template_languages
@@ -150,7 +150,7 @@ def preview(message_id: int, language: str, session: Session = Depends(get_sessi
     """The step's template filled in another language, for the side-by-side view only. It is
     never sent: switching the letter language redrafts through the agent and the fact check."""
     try:
-        tag = normalize_language(language)
+        tag = letter_language(language)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     msg = get_message(session, message_id)

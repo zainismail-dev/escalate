@@ -33,7 +33,7 @@ from escalate.config import get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Event, Message
 from escalate.evidence.store import save_upload
-from escalate.i18n.countries import currency_for, is_rtl
+from escalate.i18n.countries import currency_for, default_letter_language, is_rtl
 from escalate.pii import mask_pii
 from escalate.playbooks.loader import PlaybookError, get_playbook
 from escalate.playbooks.models import Playbook
@@ -104,7 +104,7 @@ def create_case(
         description=mask_pii(body.description.strip()),
         country=country,
         region=body.region,
-        language=body.language or settings.default_language,
+        language=body.language or default_letter_language(),
         company=body.company,
         currency=currency_for(country),
     )

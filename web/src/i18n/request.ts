@@ -2,6 +2,7 @@ import { cookies, headers } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 import en from "../../messages/en.json";
 import { defaultLocale, isLocale, LOCALE_COOKIE, type Locale, locales } from "./config";
+import { loaders } from "./loaders.generated";
 
 type Messages = Record<string, unknown>;
 
@@ -32,10 +33,9 @@ export default getRequestConfig(async () => {
   const locale: Locale = isLocale(cookie)
     ? cookie
     : (fromAcceptLanguage((await headers()).get("accept-language")) ?? defaultLocale);
-  const own =
-    locale === "en"
-      ? {}
-      : ((await import(`../../messages/${locale}.json`)).default as Messages);
+  // Only enabled, translated locales are bundled (scripts/gen-locales.mjs); others show English.
+  const load = loaders[locale];
+  const own = load ? ((await load()).default as Messages) : {};
   const translated = Object.keys(own).some((k) => !k.startsWith("_"));
   return {
     locale,

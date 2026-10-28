@@ -100,7 +100,7 @@ CASES = [
         marker="PF-220931",
         country="GB",
         region=None,
-        language="en-GB",
+        language="en",
         case_type="subscription_cancel",
         description=(
             "I cancelled my PulseFit gym membership (member PF-220931) on 31 August, but they "
@@ -127,7 +127,7 @@ CASES = [
         marker="NL-77120",
         country="US",
         region="US-CA",
-        language="en-US",
+        language="en",
         case_type="refund_refused",
         description=(
             "I bought a laptop from Northline Computers (order NL-77120) for $1,249.00. The "

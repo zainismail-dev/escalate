@@ -50,14 +50,15 @@ test("review: a blank keeps Approve disabled", async ({ page }) => {
   await expect(page.getByTestId("approve-why")).toContainText("Fill in 1 blank");
 });
 
-test("review: side-by-side preview in another letter language", async ({ page }) => {
+test("v0.1 is English-only: no language selectors anywhere", async ({ page }) => {
   const { PK } = await demoCases();
-  await page.goto(`/cases/${PK.id}/review`);
-  await settled(page);
-  await page.getByRole("button", { name: "Side by side" }).click();
-  const preview = page.getByTestId("letter-preview");
-  await expect(preview).toHaveAttribute("dir", "rtl");
-  await expect(preview).toHaveAttribute("lang", "ur");
+  for (const path of ["/", "/cases", "/cases/new", "/settings", `/cases/${PK.id}`, `/cases/${PK.id}/review`]) {
+    await page.goto(path);
+    await settled(page);
+    await expect(page.getByLabel(/language/i), path).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /side by side/i }), path).toHaveCount(0);
+  }
+  await expect(page.getByTestId("letter")).toHaveAttribute("lang", "en");
 });
 
 test("scam: urgent checklist with never-share and recovery warnings", async ({ page }) => {

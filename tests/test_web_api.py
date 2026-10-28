@@ -11,6 +11,7 @@ from freezegun import freeze_time
 from sqlalchemy import select
 
 from escalate.agent.review import blanks, segments
+from escalate.config import get_settings
 from escalate.db.models import Message
 from escalate.db.session import session_scope
 from escalate.i18n.countries import currency_for, is_rtl, normalize_language
@@ -21,6 +22,13 @@ from tests.fakes.fake_smtp import FakeSMTP
 from tests.test_api import DAY0, _create, _started, client  # noqa: F401
 
 WEB = "http://localhost:3000"
+
+
+@pytest.fixture
+def urdu_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    """v0.1 ships English-only; tests of the dormant multi-language machinery turn Urdu on."""
+    monkeypatch.setenv("ENABLED_LETTER_LANGUAGES", '["en","ur"]')
+    get_settings.cache_clear()
 
 
 def test_cors_allows_only_the_web_origin(client: TestClient) -> None:  # noqa: F811
@@ -54,7 +62,23 @@ def test_language_tags_and_locales() -> None:
     assert p is not None and p.parent.name == "ur"
 
 
-def test_create_sets_currency_and_accepts_bcp47(client: TestClient) -> None:  # noqa: F811
+def test_english_only_by_default(client: TestClient) -> None:  # noqa: F811
+    case = _create(client)
+    assert case["language"] == "en" and case["text_direction"] == "ltr"
+    assert _create(client, language="en-GB")["language"] == "en-GB"  # English variants are fine
+    for lang in ("ur", "fr-FR"):
+        r = client.post("/cases", json={"description": "x" * 20, "language": lang})
+        assert r.status_code == 422 and "not enabled" in r.text
+    cid = case["id"]
+    assert client.post(f"/cases/{cid}/letter-language", json={"language": "ur"}).status_code == 422
+    assert client.put("/settings", json={"default_language": "ur"}).status_code == 422
+    assert client.get("/settings").json()["enabled_letter_languages"] == ["en"]
+
+
+def test_create_sets_currency_and_accepts_bcp47(
+    client: TestClient,  # noqa: F811
+    urdu_enabled: None,
+) -> None:
     case = _create(client, language="ur-PK")
     assert case["language"] == "ur-PK" and case["currency"] == "PKR"
     assert case["text_direction"] == "rtl"
@@ -110,13 +134,16 @@ def test_review_shows_wrong_vs_evidence_value(client: TestClient) -> None:  # no
     assert p["kind"] == "number" and p["wrong"] == "77777" and "amount" in p["expected"]
 
 
-def test_preview_and_letter_language_switch(client: TestClient) -> None:  # noqa: F811
+def test_preview_and_letter_language_switch(
+    client: TestClient,  # noqa: F811
+    urdu_enabled: None,
+) -> None:
     with freeze_time(DAY0):
         cid = _started(client)
         mid = client.get(f"/cases/{cid}").json()["pending_draft"]["id"]
         ur = client.get(f"/messages/{mid}/preview?language=ur").json()
         assert ur["available"] and ur["text_direction"] == "rtl" and "BM-48213" in ur["body"]
-        assert client.get(f"/messages/{mid}/preview?language=fr").json()["available"] is False
+        assert client.get(f"/messages/{mid}/preview?language=fr").status_code == 422  # not enabled
         assert client.get(f"/messages/{mid}/preview?language=x1").status_code == 422
 
         r = client.post(f"/cases/{cid}/letter-language", json={"language": "ur"}).json()
@@ -178,7 +205,7 @@ def test_demo_seed_runs_four_countries_and_sends_nothing(
     assert len(ids) == 4 and set(rows) == {"PK", "IN", "GB", "US"}
     assert rows["IN"]["waiting_for"] == "urgent_checklist" and rows["IN"]["currency"] == "INR"
     assert rows["PK"]["waiting_for"] == "approve_draft" and rows["PK"]["amount"] == "64500.00"
-    assert rows["GB"]["generic_playbook"] is True and rows["GB"]["language"] == "en-GB"
+    assert rows["GB"]["generic_playbook"] is True and rows["GB"]["language"] == "en"
     us = client.get(f"/cases/{rows['US']['id']}").json()
     review = client.get(f"/messages/{us['pending_draft']['id']}/review").json()
     assert review["blanks"] == ["your phone number"] and not review["can_approve"]

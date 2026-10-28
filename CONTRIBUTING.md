@@ -9,8 +9,9 @@ country playbooks, translations and reviews of letter templates are just as valu
   first. Every rule needs an official source.
 - **Translate** the web app (`web/messages/<locale>.json`: copy the keys from `en.json`, keep
   `{placeholders}` as they are), the Streamlit dev UI (`locales/<lang>.json`) or the letter
-  templates (`templates/<cc>/<lang>/`). Untranslated keys fall back to English. To add a new UI
-  language, add its file and list it in `web/src/i18n/config.ts`.
+  templates (`templates/<cc>/<lang>/`). Untranslated keys fall back to English. v0.1 ships
+  English-only: a translated language is switched on with `NEXT_PUBLIC_ENABLED_LOCALES` (web)
+  and `ENABLED_LETTER_LANGUAGES` (letters); see docs/DECISIONS.md.
 - **Review templates** if you are a lawyer or work at a consumer-rights group. Tell us what is
   wrong; we record reviews in each playbook's changelog.
 - **Fix bugs and pick up** a [good first issue](docs/good-first-issues.md).

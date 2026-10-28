@@ -631,6 +631,7 @@
     },
     "region": {
       "title": "Language and region",
+      "titleRegion": "Region",
       "appLanguage": "App language",
       "appLanguageHint": "Untranslated languages show English. Help translate on GitHub.",
       "country": "Default country for new cases",

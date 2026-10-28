@@ -72,7 +72,7 @@ export default function Landing() {
               </div>
               <p className="font-mono text-2xl font-bold">{formatMoney(64500, "PKR", "en-PK")}</p>
             </div>
-            <CaseChipStatic country="PK" currency="PKR" language="en" className="mt-3" />
+            <CaseChipStatic country="PK" currency="PKR" className="mt-3" />
             <EscalationLadder steps={steps} className="mt-6" />
             <div className="mt-5 rounded-xl bg-lime p-4 text-on-lime">
               <p className="label-mono font-bold">{t("hero.nextLabel")}</p>

@@ -7,7 +7,7 @@ import { useTransition } from "react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme";
 import { NativeSelect } from "@/components/ui/input";
-import { LOCALE_COOKIE, locales } from "@/i18n/config";
+import { ENABLED_LOCALES, LOCALE_COOKIE } from "@/i18n/config";
 import { languageName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ export function UiLanguageSelect({ className, id = "ui-language" }: { className?
           start(() => router.refresh());
         }}
       >
-        {locales.map((l) => (
+        {ENABLED_LOCALES.map((l) => (
           <option key={l} value={l}>
             {languageName(l, l)}
           </option>
@@ -83,7 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="ms-auto flex items-center gap-1">
-            <UiLanguageSelect />
+            {ENABLED_LOCALES.length > 1 && <UiLanguageSelect />}
             <ThemeToggle />
           </div>
         </div>

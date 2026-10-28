@@ -75,9 +75,6 @@ test("review draft", async ({ page }) => {
   await page.goto(`/cases/${PK.id}/review`);
   await settled(page);
   await shot(page, "09-review-draft");
-  await page.getByRole("button", { name: "Side by side" }).click();
-  await expect(page.getByTestId("letter-preview")).toBeVisible();
-  await shot(page, "10-review-side-by-side-urdu");
   await page.goto(`/cases/${US.id}/review`);
   await settled(page);
   await shot(page, "11-review-blank-to-fill");
@@ -157,15 +154,6 @@ test.describe("dark", () => {
     await page.goto(`/cases/${PK.id}/review`);
     await settled(page);
     await shot(page, "18-dark-review");
-  });
-});
-
-test.describe("rtl", () => {
-  test("Arabic UI (right to left)", async ({ page, context, baseURL }) => {
-    await context.addCookies([{ name: "NEXT_LOCALE", value: "ar", url: baseURL! }]);
-    await page.goto("/cases");
-    await settled(page);
-    await shot(page, "19-rtl-arabic-cases");
   });
 });
 

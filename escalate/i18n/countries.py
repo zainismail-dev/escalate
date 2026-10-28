@@ -55,6 +55,25 @@ def normalize_language(tag: str) -> str:
     return norm
 
 
+def letter_language(tag: str) -> str:
+    """Normalize a letter language and check it is enabled (ENABLED_LETTER_LANGUAGES, by primary
+    subtag: `en` also allows `en-GB`). Raises ValueError otherwise."""
+    norm = normalize_language(tag)
+    enabled = get_settings().enabled_letter_languages
+    if primary_language(norm) not in {primary_language(e) for e in enabled}:
+        raise ValueError(f"letter language {norm!r} is not enabled; enabled: {', '.join(enabled)}")
+    return norm
+
+
+def default_letter_language() -> str:
+    """Settings' default letter language if it is enabled, else the first enabled one."""
+    s = get_settings()
+    try:
+        return letter_language(s.default_language)
+    except ValueError:
+        return normalize_language(s.enabled_letter_languages[0])
+
+
 def primary_language(tag: str | None) -> str:
     return (tag or "en").replace("_", "-").split("-")[0].lower()
 

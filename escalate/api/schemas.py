@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from escalate.i18n.countries import normalize_language
+from escalate.i18n.countries import letter_language
 
 
 class Orm(BaseModel):
@@ -18,7 +18,8 @@ class CaseCreate(BaseModel):
     country: str | None = Field(default=None, description="ISO 3166-1 alpha-2")
     region: str | None = Field(default=None, description="ISO 3166-2, e.g. PK-SD")
     language: str | None = Field(
-        default=None, description="BCP-47 letter language, e.g. en, ur, pt-BR (default: settings)"
+        default=None,
+        description="BCP-47 letter language; must be in ENABLED_LETTER_LANGUAGES (v0.1: en)",
     )
     company: str | None = None
 
@@ -37,7 +38,7 @@ class CaseCreate(BaseModel):
     @field_validator("language")
     @classmethod
     def _bcp47(cls, v: str | None) -> str | None:
-        return normalize_language(v) if v else None
+        return letter_language(v) if v else None
 
 
 class FactOut(Orm):
@@ -221,7 +222,7 @@ class LanguageIn(BaseModel):
     @field_validator("language")
     @classmethod
     def _bcp47(cls, v: str) -> str:
-        return normalize_language(v)
+        return letter_language(v)
 
 
 class SegmentOut(BaseModel):
@@ -290,6 +291,7 @@ class SettingsOut(BaseModel):
     has_smtp_password: bool
     default_country: str | None
     default_language: str
+    enabled_letter_languages: list[str]
     demo_mode: bool
     version: str
 
@@ -311,7 +313,7 @@ class SettingsIn(BaseModel):
     @field_validator("default_language")
     @classmethod
     def _bcp47(cls, v: str | None) -> str | None:
-        return normalize_language(v) if v else None
+        return letter_language(v) if v else None
 
 
 class DemoOut(BaseModel):

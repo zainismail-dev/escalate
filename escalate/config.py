@@ -59,6 +59,9 @@ class Settings(BaseSettings):
 
     default_country: str | None = None
     default_language: str = "en"  # BCP-47 letter language for new cases
+    # v0.1 ships English-only. Letters in other languages (templates, RTL) stay in the code;
+    # add them here to re-enable, e.g. ENABLED_LETTER_LANGUAGES='["en","ur"]'.
+    enabled_letter_languages: list[str] = ["en"]
     web_origin: str = "http://localhost:3000"  # the only origin CORS allows (the web app)
     allow_demo_seed: bool = True
     demo_mode: bool = False

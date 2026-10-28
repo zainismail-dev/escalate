@@ -16,7 +16,7 @@ from escalate.api.deps import get_session
 from escalate.api.schemas import DemoOut, HealthOut, SettingsIn, SettingsOut
 from escalate.config import get_settings, settings_file
 from escalate.db.models import Case
-from escalate.i18n.countries import CountryOut, coverage
+from escalate.i18n.countries import CountryOut, coverage, default_letter_language
 from escalate.llm import get_llm, set_llm
 from escalate.llm.privacy import is_cloud
 
@@ -76,7 +76,8 @@ def settings_out() -> SettingsOut:
         smtp_user=s.smtp_user,
         has_smtp_password=bool(s.smtp_app_password),
         default_country=s.default_country,
-        default_language=s.default_language,
+        default_language=default_letter_language(),
+        enabled_letter_languages=s.enabled_letter_languages,
         demo_mode=s.demo_mode,
         version=__version__,
     )

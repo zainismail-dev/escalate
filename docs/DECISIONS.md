@@ -327,3 +327,27 @@ Defaults chosen during the autonomous build, with the reason for each.
   `ALLOW_DEMO_SEED=false`.
 - Money in the web app uses `Intl.NumberFormat` with CLDR defaults for the case locale, so the
   minor digits follow the currency (`Rs 64,500`, `₹18,000.00`, `£39.99`, `$1,249.00`).
+
+## v0.1 ships English-only (pre-release polish)
+- **What:** the web UI shows English only and every letter is drafted in English. Countries,
+  regions and currencies stay fully global (all ISO countries; money and dates in each
+  country's format).
+- **Why:** the other UI locales were empty (English fallback with a "help translate" banner),
+  and only the Pakistan pack has non-English letter templates, unreviewed by a native speaker
+  or lawyer. Offering languages we can't stand behind would mislead people writing to companies
+  about their own money.
+- **How it is switched off (and back on, by config only):**
+  - API: `ENABLED_LETTER_LANGUAGES` (default `["en"]`). New cases default to English; other
+    letter languages are rejected with 422 (case creation, letter-language switch, preview,
+    default letter language). English variants (`en-GB`) are allowed. Re-enable:
+    `ENABLED_LETTER_LANGUAGES='["en","ur"]'`.
+  - Web: `NEXT_PUBLIC_ENABLED_LOCALES` (default `en`), read at build time.
+    `scripts/gen-locales.mjs` bundles only enabled *and translated* message files, so the empty
+    ones stay out of the build. Re-enable: build with `NEXT_PUBLIC_ENABLED_LOCALES=en,ar`.
+  - The app-language selector, the letter-language pickers, the side-by-side view and the
+    language on case chips render only when more than one language is enabled.
+- **Kept, dormant:** next-intl, RTL support (logical CSS, `dir` on letters), locale files,
+  Urdu templates, `language` fields in the API and database, and the Arabic RTL Playwright
+  spec (skipped unless `ar` is enabled).
+- Tests that exercise Urdu letters now turn Urdu on explicitly; a new test checks the
+  English-only default.

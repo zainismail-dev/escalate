@@ -224,6 +224,7 @@ export interface Settings {
   has_smtp_password: boolean;
   default_country: string | null;
   default_language: string;
+  enabled_letter_languages: string[];
   demo_mode: boolean;
   version: string;
 }

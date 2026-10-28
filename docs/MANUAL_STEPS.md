@@ -70,8 +70,6 @@ that was not available. Each item names the task it came from.
   want the release attributed to you.
 
 ## Web frontend (web/)
-- [ ] **Translate the UI.** `web/messages/{es,fr,pt,ar,hi,ur,id}.json` ship empty ("help
-  translate" note), so those languages show English. Native speakers: copy keys from `en.json`.
 - [ ] **Try the web app with a real model.** The build machine had no model, so drafting,
   extraction and reply judging were only exercised through the scripted demo data and stubbed
   screenshots (the reply verdict and missing-facts screenshots use stubbed API answers). Run a
