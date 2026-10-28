@@ -2,7 +2,8 @@ A company replied to a consumer's complaint. Decide the outcome.
 What the consumer asked for: {remedy_wanted}
 THE REPLY: {reply_text}
 Return JSON: {"verdict": "resolved"|"partial"|"refused"|"no_reply", "promise": str|null,
-"promise_date": YYYY-MM-DD|null, "reason": str}
+"promise_date": YYYY-MM-DD|null, "condition": str|null, "reason": str}
+"condition" is anything the company says the consumer must do first (e.g. "send the item back"), else null.
 A vague promise with no date ("we will replace when the claim is approved") is "refused".
 "resolved" means the consumer got (or is certainly getting, on a stated date) what they asked for.
 "partial" means they got or will get, on a stated date, only part of it (e.g. half the money, store credit instead of a refund).

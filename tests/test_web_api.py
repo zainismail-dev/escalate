@@ -197,3 +197,25 @@ def test_segments_prefer_longest_fact_and_keep_blanks() -> None:
     kinds = [(s.kind, s.text) for s in segs if s.kind != "text"]
     assert kinds == [("fact", "BM-48213"), ("fact", "PKR 64,500.00"), ("blank", "[[sign]]")]
     assert blanks("a ____ b [[ x ]]") == ["____", "x"]
+
+
+def test_override_verdict_replays_from_the_reply(client: TestClient) -> None:  # noqa: F811
+    with freeze_time(DAY0):
+        cid = _started(client)
+        mid = client.get(f"/cases/{cid}").json()["pending_draft"]["id"]
+        assert client.post(f"/messages/{mid}/approve", json={}).status_code == 200
+        assert client.post(f"/cases/{cid}/verdict", json={"verdict": "resolved"}).status_code == 409
+        r = client.post(f"/cases/{cid}/replies", json={"text": "We refuse."}).json()
+        assert r["verdict"] == "refused" and r["waiting_for"] == "questions"
+        assert "condition" in r and "promise_date" in r
+
+        ok = client.post(f"/cases/{cid}/verdict", json={"verdict": "resolved"}).json()
+        assert ok["waiting_for"] is None
+        assert client.get(f"/cases/{cid}").json()["status"] == "resolved"
+
+        back = client.post(f"/cases/{cid}/verdict", json={"verdict": "refused"}).json()
+        assert back["waiting_for"] == "questions"
+        types = [e["type"] for e in client.get(f"/cases/{cid}/timeline").json()]
+        assert types.count("verdict_overridden") == 2
+        assert client.post(f"/cases/{cid}/verdict", json={"verdict": "maybe"}).status_code == 422
+    assert len(FakeSMTP.all_sent()) == 1  # only the approved letter

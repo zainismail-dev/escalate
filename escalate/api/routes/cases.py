@@ -26,6 +26,7 @@ from escalate.api.schemas import (
     ReplyOut,
     RunOut,
     SourceOut,
+    VerdictIn,
     WithdrawIn,
 )
 from escalate.config import get_settings
@@ -207,8 +208,21 @@ def log_reply(case_id: int, body: ReplyIn, session: Session = Depends(get_sessio
         )
         ev = session.scalars(q).first()
         if ev is not None:
-            out.verdict, out.reason = ev.payload.get("verdict"), ev.payload.get("reason")
+            p = ev.payload
+            out.verdict, out.reason = p.get("verdict"), p.get("reason")
+            out.promise, out.promise_date = p.get("promise"), p.get("promise_date")
+            out.condition = p.get("condition")
     return out
+
+
+@router.post("/{case_id}/verdict", response_model=RunOut)
+def override_verdict(
+    case_id: int, body: VerdictIn, session: Session = Depends(get_session)
+) -> RunOut:
+    """The user corrects the agent's verdict on the last reply; the ladder is replayed from it."""
+    get_case(session, case_id)
+    session.close()
+    return run_out(runner.override_verdict(case_id, body.verdict))
 
 
 @router.get("/{case_id}/export.pdf")

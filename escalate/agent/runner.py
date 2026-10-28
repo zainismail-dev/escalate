@@ -174,6 +174,44 @@ def resume_timeout(case_id: int, step_id: str) -> RunResult | None:
     return _run(case_id, Command(resume={"text": None}))
 
 
+def override_verdict(case_id: int, verdict: str) -> RunResult:
+    """Replace the verdict on the last judged reply and replay the ladder from there.
+
+    Uses the graph checkpoint taken just before `judge_reply`. Drafts made after the old verdict
+    are rejected (never sent); nothing is approved here.
+    """
+    with _lock:
+        target = None
+        for snap in graph().get_state_history(_cfg(case_id)):
+            if snap.next == ("judge_reply",):
+                target = snap
+                break
+        if target is None:
+            raise RunnerError(f"case {case_id} has no judged reply to correct")
+        with session_scope() as s:
+            case = s.get(Case, case_id)
+            if case is None or case.status == CaseStatus.WITHDRAWN:
+                raise RunnerError(f"case {case_id} cannot be changed")
+            old = target.values.get("reply_verdict")
+            for m in case.messages:
+                if m.direction == "out" and m.status == "draft":
+                    reject_message(s, m.id, f"verdict changed to {verdict}")
+            if verdict == "resolved":
+                case.status, case.next_action_at = CaseStatus.RESOLVED, None
+                log_event(s, case_id, "case_resolved", {"step": target.values.get("step_id")})
+            elif case.status == CaseStatus.RESOLVED:
+                case.status = CaseStatus.PICK_NEXT
+            log_event(
+                s,
+                case_id,
+                "verdict_overridden",
+                {"from": old, "to": verdict, "step": target.values.get("step_id")},
+            )
+        cfg = graph().update_state(target.config, {"reply_verdict": verdict}, as_node="judge_reply")
+        graph().invoke(None, cfg)
+        return RunResult(case_id, pending(case_id))
+
+
 def withdraw(case_id: int, reason: str = "") -> None:
     with session_scope() as s:
         case = s.get(Case, case_id)

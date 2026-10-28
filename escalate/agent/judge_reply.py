@@ -20,9 +20,10 @@ class Judgement(BaseModel):
     verdict: Verdict
     promise: str | None = None
     promise_date: date | None = None
+    condition: str | None = None  # what the company wants first, e.g. "return the item"
     reason: str = ""
 
-    @field_validator("promise", "promise_date", mode="before")
+    @field_validator("promise", "promise_date", "condition", mode="before")
     @classmethod
     def _blank_is_none(cls, v: object) -> object:
         return None if isinstance(v, str) and v.strip().lower() in ("", "null", "none") else v

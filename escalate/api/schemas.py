@@ -184,6 +184,13 @@ class ReplyIn(BaseModel):
 class ReplyOut(RunOut):
     verdict: str | None = None
     reason: str | None = None
+    promise: str | None = None
+    promise_date: date | None = None
+    condition: str | None = None
+
+
+class VerdictIn(BaseModel):
+    verdict: Literal["resolved", "partial", "refused", "no_reply"]
 
 
 class DeliveryIn(BaseModel):
