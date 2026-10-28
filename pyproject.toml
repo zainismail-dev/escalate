@@ -1,0 +1,76 @@
+[project]
+name = "escalate"
+version = "0.0.1"
+description = "Self-hostable AI agent that runs a consumer complaint from first message to consumer court."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "alembic>=1.20.1",
+    "apscheduler>=3.11.3",
+    "babel>=2.18.0",
+    "cryptography==46.0.3 ; platform_machine == 'x86_64' and sys_platform == 'darwin'",
+    "cryptography>=46.0.3 ; platform_machine != 'x86_64' or sys_platform != 'darwin'",
+    "fastapi>=0.162.0",
+    "google-api-python-client>=2.201.0",
+    "google-auth-oauthlib>=1.5.0",
+    "httpx>=0.28.1",
+    "jinja2>=3.1.6",
+    "jsonschema>=4.26.0",
+    "langgraph>=1.2.18",
+    "langgraph-checkpoint-sqlite>=3.1.2",
+    "openai>=3.40.0",
+    "pillow>=13.0.0",
+    "pydantic>=2.14.1",
+    "pydantic-settings>=2.16.1",
+    "pypdf>=6.21.3",
+    "pytesseract>=0.3.13",
+    "python-multipart>=0.0.32",
+    "pyyaml>=6.0.3",
+    "sqlalchemy>=2.1.6",
+    "streamlit>=1.66.1",
+    "uvicorn>=0.54.0",
+    "weasyprint>=70.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "escalate"
+module-root = ""
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["migrations/versions", "*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[dependency-groups]
+dev = [
+    "freezegun>=1.5.5",
+    "mypy>=2.4.0",
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.4.1",
+    "ruff>=0.17.3",
+    "types-jsonschema>=4.26.0.20261006",
+    "types-pyyaml>=6.0.12.20260906",
+]
