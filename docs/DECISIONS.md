@@ -295,3 +295,12 @@ Defaults chosen during the autonomous build, with the reason for each.
   7–8B instruct model in the Ollama library. It has **not** been evaluated (see 4.1).
 - The CI `docker` job builds the image and runs `tesseract --version` plus a real
   WeasyPrint render inside it.
+
+## README and community files (task 4.4)
+- The demo GIF line in the README is commented out (with a visible "coming soon" note) so the
+  README doesn't show a broken image before `docs/demo.gif` exists.
+- The "Why it exists" story is told without names; the build plan only calls it "your cousin's
+  LED story" (it says "a family member").
+- The Code of Conduct is written for this project (short, with harassment and "recovery scam"
+  promotion called out) rather than copied from a standard text.
+- A test checks every local link in README/CONTRIBUTING exists and the issue templates parse.

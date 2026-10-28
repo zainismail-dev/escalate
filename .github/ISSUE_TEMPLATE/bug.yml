@@ -1,0 +1,40 @@
+name: Bug report
+description: Something doesn't work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "**Never paste real personal data** (names, addresses, card or ID numbers) into an issue. Use made-up values."
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Start a case with country PK\n2. Approve the first draft\n3. ..."
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error output
+      description: Paste the exact error (API logs, browser console). Remove personal data first.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Escalate version
+      placeholder: "0.1.0"
+  - type: dropdown
+    id: install
+    attributes:
+      label: How do you run it?
+      options: [docker compose, uv (local), other]
+  - type: input
+    id: model
+    attributes:
+      label: LLM endpoint and model
+      placeholder: "Ollama, llama3.1:8b"

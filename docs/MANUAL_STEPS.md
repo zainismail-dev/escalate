@@ -47,3 +47,10 @@ that was not available. Each item names the task it came from.
   On a machine with Docker: fresh clone, `make setup && make up`, open http://localhost:8501
   and open a case. (CI builds the image and smoke-tests OCR and PDF rendering inside it.)
   `make setup` pulls `llama3.1:8b` by default; pass `MODEL=<name>` to choose another.
+- [ ] **4.4 — Record the demo GIF** (30–45 s: broken-LED photo → draft → approve → timeline jumps
+  to the legal notice → PDF), save it as `docs/demo.gif`, and uncomment the image line near the
+  top of `README.md`.
+- [ ] **4.4 — Open the 10 issues** in `docs/good-first-issues.md` on GitHub, create the labels
+  (`good first issue`, `playbook`, `country:pk`, …) and set the repo topics (`ai-agent`,
+  `consumer-rights`, `langgraph`, `llm`, `legal-tech`, `i18n`, `self-hosted`). `gh` was not
+  available during the build.

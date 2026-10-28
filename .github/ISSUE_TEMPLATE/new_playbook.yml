@@ -1,0 +1,41 @@
+name: New playbook
+description: Propose or start a playbook for a country, region, sector or company
+labels: [playbook]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Country / region
+      description: ISO codes, e.g. "NG" or "US-CA".
+    validations:
+      required: true
+  - type: dropdown
+    id: case_type
+    attributes:
+      label: Case type
+      options: [refund_refused, subscription_cancel, scam]
+    validations:
+      required: true
+  - type: textarea
+    id: ladder
+    attributes:
+      label: The escalation ladder
+      description: Each step (who you write to, how, how long to wait) and any filing deadline.
+      placeholder: "1. Written demand to the seller, 7 days\n2. ...\nDeadline: ..."
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Official sources
+      description: A link from a government, regulator, court or recognised consumer body for each rule.
+    validations:
+      required: true
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Can you help?
+      options:
+        - label: I can write the playbook YAML and templates
+        - label: I can translate the templates
+        - label: I am a lawyer or consumer-rights professional and can review it

@@ -1,0 +1,30 @@
+name: Playbook correction
+description: A rule, deadline, authority or letter in an existing playbook is wrong
+labels: [playbook, correction]
+body:
+  - type: input
+    id: file
+    attributes:
+      label: Playbook or template file
+      placeholder: playbooks/pk/ecommerce/refund_refused.yaml
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What is wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: correct
+    attributes:
+      label: What is correct?
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Official source
+      description: A link that shows the correct rule.
+    validations:
+      required: true
