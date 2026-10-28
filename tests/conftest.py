@@ -11,6 +11,9 @@ from escalate.config import Settings
 from escalate.db import session as db_session
 from escalate.db.models import Base
 
+# Never read the developer's .env either (e.g. DEMO_MODE=true there would change test results).
+Settings.model_config["env_file"] = None
+
 # Never read a developer's saved web settings (data/settings.json) in tests.
 os.environ["ESCALATE_SETTINGS_FILE"] = os.devnull
 
