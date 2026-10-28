@@ -1,0 +1,42 @@
+{
+  "name": "escalate-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Escalate web app: a Next.js front end on the Escalate API.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "screenshots": "playwright test --project=screenshots"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "1.63.0",
+    "next": "16.4.3",
+    "next-intl": "4.14.9",
+    "next-themes": "0.4.6",
+    "radix-ui": "1.8.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tailwind-merge": "3.7.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.3",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+/* Dark mode follows the `dark` class that next-themes sets (system preference or the toggle). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --raised: #ffffff;
+  --ink: #14161f;
+  --text: #14161f;
+  --text-2: #3a3f4e;
+  --muted: #5b6170;
+  --line: #e3e5ea;
+  --line-strong: #14161f;
+  --lime: #d7f36b;
+  --on-lime: #14161f;
+  --fact: #e9f9a8;
+  --blank: #ffe3b8;
+  --success: #12703a;
+  --success-bg: #eaf7ee;
+  --warning: #a04b00;
+  --warning-bg: #fff4e5;
+  --danger: #b42318;
+  --danger-bg: #fef0ef;
+  --info: #1d4ed8;
+  --info-bg: #eff4ff;
+  --focus: #1d4ed8;
+  --paper: #ffffff;
+  --paper-ink: #14161f;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0e1016;
+  --card: #171a23;
+  --raised: #1f2330;
+  --ink: #f1f2f5;
+  --text: #f1f2f5;
+  --text-2: #b9bdc9;
+  --muted: #8d93a5;
+  --line: #262a36;
+  --line-strong: #f1f2f5;
+  /* Status colours lightened on dark backgrounds to keep 4.5:1 contrast. */
+  --success: #6fd49a;
+  --success-bg: #12291c;
+  --warning: #ffb366;
+  --warning-bg: #2e1f0d;
+  --danger: #ff8a80;
+  --danger-bg: #331614;
+  --info: #8fb0ff;
+  --info-bg: #141e38;
+  --focus: #d7f36b;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-lime: var(--lime);
+  --color-on-lime: var(--on-lime);
+  --color-fact: var(--fact);
+  --color-blank: var(--blank);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-focus: var(--focus);
+  --color-paper: var(--paper);
+  --color-paper-ink: var(--paper-ink);
+  --color-night: #0e1016;
+  --color-night-card: #171a23;
+  --color-night-line: #262a36;
+
+  /* Latin first, then Noto fallbacks per script, so Arabic, Urdu and Devanagari never box. */
+  --font-sans: var(--font-instrument), var(--font-noto-arabic), var(--font-noto-devanagari), ui-sans-serif,
+    system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-noto-arabic), var(--font-noto-devanagari), ui-sans-serif,
+    system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-serif: var(--font-source-serif), var(--font-noto-naskh), var(--font-noto-serif-devanagari), Georgia,
+    serif;
+  --font-nastaliq: var(--font-noto-nastaliq), var(--font-noto-naskh), serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--lime);
+    color: var(--on-lime);
+  }
+}
+
+/* Uppercase mono labels (IDs, dates, small captions). */
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Letters: serif on paper. Urdu uses Nastaliq; other RTL scripts use Naskh via the stack. */
+.letter {
+  font-family: var(--font-serif);
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+.letter:lang(ur) {
+  font-family: var(--font-nastaliq);
+  line-height: 2.2;
+}
+
+.fact-mark {
+  background: var(--fact);
+  color: #14161f;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #9bbf1f;
+  padding-inline: 2px;
+}
+.blank-mark {
+  background: var(--blank);
+  color: #14161f;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #d98a1c;
+  padding-inline: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
