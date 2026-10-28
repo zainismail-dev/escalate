@@ -1,0 +1,4 @@
+List every factual claim in this draft that is NOT supported by the facts.
+DRAFT: {draft}  FACTS: {facts_json}
+Ignore tone, greetings, the sign-off and the reply deadline. Only list claims of fact.
+Return JSON: {"unsupported": [str]}

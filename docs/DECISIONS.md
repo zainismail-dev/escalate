@@ -95,3 +95,16 @@ Defaults chosen during the autonomous build, with the reason for each.
   model fails to return valid JSON after retries, the plain filled template is used. The
   disclaimer is appended by code, never left to the model.
 - A new draft for a step marks older open drafts of that step `superseded`.
+
+## Fact check and approval (task 2.2)
+- Code check allow-list = case facts + the trusted template rendering (facts, today, reply-by
+  date) + text already approved in the case. Numbers are compared after normalising commas,
+  spaces, European decimals and trailing `.00`; dates in ISO, `D/M/YYYY`, `4 November 2026` and
+  `November 4, 2026` forms are compared as dates; IDs are letter+digit tokens with hyphens.
+- The model check runs only when the code check passes. If the model can't produce valid JSON it
+  returns no issues (the code check already ran), so a confused small model cannot block forever.
+- **The user's own edits must also pass the code check** at approval (`UnsupportedFacts`).
+  `PUT /messages/{id}` (edit only) saves the edit and returns warnings without blocking; approval
+  then enforces it. To use a new value, the user adds it as a fact first.
+- Approve/reject live in `escalate/agent/approval.py`; a test asserts no other module assigns
+  `approved_at`.
