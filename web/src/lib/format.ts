@@ -13,36 +13,40 @@ export function caseLocale(language: string | null | undefined, country: string 
   }
 }
 
-export function formatMoney(amount: string | number | null | undefined, currency: string | null | undefined, locale: string) {
-  if (amount === null || amount === undefined || amount === "") return null;
-  const value = typeof amount === "number" ? amount : Number(amount);
-  if (!Number.isFinite(value)) return String(amount);
-  if (!currency) return new Intl.NumberFormat(locale).format(value);
-  try {
-    return new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
-  } catch {
-    return `${currency} ${value}`;
-  }
+export { formatMoney } from "./money";
+
+/**
+ * Dates and times are formatted in UTC with an explicit locale, so the server render and the
+ * browser produce the same string (no hydration mismatch). Times show their zone ("UTC").
+ */
+const TIME_ZONE = "UTC";
+
+function toDate(value: string | Date): Date {
+  if (value instanceof Date) return value;
+  if (value.length === 10) return new Date(`${value}T12:00:00Z`); // a calendar date
+  return new Date(value.endsWith("Z") || /[+-]\d\d:\d\d$/.test(value) ? value : `${value}Z`);
 }
 
 export function formatDate(value: string | Date | null | undefined, locale: string, style: "medium" | "long" = "medium") {
   if (!value) return null;
-  const d = typeof value === "string" ? new Date(value.length === 10 ? `${value}T12:00:00` : value) : value;
+  const d = toDate(value);
   if (Number.isNaN(d.getTime())) return String(value);
-  return new Intl.DateTimeFormat(locale, { dateStyle: style }).format(d);
+  return new Intl.DateTimeFormat(locale, { dateStyle: style, timeZone: TIME_ZONE }).format(d);
 }
 
 export function formatDateTime(value: string | null | undefined, locale: string) {
   if (!value) return null;
-  const d = new Date(value.endsWith("Z") || value.includes("+") ? value : `${value}Z`);
-  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(d);
-}
-
-export function relativeDays(value: string | null | undefined, locale: string) {
-  if (!value) return null;
-  const d = new Date(value.endsWith("Z") || value.includes("+") ? value : `${value}Z`);
-  const days = Math.round((d.getTime() - Date.now()) / 86_400_000);
-  return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(days, "day");
+  const d = toDate(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: TIME_ZONE,
+    timeZoneName: "short",
+  }).format(d);
 }
 
 const displayNames = new Map<string, Intl.DisplayNames>();

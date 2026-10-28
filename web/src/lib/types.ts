@@ -22,6 +22,7 @@ export type WaitingFor =
 export interface Fact {
   key: string;
   value: string;
+  display?: string | null;
   confidence: number;
   source_evidence_id: number | null;
 }
@@ -84,6 +85,7 @@ export interface CaseSummary {
   language: string;
   company: string | null;
   amount: string | null;
+  amount_display: string | null;
   currency: string | null;
   status: CaseStatus;
   playbook_id: string | null;

@@ -1,12 +1,14 @@
 """Locale-aware money and date formatting with Babel. Currencies are ISO 4217 codes."""
 
+import re
+import unicodedata
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from functools import lru_cache
 
 from babel import Locale, UnknownLocaleError, localedata
 from babel.dates import format_date as _babel_date
-from babel.numbers import format_currency, get_currency_symbol
+from babel.numbers import format_currency, get_currency_precision, get_currency_symbol
 
 
 def _locale(locale: str | None) -> str:
@@ -65,6 +67,45 @@ def format_money(amount: object, currency: str | None, locale: str | None = "en"
     elif code in text and not text.startswith(f"{code} ") and text.startswith(code):
         text = text.replace(code, f"{code} ", 1)
     return " ".join(text.split())
+
+
+_SPACES = re.compile(r"[\s\u202f\u00a0]+")
+
+
+def format_amount(amount: object, currency: str | None, locale: str | None = "en") -> str | None:
+    """Money for people to read (API responses, web UI, PDF): the locale's own symbol and
+    spacing, no decimals for whole amounts, the currency's digits otherwise.
+
+    64500 PKR en_PK -> "Rs 64,500"; 39.99 GBP en_GB -> "£39.99"; 89.9 EUR de_DE -> "89,90 €".
+    Spaces are U+00A0. The web app's formatter (web/src/lib/money.ts) follows the same rules;
+    both are tested against schema/money_format_cases.json. Letters use `format_money` instead.
+    """
+    value = to_decimal(amount)
+    if value is None:
+        return None if amount in (None, "") else str(amount)
+    if not currency:
+        return f"{value.normalize():f}"
+    code, loc = currency.upper(), _locale(locale)
+    digits = 0 if value == value.to_integral_value() else get_currency_precision(code)
+    pattern = Locale.parse(loc).currency_formats["standard"].pattern
+    pattern = re.sub(r"0\.0+", "0." + "0" * digits if digits else "0", pattern)
+    text = format_currency(value, code, locale=loc, format=pattern, currency_digits=False)
+    return _currency_spacing(_SPACES.sub("\u00a0", text), get_currency_symbol(code, locale=loc))
+
+
+def _currency_spacing(text: str, symbol: str) -> str:
+    """CLDR currency spacing (Babel skips it): a symbol that ends or starts with a letter is
+    kept apart from the digits ("Rs 64,500", but "$1,249")."""
+
+    def letter(ch: str) -> bool:
+        return unicodedata.category(ch).startswith("L")
+
+    head, tail = text[len(symbol) :], text[: -len(symbol)]
+    if text.startswith(symbol) and head[:1].isdigit() and letter(symbol[-1]):
+        return f"{symbol}\u00a0{head}"
+    if text.endswith(symbol) and tail[-1:].isdigit() and letter(symbol[0]):
+        return f"{tail}\u00a0{symbol}"
+    return text
 
 
 def format_date(d: date | datetime | str, locale: str | None = "en", fmt: str = "long") -> str:

@@ -60,3 +60,23 @@ def _placeholders(text: str) -> list[str]:
     import re
 
     return re.findall(r"\{(\w+)\}", text)
+
+
+def test_format_amount_matches_the_shared_cases() -> None:
+    """The same table the web formatter is tested against (web/tests/money.test.mts)."""
+    import json
+    from pathlib import Path
+
+    from escalate.i18n.formatting import format_amount
+
+    data = json.loads((Path(__file__).parents[1] / "schema/money_format_cases.json").read_text())
+    for c in data["cases"]:
+        assert format_amount(c["amount"], c["currency"], c["locale"]) == c["expected"], c
+
+
+def test_format_amount_edges() -> None:
+    from escalate.i18n.formatting import format_amount
+
+    assert format_amount(None, "USD", "en_US") is None
+    assert format_amount("about forty", "USD", "en_US") == "about forty"
+    assert format_amount("12.50", None) == "12.5"

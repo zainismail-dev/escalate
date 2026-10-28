@@ -325,8 +325,8 @@ Defaults chosen during the autonomous build, with the reason for each.
 - Demo data (`make demo-data`, `POST /demo/seed`) runs the real graph with a scripted offline
   model; cases stop at approval or the scam checklist, so nothing is sent. Turn it off with
   `ALLOW_DEMO_SEED=false`.
-- Money in the web app uses `Intl.NumberFormat` with CLDR defaults for the case locale, so the
-  minor digits follow the currency (`Rs 64,500`, `₹18,000.00`, `£39.99`, `$1,249.00`).
+- ~~Money in the web app uses `Intl.NumberFormat` with CLDR defaults~~ (replaced in the
+  pre-release polish, see "Money display" below).
 
 ## v0.1 ships English-only (pre-release polish)
 - **What:** the web UI shows English only and every letter is drafted in English. Countries,
@@ -351,3 +351,20 @@ Defaults chosen during the autonomous build, with the reason for each.
   spec (skipped unless `ar` is enabled).
 - Tests that exercise Urdu letters now turn Urdu on explicitly; a new test checks the
   English-only default.
+
+## Money display (pre-release polish)
+- Whole amounts show no decimals (`Rs 64,500`, `₹18,000`, `$1,249`); amounts with cents keep
+  the currency's digits (`£39.99`, `89,90 €`); JPY never shows decimals. The locale's own
+  symbol and spacing are used; every space is U+00A0.
+- **One source of truth:** `format_amount` in `escalate/i18n/formatting.py` formats every
+  amount the API returns (`amount_display`, each fact's `display`) and the PDF cover. The web
+  app shows those strings and never formats case money itself, so server and browser render
+  identical text.
+- The web formatter (`web/src/lib/money.ts`) is only for static examples (landing page). It is
+  tested against the same table as the API, `schema/money_format_cases.json`. One case is
+  API-only: browsers (ICU) give PKR 0 minor digits while CLDR/ISO 4217 (Babel) gives 2.
+- Babel does not apply CLDR currency spacing, so `format_amount` does it ("Rs 64,500").
+- Letters keep `format_money` (ISO code, standard decimals: `PKR 64,500.00`): unambiguous for
+  the company, and unchanged so approved letters stay identical.
+- Dates and times in the web app are formatted with an explicit locale and `timeZone: "UTC"`
+  (times show "UTC"), and nothing calls `Date.now()` while rendering.

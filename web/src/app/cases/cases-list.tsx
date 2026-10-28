@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
-import { caseLocale, countryName, formatDateTime, formatMoney } from "@/lib/format";
+import { caseLocale, countryName, formatDateTime } from "@/lib/format";
 import type { CaseStatus, CaseSummary } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 import { cn } from "@/lib/utils";
@@ -41,8 +41,7 @@ function actionHref(c: CaseSummary) {
 
 function Title({ c }: { c: CaseSummary }) {
   const t = useTranslations("caseType");
-  const locale = caseLocale(c.language, c.country);
-  const money = formatMoney(c.amount, c.currency, locale);
+  const money = c.amount_display;
   return (
     <span className="inline-flex flex-wrap items-baseline gap-x-2">
       <span>{c.title || t(c.case_type ?? "unknown")}</span>

@@ -1,0 +1,78 @@
+{
+  "_about": "Display money format shared by the API/PDF (escalate/i18n/formatting.py::format_amount) and the web app (web/src/lib/money.ts). Whole amounts have no decimals; amounts with cents keep the currency's digits; spaces are U+00A0. Cases with \"web\": false are API-only: ICU (browsers, Node) gives PKR 0 minor digits while CLDR/ISO 4217 (Babel) gives 2, so the API formats every case amount and the web only formats static examples.",
+  "cases": [
+    {
+      "amount": "64500",
+      "currency": "PKR",
+      "locale": "en-PK",
+      "expected": "Rs 64,500"
+    },
+    {
+      "amount": "64500.50",
+      "currency": "PKR",
+      "locale": "en-PK",
+      "expected": "Rs 64,500.50",
+      "web": false
+    },
+    {
+      "amount": "18000",
+      "currency": "INR",
+      "locale": "en-IN",
+      "expected": "₹18,000"
+    },
+    {
+      "amount": "1234567",
+      "currency": "INR",
+      "locale": "en-IN",
+      "expected": "₹12,34,567"
+    },
+    {
+      "amount": "39.99",
+      "currency": "GBP",
+      "locale": "en-GB",
+      "expected": "£39.99"
+    },
+    {
+      "amount": "89.90",
+      "currency": "EUR",
+      "locale": "de-DE",
+      "expected": "89,90 €"
+    },
+    {
+      "amount": "1249",
+      "currency": "EUR",
+      "locale": "fr-FR",
+      "expected": "1 249 €"
+    },
+    {
+      "amount": "1249.00",
+      "currency": "USD",
+      "locale": "en-US",
+      "expected": "$1,249"
+    },
+    {
+      "amount": "1249.5",
+      "currency": "USD",
+      "locale": "en-US",
+      "expected": "$1,249.50"
+    },
+    {
+      "amount": "1500",
+      "currency": "JPY",
+      "locale": "ja-JP",
+      "expected": "￥1,500"
+    },
+    {
+      "amount": "1500",
+      "currency": "JPY",
+      "locale": "en-US",
+      "expected": "¥1,500"
+    },
+    {
+      "amount": "1500.40",
+      "currency": "JPY",
+      "locale": "en-US",
+      "expected": "¥1,500"
+    }
+  ]
+}

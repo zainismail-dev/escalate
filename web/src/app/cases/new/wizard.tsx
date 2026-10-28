@@ -15,7 +15,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FieldHint, Input, Label, Textarea } from "@/components/ui/input";
 import { api, ApiError } from "@/lib/api";
 import { displayFact } from "@/lib/facts";
-import { caseLocale } from "@/lib/format";
 import type { CaseDetail, Country, Evidence } from "@/lib/types";
 import { useAction, useApi } from "@/lib/use-api";
 import { useLetterLanguages } from "@/lib/letter-languages";
@@ -99,7 +98,6 @@ export function Wizard() {
   }, [resumeId, goFor, router]);
 
   const selected: Country | undefined = countries.data?.find((x) => x.code === country);
-  const locale = caseLocale(c?.language ?? language, c?.country ?? country);
   const regionOk = !region || /^[A-Za-z]{2}-[A-Za-z0-9]{1,3}$/.test(region);
 
   async function createCase() {
@@ -296,7 +294,7 @@ export function Wizard() {
                   <h2 className="font-display text-lg">{t("found")}</h2>
                   <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {facts.map((f) => (
-                      <FactChip key={f.key} label={label(f.key)} value={displayFact(f.key, f.value, c.currency, locale)} source={f.file} />
+                      <FactChip key={f.key} label={label(f.key)} value={displayFact(f)} source={f.file} />
                     ))}
                   </ul>
                 </div>
@@ -327,7 +325,7 @@ export function Wizard() {
                 <h2 className="font-display text-lg">{t("alreadyKnown")}</h2>
                 <ul className="mt-3 grid gap-2">
                   {facts.map((f) => (
-                    <FactChip key={f.key} label={label(f.key)} value={displayFact(f.key, f.value, c.currency, locale)} source={f.file} />
+                    <FactChip key={f.key} label={label(f.key)} value={displayFact(f)} source={f.file} />
                   ))}
                 </ul>
               </div>
@@ -356,7 +354,7 @@ export function Wizard() {
             </dl>
             <ul className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {facts.slice(0, 9).map((f) => (
-                <FactChip key={f.key} label={label(f.key)} value={displayFact(f.key, f.value, c.currency, locale)} source={f.file} />
+                <FactChip key={f.key} label={label(f.key)} value={displayFact(f)} source={f.file} />
               ))}
             </ul>
             <div className="flex flex-wrap justify-end gap-2">

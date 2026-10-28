@@ -37,6 +37,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: node scripts/check-messages.mjs
+      - run: npm test
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1

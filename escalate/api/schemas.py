@@ -44,6 +44,7 @@ class CaseCreate(BaseModel):
 class FactOut(Orm):
     key: str
     value: str
+    display: str | None = None  # how people read it: money and dates in the case's locale
     confidence: float
     source_evidence_id: int | None
 
@@ -99,6 +100,7 @@ class CaseOut(Orm):
     language: str
     company: str | None
     amount: Decimal | None
+    amount_display: str | None = None  # "Rs 64,500", "£39.99": format_amount, case locale
     currency: str | None
     status: str
     playbook_id: str | None

@@ -16,7 +16,7 @@ from escalate.agent.titles import display_title
 from escalate.db.models import Case, Evidence, utcnow
 from escalate.evidence.store import load_plain
 from escalate.export.pdf import html_to_pdf
-from escalate.i18n.formatting import format_money, locale_for
+from escalate.i18n.formatting import format_amount, locale_for
 from escalate.templates_engine import disclaimer
 
 THUMB_PX = 360
@@ -69,11 +69,7 @@ def build_case_html(session: Session, case: Case) -> str:
     facts = case.fact_dict()
     currency = case.currency or facts.get("currency")
     amount_raw = facts.get("amount") or (str(case.amount) if case.amount is not None else None)
-    amount = (
-        format_money(amount_raw, currency, locale_for(case.language, case.country))
-        if amount_raw
-        else "—"
-    )
+    amount = format_amount(amount_raw, currency, locale_for(case.language, case.country)) or "—"
     evidence = [
         {
             "id": ev.id,

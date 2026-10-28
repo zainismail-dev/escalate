@@ -7,7 +7,6 @@ import { CaseChip, PackBadge, StatusBadge } from "@/components/case-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
-import { caseLocale, formatMoney } from "@/lib/format";
 import type { CaseDetail } from "@/lib/types";
 
 /** Breadcrumb "My cases › <case title>" (the last part links to the case unless we are on it). */
@@ -92,7 +91,7 @@ export function CaseHeader({
   onRenamed?: (c: CaseDetail) => void;
 }) {
   const t = useTranslations("caseType");
-  const money = formatMoney(c.amount, c.currency, caseLocale(c.language, c.country));
+  const money = c.amount_display;
   return (
     <div className="space-y-3">
       <CaseBreadcrumb c={c} onCase={!heading} />

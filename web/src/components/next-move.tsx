@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import { formatDateTime, relativeDays } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import type { CaseDetail } from "@/lib/types";
 
 /** "Your next move": one clear action, with a lime call to action. */
@@ -21,7 +21,7 @@ export function NextMove({ c, onDeliveryUpload }: { c: CaseDetail; onDeliveryUpl
     waiting_reply: `/cases/${c.id}/reply`,
     start: `/cases/new?case=${c.id}`,
   };
-  const when = c.next_action_at ? `${formatDateTime(c.next_action_at, locale)} (${relativeDays(c.next_action_at, locale)})` : "";
+  const when = c.next_action_at ? (formatDateTime(c.next_action_at, locale) ?? "") : "";
   return (
     <section aria-labelledby="next-move" className="rounded-2xl border border-line bg-card p-5" data-testid="next-move">
       <p className="label-mono text-muted">{t("title")}</p>

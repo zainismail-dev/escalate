@@ -145,7 +145,7 @@ export function CaseDashboard({ id }: { id: number }) {
                     <FactChip
                       key={f.key}
                       label={label(f.key)}
-                      value={displayFact(f.key, f.value, c.currency, locale)}
+                      value={displayFact(f)}
                       source={f.source_evidence_id ? files.get(f.source_evidence_id) : null}
                     />
                   ))}

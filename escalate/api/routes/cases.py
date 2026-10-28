@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from escalate.agent import runner
 from escalate.agent.deadlines import deadline_status
+from escalate.agent.review import display_value
 from escalate.agent.titles import display_title
 from escalate.api import views
 from escalate.api.deps import get_case, get_session
@@ -36,6 +37,7 @@ from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Event, Message
 from escalate.evidence.store import save_upload
 from escalate.i18n.countries import currency_for, default_letter_language, is_rtl
+from escalate.i18n.formatting import format_amount, locale_for
 from escalate.pii import mask_pii
 from escalate.playbooks.loader import PlaybookError, get_playbook
 from escalate.playbooks.models import Playbook
@@ -59,9 +61,16 @@ def _playbook(case: Case) -> Playbook | None:
         return None
 
 
+def _amount_display(case: Case) -> str | None:
+    if case.amount is None:
+        return None
+    return format_amount(case.amount, case.currency, locale_for(case.language, case.country))
+
+
 def case_summary(case: Case) -> CaseSummary:
     out = CaseSummary.model_validate(case)
     out.title = display_title(case)
+    out.amount_display = _amount_display(case)
     pending = runner.pending(case.id)
     out.waiting_for = pending.get("type") if pending else None
     pb = _playbook(case)
@@ -78,6 +87,9 @@ def case_detail(session: Session, case: Case) -> CaseDetail:
     session.refresh(case)
     detail = CaseDetail.model_validate(case)
     detail.title = display_title(case)
+    detail.amount_display = _amount_display(case)
+    for f in detail.facts:
+        f.display = display_value(case, f.key, f.value)
     detail.pending = runner.pending(case.id)
     detail.waiting_for = detail.pending.get("type") if detail.pending else None
     detail.text_direction = "rtl" if is_rtl(case.language) else "ltr"

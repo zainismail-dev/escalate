@@ -12,7 +12,7 @@ from typing import Literal
 from escalate.agent.fact_check import code_check, find_dates, find_ids
 from escalate.agent.tone import tone_flags
 from escalate.db.models import Case, Message
-from escalate.i18n.formatting import format_date, format_money, locale_for
+from escalate.i18n.formatting import format_amount, format_date, format_money, locale_for
 from escalate.pii import mask_pii
 
 BLANK = re.compile(r"\[\[\s*([^\]\n]+?)\s*\]\]|_{4,}")
@@ -48,16 +48,26 @@ def blanks(text: str) -> list[str]:
     return [m.group(1) or m.group(0) for m in BLANK.finditer(text)]
 
 
+def display_value(case: Case, key: str, value: str) -> str:
+    """How people read a fact (UI, PDF): money via format_amount, ISO dates spelled out."""
+    locale = locale_for(case.language, case.country)
+    if key == "amount" and case.currency:
+        return format_amount(value, case.currency, locale) or value
+    if _is_iso_date(value):
+        return format_date(value, locale)
+    return value
+
+
 def fact_displays(case: Case) -> dict[str, list[str]]:
-    """Each fact's raw value plus how a letter in the case's locale writes it."""
+    """Each fact's raw value, how a letter writes it (for highlighting), and, last, how people
+    read it."""
     locale = locale_for(case.language, case.country)
     out: dict[str, list[str]] = {}
     for f in case.facts:
         forms = [f.value]
         if f.key == "amount" and case.currency:
             forms.append(format_money(f.value, case.currency, locale))
-        if _is_iso_date(f.value):
-            forms.append(format_date(f.value, locale))
+        forms.append(display_value(case, f.key, f.value))
         out[f.key] = [v for v in dict.fromkeys(forms) if v.strip()]
     return out
 

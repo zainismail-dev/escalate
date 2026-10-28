@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "screenshots": "playwright test --project=screenshots",
     "start": "next start --port 3000",
+    "test": "node --test tests/*.test.mts",
     "test:e2e": "playwright test",
     "pretypecheck": "node scripts/gen-locales.mjs",
     "typecheck": "tsc --noEmit"

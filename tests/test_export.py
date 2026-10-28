@@ -59,7 +59,8 @@ def test_case_html_has_every_section(agent_env: AgentEnv, monkeypatch: pytest.Mo
     assert f"Case file #{cid}" in html
     assert "<h1>Refund refused by BrightMart Electronics</h1>" in html  # the case title
     assert "Ali Raza" in html and "BrightMart Electronics" in html
-    assert "PKR 45,000.00" in html
+    assert "PKR 45,000.00" in html  # in the letter (ISO code, unambiguous)
+    assert "<th>Amount</th><td>Rs\u00a045,000</td>" in html  # cover: format_amount
     assert "Facts and their sources" in html
     assert "evidence #1 (receipt.png)" in html
     assert "consumer's statement" in html  # facts from the user's own words
