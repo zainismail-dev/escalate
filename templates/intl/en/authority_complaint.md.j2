@@ -1,0 +1,16 @@
+Subject: Consumer complaint against {{ seller_name }} (order {{ order_id }})
+
+To: {{ authority_name }}
+
+I wish to make a complaint against {{ seller_name }}.
+
+1. On {{ order_date }} I bought from {{ seller_name }} under order {{ order_id }} and paid {{ amount | money(currency) }}.
+2. The problem: {{ defect_description }}
+{% if return_shipped_on %}3. I returned the item on {{ return_shipped_on }}{% if return_tracking %} (tracking number {{ return_tracking }}){% endif %}.
+{% endif %}
+I wrote to the seller asking for the following: {{ remedy_wanted }}. I then sent a final notice. The matter is still not resolved. Copies of my messages and evidence are attached.
+
+I ask you to look into this complaint and help me obtain: {{ remedy_wanted }}.
+
+{{ buyer_name }}{% if buyer_contact %}
+{{ buyer_contact }}{% endif %}

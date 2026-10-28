@@ -1,0 +1,7 @@
+Subject: Order {{ order_id }}
+
+Dear {{ seller_name }},
+
+Order {{ order_id }} of {{ order_date }} for {{ amount | money(currency) }}. The problem: {{ defect_description }}. I ask for: {{ remedy_wanted }}.
+
+{{ buyer_name }}

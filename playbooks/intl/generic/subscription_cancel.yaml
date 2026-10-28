@@ -1,0 +1,52 @@
+id: intl-generic-subscription-cancel
+version: 0.1.0
+country: INTL
+case_type: subscription_cancel
+generic: true
+last_verified: 2026-10-28
+required_facts: [buyer_name, company_name, company_contact, account_id, cancel_requested_on,
+                 remedy_wanted]
+optional_facts: [plan_name, amount, currency, charges_after_cancel, card_issuer,
+                 card_issuer_contact, card_last4, authority_name, authority_contact]
+steps:
+  - id: s1_cancel_request
+    name: cancellation request
+    channel: email
+    recipient_role: the company
+    recipient_fact: company_contact
+    template: intl/cancel_request.md.j2
+    wait_days: 7
+    on_no_reply: s2_final_notice
+    on_refused: s2_final_notice
+    on_partial: s2_final_notice
+  - id: s2_final_notice
+    name: final notice listing the charges
+    channel: email
+    recipient_role: the company
+    recipient_fact: company_contact
+    template: intl/subscription_final_notice.md.j2
+    wait_days: 14
+    on_no_reply: s3_card_dispute
+    on_refused: s3_card_dispute
+    on_partial: s3_card_dispute
+  - id: s3_card_dispute
+    name: card-issuer dispute letter
+    channel: email
+    recipient_role: your card issuer or bank
+    recipient_fact: card_issuer_contact
+    requires: [card_issuer]
+    template: intl/card_dispute.md.j2
+    wait_days: 30
+    on_no_reply: s4_authority
+    on_refused: s4_authority
+    on_partial: s4_authority
+  - id: s4_authority
+    name: complaint to the consumer authority
+    channel: web_form
+    recipient_role: the national consumer authority or ombudsman
+    recipient_fact: authority_contact
+    requires: [authority_name]
+    template: intl/subscription_authority_complaint.md.j2
+sources:
+  - title: "Your country's national consumer protection authority or ombudsman"
+    note: "Generic ladder. Card-dispute time limits are set by your card issuer; ask them."

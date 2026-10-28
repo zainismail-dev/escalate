@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zainismail-dev/escalate/schema/playbook.schema.json",
+  "title": "Escalate playbook",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "country", "case_type", "last_verified", "required_facts", "steps", "sources"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "country": {
+      "description": "ISO 3166-1 alpha-2 code, or INTL for the generic fallback",
+      "type": "string",
+      "pattern": "^([A-Z]{2}|INTL)$"
+    },
+    "regions": {
+      "description": "ISO 3166-2 subdivision codes this playbook covers; empty = whole country",
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[A-Z]{2}-[A-Z0-9]{1,3}$"},
+      "uniqueItems": true
+    },
+    "sector": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+    "company": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "case_type": {"enum": ["refund_refused", "subscription_cancel", "scam"]},
+    "generic": {"type": "boolean"},
+    "last_verified": {"type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "required_facts": {"$ref": "#/$defs/factList", "minItems": 1},
+    "optional_facts": {"$ref": "#/$defs/factList"},
+    "deadlines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "rule"],
+        "properties": {
+          "id": {"$ref": "#/$defs/slug"},
+          "rule": {"type": "string", "minLength": 1},
+          "days": {"type": "integer", "minimum": 1},
+          "from_fact": {"$ref": "#/$defs/slug"},
+          "from_step": {"$ref": "#/$defs/slug"},
+          "warn_when_days_left": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "channel", "template"],
+        "properties": {
+          "id": {"$ref": "#/$defs/slug"},
+          "name": {"type": "string"},
+          "channel": {"enum": ["email", "post", "court", "web_form", "info"]},
+          "template": {"type": "string", "pattern": "^[a-z_]+/[a-z0-9_]+\\.md\\.j2$"},
+          "recipient_role": {"type": "string"},
+          "recipient_fact": {"$ref": "#/$defs/slug"},
+          "requires": {"$ref": "#/$defs/factList"},
+          "wait_days": {"type": "integer", "minimum": 0},
+          "on_no_reply": {"$ref": "#/$defs/slug"},
+          "on_refused": {"$ref": "#/$defs/slug"},
+          "on_partial": {"$ref": "#/$defs/slug"},
+          "when": {"type": "string", "pattern": "^[a-z][a-z0-9_]* is (not )?set$"},
+          "proof_required": {"type": "string"},
+          "attachments": {"type": "array", "items": {"type": "string"}},
+          "adds_if_late": {"type": "string", "pattern": "^[a-z_]+/[a-z0-9_]+\\.md\\.j2$"}
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title"],
+        "properties": {
+          "title": {"type": "string", "minLength": 1},
+          "url": {"type": "string", "pattern": "^https?://"},
+          "note": {"type": "string"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "slug": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$"},
+    "factList": {"type": "array", "items": {"$ref": "#/$defs/slug"}, "uniqueItems": true}
+  }
+}

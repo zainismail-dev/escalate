@@ -1,0 +1,65 @@
+id: pk-ecommerce-refund-refused
+version: 0.1.0
+country: PK
+regions: [PK-SD, PK-PB, PK-KP, PK-IS]   # Sindh, Punjab, Khyber Pakhtunkhwa, Islamabad
+sector: ecommerce
+case_type: refund_refused
+last_verified: 2026-10-28
+required_facts: [buyer_name, seller_name, seller_contact, order_id, order_date,
+                 amount, currency, defect_description, remedy_wanted]
+optional_facts: [buyer_address, seller_address, return_shipped_on, return_tracking,
+                 platform_name, last_promise_on, last_promise_text, notice_delivered_on,
+                 cause_of_action_on, court_name, delay_reason]
+deadlines:
+  - id: court_filing_limit
+    rule: "30 days from cause of action; court may condone delay with reasons"
+    days: 30
+    from_fact: cause_of_action_on   # if the user knows it
+    from_step: s3_legal_notice      # otherwise: when the notice period runs out
+    warn_when_days_left: 10
+steps:
+  - id: s1_seller_written
+    name: written demand to the seller
+    channel: email           # or WhatsApp text the user copies
+    recipient_role: the seller
+    recipient_fact: seller_contact
+    template: pk/seller_written_demand.md.j2
+    wait_days: 5
+    on_no_reply: s2_platform
+    on_refused: s3_legal_notice
+    on_partial: s3_legal_notice
+  - id: s2_platform
+    name: escalation to the marketplace
+    when: "platform_name is set"
+    channel: web_form
+    recipient_role: the marketplace's customer support
+    template: pk/platform_escalation.md.j2
+    wait_days: 5
+    on_no_reply: s3_legal_notice
+    on_refused: s3_legal_notice
+    on_partial: s3_legal_notice
+  - id: s3_legal_notice
+    name: 15-day legal notice
+    channel: post            # registered post or hand delivery with acknowledgement
+    recipient_role: the seller
+    recipient_fact: seller_address
+    requires: [seller_address]
+    template: pk/legal_notice_15_day.md.j2
+    wait_days: 15
+    proof_required: delivery_receipt
+    on_no_reply: s4_consumer_court
+    on_refused: s4_consumer_court
+    on_partial: s4_consumer_court
+  - id: s4_consumer_court
+    name: consumer court complaint
+    channel: court
+    recipient_role: the District Consumer Court
+    requires: [buyer_address, seller_address]
+    template: pk/consumer_court_complaint.md.j2
+    attachments: [timeline_pdf, legal_notice, delivery_receipt, evidence_all]
+    adds_if_late: pk/condonation_of_delay.md.j2
+sources:
+  - title: "CRCP guide: filing a consumer complaint"
+    url: "https://crcp.org.pk/wp-content/uploads/2020/10/Complaint-Filing-in-Consumer-courts.pdf"
+  - title: "Sindh consumer court filing overview"
+    url: "https://commoner-law.com/pakistan/consumer-rights/filing-a-consumer-court-complaint/sindh"

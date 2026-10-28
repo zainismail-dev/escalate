@@ -1,0 +1,42 @@
+# Scam cases show the urgent checklist (playbooks/<cc>/scam_checklist.yaml) before any letter.
+id: intl-generic-scam
+version: 0.1.0
+country: INTL
+case_type: scam
+generic: true
+last_verified: 2026-10-28
+required_facts: [buyer_name, amount, currency, paid_on, payment_method, scam_description]
+optional_facts: [bank_name, bank_contact, transaction_id, scammer_name, scammer_contact,
+                 police_station, police_contact, reporting_body, reporting_body_contact]
+steps:
+  - id: s1_bank_fraud_report
+    name: fraud report to your bank
+    channel: email
+    recipient_role: your bank or card issuer's fraud team
+    recipient_fact: bank_contact
+    requires: [bank_name]
+    template: intl/bank_fraud_report.md.j2
+    wait_days: 10
+    on_no_reply: s2_police_report
+    on_refused: s2_police_report
+    on_partial: s2_police_report
+  - id: s2_police_report
+    name: police report
+    channel: post
+    recipient_role: the police
+    recipient_fact: police_contact
+    template: intl/police_report.md.j2
+    wait_days: 30
+    on_no_reply: s3_national_report
+    on_refused: s3_national_report
+    on_partial: s3_national_report
+  - id: s3_national_report
+    name: report to the national fraud reporting body
+    channel: web_form
+    recipient_role: the national fraud or cybercrime reporting body
+    recipient_fact: reporting_body_contact
+    requires: [reporting_body]
+    template: intl/national_fraud_report.md.j2
+sources:
+  - title: "Your bank's official fraud line (the number on the back of your card)"
+    note: "Generic ladder. Find your national fraud reporting body on your government's official website."

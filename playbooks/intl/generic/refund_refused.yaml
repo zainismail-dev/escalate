@@ -1,0 +1,52 @@
+# Generic international ladder: used for any country without its own pack.
+# Drafts carry "Check the rules in your country".
+id: intl-generic-refund-refused
+version: 0.1.0
+country: INTL
+case_type: refund_refused
+generic: true
+last_verified: 2026-10-28
+required_facts: [buyer_name, seller_name, seller_contact, order_id, order_date, amount,
+                 currency, defect_description, remedy_wanted]
+optional_facts: [buyer_contact, return_shipped_on, return_tracking, last_promise_on,
+                 last_promise_text, authority_name, authority_contact]
+steps:
+  - id: s1_written_demand
+    name: written demand
+    channel: email
+    recipient_role: the seller
+    recipient_fact: seller_contact
+    template: intl/written_demand.md.j2
+    wait_days: 7
+    on_no_reply: s2_final_notice
+    on_refused: s2_final_notice
+    on_partial: s2_final_notice
+  - id: s2_final_notice
+    name: final notice
+    channel: email
+    recipient_role: the seller
+    recipient_fact: seller_contact
+    template: intl/final_notice.md.j2
+    wait_days: 14
+    on_no_reply: s3_authority
+    on_refused: s3_authority
+    on_partial: s3_authority
+  - id: s3_authority
+    name: complaint to the consumer authority
+    channel: web_form
+    recipient_role: the national consumer authority or ombudsman
+    recipient_fact: authority_contact
+    requires: [authority_name]
+    template: intl/authority_complaint.md.j2
+    wait_days: 30
+    on_no_reply: s4_small_claims
+    on_refused: s4_small_claims
+    on_partial: s4_small_claims
+  - id: s4_small_claims
+    name: small-claims or consumer court guide
+    channel: info
+    recipient_role: you (a filing guide)
+    template: intl/small_claims_guide.md.j2
+sources:
+  - title: "Your country's national consumer protection authority or ombudsman"
+    note: "Generic ladder. Find your authority on your government's official website and check local time limits."
