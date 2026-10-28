@@ -1,0 +1,8 @@
+A company replied to a consumer's complaint. Decide the outcome.
+What the consumer asked for: {remedy_wanted}
+THE REPLY: {reply_text}
+Return JSON: {"verdict": "resolved"|"partial"|"refused"|"no_reply", "promise": str|null,
+"promise_date": YYYY-MM-DD|null, "reason": str}
+A vague promise with no date ("we will replace when the claim is approved") is "refused".
+"resolved" means the consumer got (or is certainly getting, on a stated date) what they asked for.
+Return ONLY the JSON object.

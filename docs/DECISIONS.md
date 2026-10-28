@@ -120,3 +120,15 @@ Defaults chosen during the autonomous build, with the reason for each.
 - Gmail API token is stored Fernet-encrypted at `secrets/gmail_token.enc` (single-user v0.1).
 - Email recipients must look like an email address; otherwise sending fails before any network
   call (e.g. a WhatsApp number in `seller_contact`).
+
+## Scheduler and replies (task 2.4)
+- Job defaults: `coalesce=True`, `misfire_grace_time=None` (a wake-up missed while the machine
+  was off still fires on the next start), timezone UTC.
+- Tests drive a thread-less `ManualScheduler` (real job store and triggers, `DebugExecutor`)
+  under freezegun instead of sleeping or racing a background thread.
+- **Code-side rule in the reply judge:** a promise with no date is `refused` even if the model
+  says `resolved`/`partial`. An empty reply (timer fired) is `no_reply` without a model call.
+- `pick_next` skips steps whose `when` fails by following their `on_no_reply` edge; `partial`
+  uses `on_partial`, falling back to `on_refused`.
+- Deadline warnings are logged once per deadline per day (`deadline_warning` events), from
+  10 days left (playbook `warn_when_days_left`) and after the deadline has passed.
