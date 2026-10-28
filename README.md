@@ -66,16 +66,16 @@ All screenshots use the fictional demo cases. Full set: [docs/screenshots/](docs
 | **Landing** | **My cases** |
 | ![Case dashboard: ladder, next move and the agent's reasons](docs/screenshots/08-case-dashboard.png) | ![Review draft: verified facts highlighted, safety checks, decision card](docs/screenshots/09-review-draft.png) |
 | **Case dashboard** | **Review draft** |
-| ![Side-by-side letter in English and Urdu (right to left)](docs/screenshots/10-review-side-by-side-urdu.png) | ![A blank to fill keeps Approve disabled](docs/screenshots/11-review-blank-to-fill.png) |
-| **Side by side, right-to-left** | **Blanks block approval** |
+| ![A blank to fill keeps Approve disabled](docs/screenshots/11-review-blank-to-fill.png) | ![Mobile: review draft](docs/screenshots/21-mobile-review.png) |
+| **Blanks block approval** | **Mobile** |
 | ![Draft blocked by the fact check: wrong vs. evidence value](docs/screenshots/12-state-fact-check-blocked.png) | ![Scam urgent checklist](docs/screenshots/13-scam-urgent-checklist.png) |
 | **Blocked by the fact check** | **Scam: urgent checklist** |
 | ![New case wizard: where you are](docs/screenshots/03-new-case-where.png) | ![Missing facts with "why we ask"](docs/screenshots/07-missing-facts.png) |
 | **New case wizard** | **Missing facts** |
 | ![Reply verdict with offered, by when and condition](docs/screenshots/15-reply-verdict.png) | ![Settings: model, email, language, privacy](docs/screenshots/16-settings.png) |
 | **Reply verdict** | **Settings** |
-| ![Dark mode review](docs/screenshots/18-dark-review.png) | ![Arabic UI, right to left](docs/screenshots/19-rtl-arabic-cases.png) |
-| **Dark mode** | **Arabic UI (RTL)** |
+| ![Dark mode review](docs/screenshots/18-dark-review.png) | ![Dark mode: My cases](docs/screenshots/19-dark-my-cases.png) |
+| **Dark mode** | **Dark mode: My cases** |
 
 ## How it works
 
@@ -108,9 +108,9 @@ flowchart LR
 - **One process** runs the API and the scheduler (reminders survive restarts). The web app
   (`web/`) and the Streamlit dev UI (`ui/`) only talk to the API, so a future mobile or chat
   front end can reuse it.
-- **Global by design:** every ISO country is listed; money and dates use each case's locale;
-  letters can be in any language, right-to-left included. Countries without a local pack get a
-  generic route, labelled as such.
+- **Global by design:** every ISO country is listed; money and dates use each case's locale.
+  Countries without a local pack get a generic route, labelled as such. v0.1 is English-only
+  (app and letters); more languages are coming (see docs/DECISIONS.md).
 - **Free by default:** a local model through Ollama; any OpenAI-compatible endpoint works
   (Groq, Gemini, OpenRouter, paid APIs) by changing one line in `.env`.
 
@@ -131,7 +131,7 @@ flowchart LR
 | Country | Refund refused | Subscription | Scam checklist | Status |
 | --- | --- | --- | --- | --- |
 | 🌍 Any country | generic ladder | generic ladder | generic | ✅ always available |
-| 🇵🇰 Pakistan | seller → marketplace → 15-day legal notice → District Consumer Court (en, ur) | generic | ✅ | needs lawyer review |
+| 🇵🇰 Pakistan | seller → marketplace → 15-day legal notice → District Consumer Court | generic | ✅ | needs lawyer review |
 | 🇮🇳 India | demand → legal notice → District Consumer Commission | generic | ✅ | starter, needs verification |
 | 🇬🇧 United Kingdom | complaint → letter before action → small claim | generic | ✅ | starter, needs verification |
 | 🇺🇸 United States | demand → final demand → state attorney general → small claims | generic | ✅ | starter, needs verification |
@@ -157,7 +157,7 @@ lawyers or consumer-rights groups. Start with [CONTRIBUTING.md](CONTRIBUTING.md)
 make test    # offline unit and integration tests (fake LLM, fake email)
 make lint    # ruff, mypy and the playbook validator
 make web-lint  # eslint and TypeScript for the web app
-make web-e2e   # Playwright smoke tests (incl. Arabic RTL and dark mode) against a running app
+make web-e2e   # Playwright: smoke, console/hydration guard (light + dark), dark mode, mobile
 make evals   # golden-set evals against your model
 ```
 

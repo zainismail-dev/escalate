@@ -154,6 +154,9 @@ test.describe("dark", () => {
     await page.goto(`/cases/${PK.id}/review`);
     await settled(page);
     await shot(page, "18-dark-review");
+    await page.goto("/cases");
+    await settled(page);
+    await shot(page, "19-dark-my-cases");
   });
 });
 
