@@ -2,8 +2,9 @@
 
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
+from functools import lru_cache
 
-from babel import Locale, UnknownLocaleError
+from babel import Locale, UnknownLocaleError, localedata
 from babel.dates import format_date as _babel_date
 from babel.numbers import format_currency, get_currency_symbol
 
@@ -16,12 +17,14 @@ def _locale(locale: str | None) -> str:
         return lang if lang != locale and _known(lang) else "en"
 
 
+@lru_cache
+def _identifiers() -> frozenset[str]:
+    return frozenset(localedata.locale_identifiers())
+
+
 def _known(locale: str) -> bool:
-    try:
-        Locale.parse(locale)
-        return True
-    except (UnknownLocaleError, ValueError):
-        return False
+    """Only locales CLDR really has data for (Babel also accepts e.g. en_ZZ, 'unknown region')."""
+    return locale in _identifiers()
 
 
 def locale_for(language: str | None, country: str | None = None) -> str:

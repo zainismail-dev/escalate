@@ -1,0 +1,23 @@
+{
+  "app.disclaimer": "Escalate ایک سیلف ہیلپ ٹول ہے، قانونی مشورہ نہیں۔",
+  "app.ui_language": "انٹرفیس کی زبان",
+  "app.case": "کیس",
+  "page.scam": "میرے ساتھ فراڈ ہوا: ابھی یہ کریں",
+  "page.new_case": "نیا کیس",
+  "page.dashboard": "کیس ڈیش بورڈ",
+  "page.review": "مسودہ دیکھیں",
+  "scam.header": "فراڈ ہوا؟ ابھی یہ کام کریں",
+  "new.header": "کیا ہوا؟",
+  "new.story": "آپ کی کہانی",
+  "new.submit": "میرا کیس شروع کریں",
+  "pending.questions": "چند سوالات",
+  "pending.save_answers": "جوابات محفوظ کریں",
+  "dash.header": "کیس نمبر {id}",
+  "dash.timeline": "ٹائم لائن",
+  "review.header": "مسودہ دیکھیں",
+  "review.subject": "موضوع",
+  "review.message": "پیغام",
+  "review.approve": "منظور کریں اور بھیجیں",
+  "review.reject": "مسترد کریں",
+  "status.resolved": "حل ہو گیا"
+}

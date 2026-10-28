@@ -208,3 +208,16 @@ Defaults chosen during the autonomous build, with the reason for each.
 - India's filing deadline (730 days) is marked `TODO verify` in its rule text and warns at 30
   days left. GB and US set no deadline (it varies by nation/state).
 - The validator now also checks scam checklists (load, have items, keep both safety warnings).
+
+## Localisation (task 3.4)
+- UI strings live in `locales/<lang>.json`, loaded by `ui/i18n.py`; `t("key", **values)` falls
+  back to English, then to the key itself. A test fails if the app uses a key that `en.json`
+  lacks, or if a translation's `{placeholders}` differ from English.
+- `locales/ur.json` holds only the strings I'm confident of (the brief allowed "keys only where
+  unsure"); everything else falls back to English. Urdu switches the page to right-to-left.
+- Pages are tracked by stable ids (`new_case`, `dashboard`, …), so switching language keeps the
+  current page.
+- `locale_for()` only uses `<lang>_<CC>` when CLDR really has that locale (Babel otherwise
+  accepts e.g. `en_ZZ`).
+- Drafts already use `case.language` (templates per language, falling back to `en/` with the
+  model asked to write in the case language).

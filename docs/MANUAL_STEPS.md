@@ -34,3 +34,5 @@ that was not available. Each item names the task it came from.
   government sites: resolve every `TODO(verify)` in `playbooks/{in,gb,us}/**` and
   `playbooks/{pk,in,gb,us}/scam_checklist.yaml` (authority names, URLs, helpline numbers, time
   limits), or open issues labelled `country:<cc>` and `good first issue` for contributors.
+- [ ] **3.4 — Complete `locales/ur.json`** with a native speaker (only ~20 strings are
+  translated; the rest fall back to English).

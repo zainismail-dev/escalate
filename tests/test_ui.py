@@ -65,7 +65,7 @@ def app(monkeypatch: pytest.MonkeyPatch) -> AppTest:
 
 
 def test_new_case_page_renders_with_privacy_banner(app: AppTest) -> None:
-    app.session_state["page"] = "New case"
+    app.session_state["page"] = "new_case"
     app.run()
     assert not app.exception
     assert any("cloud" in w.value for w in app.warning)
@@ -73,14 +73,14 @@ def test_new_case_page_renders_with_privacy_banner(app: AppTest) -> None:
 
 
 def test_dashboard_shows_deadline_in_red(app: AppTest) -> None:
-    app.session_state["page"] = "Case dashboard"
+    app.session_state["page"] = "dashboard"
     app.run()
     assert not app.exception
     assert any("Deadline in 4 days" in e.value for e in app.error)
 
 
 def test_review_page_shows_draft_and_facts(app: AppTest) -> None:
-    app.session_state["page"] = "Review draft"
+    app.session_state["page"] = "review"
     app.run()
     assert not app.exception
     assert app.text_area[0].value == "Dear seller"
@@ -88,8 +88,35 @@ def test_review_page_shows_draft_and_facts(app: AppTest) -> None:
 
 
 def test_scam_page_shows_warnings_and_checklist(app: AppTest) -> None:
-    app.session_state["page"] = "I was scammed: do this now"
+    app.session_state["page"] = "scam"
     app.run()
     assert not app.exception
     assert any("OTP" in w.value for w in app.warning)
     assert any("Call your bank now" in m.value for m in app.markdown)
+
+
+def test_switching_ui_language_changes_labels(app: AppTest) -> None:
+    app.session_state["page"] = "new_case"
+    app.run()
+    assert app.header[0].value == "What happened?"
+    app.sidebar.selectbox[0].set_value("ur").run()
+    assert not app.exception
+    assert app.header[0].value == "کیا ہوا؟"
+    # untranslated keys fall back to English
+    assert app.text_area[0].label == "آپ کی کہانی"
+    assert app.text_input[1].label.startswith("Province/state")
+
+
+def test_every_ui_key_exists_in_english() -> None:
+    import json
+    import re
+
+    from escalate.db.models import CaseStatus
+
+    en = json.loads((UI.parent / "locales" / "en.json").read_text())
+    source = (UI / "app.py").read_text()
+    keys = {k for k in re.findall(r"""\bt\(\s*["']([\w.]+)["']""", source) if not k.endswith(".")}
+    keys |= {f"page.{p}" for p in ["scam", "new_case", "dashboard", "review"]}
+    keys |= {f"status.{s.value}" for s in CaseStatus}  # built as t("status." + status)
+    assert keys, "no t() calls found"
+    assert sorted(keys - set(en)) == []
