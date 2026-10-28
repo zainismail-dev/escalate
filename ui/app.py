@@ -7,7 +7,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Escalate", page_icon="⚖️", layout="wide")
 
-PAGES = ["New case", "Case dashboard", "Review draft"]
+PAGES = ["I was scammed: do this now", "New case", "Case dashboard", "Review draft"]
 STATUS_COLOURS = {
     "resolved": "green",
     "withdrawn": "gray",
@@ -99,6 +99,29 @@ def page_new_case() -> None:
     st.rerun()
 
 
+def show_checklist(items: list[dict[str, Any]], warnings: list[str]) -> None:
+    for w in warnings:
+        st.warning(w)
+    for n, item in enumerate(items, start=1):
+        marker = "🔴" if item.get("urgent", True) else "⚪"
+        st.markdown(f"{marker} **{n}. {item['title']}**  \n{item.get('detail', '')}")
+
+
+def page_scam() -> None:
+    st.header("Scammed? Do these now")
+    st.caption("Time matters: banks can sometimes stop a payment only in the first hours.")
+    country = st.text_input("Your country (ISO code, e.g. PK, IN, GB, US)", max_chars=2)
+    checklist = api.get("/checklist", **({"country": country} if country else {}))
+    show_checklist(checklist["items"], checklist.get("warnings", []))
+    if checklist["country"] == "INTL":
+        st.caption("Generic checklist — check the rules in your country.")
+    st.divider()
+    st.write("When the urgent steps are done, open a case to get the letters drafted.")
+    if st.button("Open a scam case", type="primary"):
+        st.session_state["page"] = "New case"
+        st.rerun()
+
+
 def pending_panel(case: dict[str, Any]) -> None:
     p = case.get("pending")
     cid = case["id"]
@@ -119,8 +142,10 @@ def pending_panel(case: dict[str, Any]) -> None:
                     show_error(exc)
     elif kind == "urgent_checklist":
         st.error("Do these now — they are time-critical")
-        for item in p.get("items", []):
-            st.markdown(f"**{item['title']}**  \n{item.get('detail', '')}")
+        checklist = api.get(
+            "/checklist", **({"country": case["country"]} if case["country"] else {})
+        )
+        show_checklist(p.get("items", []), checklist.get("warnings", []))
         if st.button("I have done the urgent steps", type="primary"):
             api.post(f"/cases/{cid}/checklist/ack")
             st.rerun()
@@ -228,9 +253,13 @@ def main() -> None:
         "Go to", PAGES, index=PAGES.index(st.session_state.get("page", "New case"))
     )
     st.session_state["page"] = page
-    {"New case": page_new_case, "Case dashboard": page_dashboard, "Review draft": page_review}[
-        page
-    ]()
+    pages = {
+        "I was scammed: do this now": page_scam,
+        "New case": page_new_case,
+        "Case dashboard": page_dashboard,
+        "Review draft": page_review,
+    }
+    pages[page]()
     st.sidebar.caption("Escalate is a self-help tool, not legal advice.")
 
 

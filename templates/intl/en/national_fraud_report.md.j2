@@ -1,7 +1,11 @@
-Subject: Fraud report
+Subject: Fraud report: {{ amount | money(currency) }} paid on {{ paid_on }}
 
-On {{ paid_on }} I paid {{ amount | money(currency) }} by {{ payment_method }} as a result of a scam.
+To: {{ reporting_body }}
 
-{{ scam_description }}
+1. On {{ paid_on }} I paid {{ amount | money(currency) }} by {{ payment_method }}{% if transaction_id %} (transaction reference {{ transaction_id }}){% endif %}{% if scammer_name %} to {{ scammer_name }}{% endif %}.
+2. What happened: {{ scam_description }}
+{% if scammer_contact %}3. Contact details used by the scammer: {{ scammer_contact }}
+{% endif %}
+I have reported this to my bank{% if police_station %} and to {{ police_station }}{% endif %}. Copies of my evidence are attached.
 
 {{ buyer_name }}

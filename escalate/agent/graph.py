@@ -93,6 +93,9 @@ def intake(state: CaseState) -> CaseState:
         if not case.case_type or not case.playbook_id:
             classify_svc.classify(s, case)
         pb = get_playbook(case.playbook_id or "")
+        if case.case_type == "scam" and not state.get("checklist_done"):
+            # Time-critical steps come before reading evidence or asking anything.
+            return {"case_type": "scam", "playbook_id": pb.id, "missing": []}
         if not state.get("extracted"):
             evidence = [(e.id, e.extracted_text or "") for e in case.evidence if e.extracted_text]
             try:
@@ -287,6 +290,12 @@ def pick_next(state: CaseState) -> CaseState:
 # --- wiring -------------------------------------------------------------------------
 
 
+def _after_intake(s: CaseState) -> str:
+    if s.get("case_type") == "scam" and not s.get("checklist_done"):
+        return "urgent_checklist"
+    return "ask_missing" if s.get("missing") else "classify"
+
+
 def build_graph() -> StateGraph[CaseState]:
     g = StateGraph(CaseState)
     for name, fn in [
@@ -305,7 +314,7 @@ def build_graph() -> StateGraph[CaseState]:
         g.add_node(name, fn)
 
     g.set_entry_point("intake")
-    g.add_conditional_edges("intake", lambda s: "ask_missing" if s.get("missing") else "classify")
+    g.add_conditional_edges("intake", _after_intake)
     g.add_edge("ask_missing", "intake")
     g.add_conditional_edges(
         "classify",
@@ -315,7 +324,7 @@ def build_graph() -> StateGraph[CaseState]:
             else "draft"
         ),
     )
-    g.add_edge("urgent_checklist", "draft")
+    g.add_edge("urgent_checklist", "intake")
     g.add_conditional_edges("draft", lambda s: "ask_missing" if s.get("missing") else "fact_check")
     g.add_conditional_edges("fact_check", lambda s: "approval" if s.get("fact_ok") else "draft")
     g.add_conditional_edges(

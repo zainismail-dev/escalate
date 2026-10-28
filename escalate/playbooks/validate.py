@@ -8,6 +8,7 @@ or a source has no URL.
 """
 
 import argparse
+import re
 import sys
 from dataclasses import dataclass, field
 from datetime import date, timedelta
@@ -20,6 +21,8 @@ from escalate.playbooks.models import Playbook, parse_when, template_languages
 from escalate.templates_engine import make_env
 
 STALE_AFTER = timedelta(days=365)
+# CLAUDE.md rule 5: never ask users for passwords, PINs or one-time codes.
+FORBIDDEN_FACT = re.compile(r"(password|passcode|(^|_)pin($|_)|otp|cvv|cvc|secret|one_time)", re.I)
 # Variables every template may use besides the playbook's facts (see escalate/templates_engine).
 TEMPLATE_CONTEXT = {"today", "reply_by", "language", "locale", "generic", "case_ref", "late"}
 
@@ -47,6 +50,9 @@ def check_playbook(pb: Playbook, templates_dir: Path, report: Report, today: dat
     facts = set(pb.all_facts)
     env = make_env()
 
+    for fact in sorted(facts):
+        if FORBIDDEN_FACT.search(fact):
+            report.error(where, f"fact {fact!r} looks like a secret; never ask for it")
     if len(set(step_ids)) != len(step_ids):
         report.error(where, "duplicate step ids")
     if not pb.sources:

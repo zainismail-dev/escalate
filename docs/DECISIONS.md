@@ -180,3 +180,17 @@ Defaults chosen during the autonomous build, with the reason for each.
 - The fact check converts all Unicode decimal digits (Urdu, Devanagari, …) to ASCII first, so
   an invented amount in another script is still caught.
 - The disclaimer gains an Urdu line for Urdu drafts; the English line always stays.
+
+## Subscription and scam flows (task 3.2)
+- **Scam cases show the urgent checklist immediately after classification, before fact
+  extraction, questions or any letter**: `intake` returns early for an unacknowledged scam, and
+  `urgent_checklist -> intake` continues the normal flow afterwards.
+- Checklists live in `playbooks/<cc>/scam_checklist.yaml` with fallback to
+  `playbooks/intl/generic/scam_checklist.yaml`; they always carry the "we never ask for
+  passwords/PINs/OTPs" and "recovery scammer" warnings. The UI has a "do this now" page that
+  works before any case exists.
+- The validator rejects playbook facts that look like secrets (`password`, `pin`, `otp`, `cvv`,
+  …). Only `card_last4` is used for cards; never the full number.
+- Scam ladder: bank/card-issuer fraud report (email, 10 days) -> police report (post) ->
+  national fraud-reporting body (web form). Subscription ladder: cancel request (7 days) ->
+  final notice listing charges (14) -> card-issuer dispute (30) -> consumer authority.

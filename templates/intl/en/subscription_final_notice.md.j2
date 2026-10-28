@@ -1,7 +1,19 @@
-Subject: Subscription {{ account_id }}
+Subject: Final notice: cancellation of account {{ account_id }}
 
 Dear {{ company_name }},
 
-I asked to cancel my subscription (account {{ account_id }}) on {{ cancel_requested_on }}. I ask you to provide the following: {{ remedy_wanted }}.
+This is my final notice about account {{ account_id }}{% if plan_name %} ({{ plan_name }}){% endif %}.
 
+I asked you to cancel on {{ cancel_requested_on }} and asked again in writing. You have not confirmed the cancellation.
+{% if charges_after_cancel %}
+Charges taken after I asked to cancel:
+{{ charges_after_cancel }}
+{% elif amount and currency %}
+You have continued to charge me {{ amount | money(currency) }} after I asked to cancel.
+{% endif %}
+I ask you to: {{ remedy_wanted }}.
+
+If this is not done by {{ reply_by }}, I will dispute these charges with my card issuer and complain to the national consumer authority, without further notice.
+
+Yours sincerely,
 {{ buyer_name }}

@@ -1,7 +1,14 @@
-Subject: Fraud report
+Subject: Report of fraud: {{ amount | money(currency) }} lost on {{ paid_on }}
 
-On {{ paid_on }} I paid {{ amount | money(currency) }} by {{ payment_method }} as a result of a scam.
+To: {% if police_station %}{{ police_station }}{% else %}The officer in charge{% endif %}
 
-{{ scam_description }}
+I wish to report a fraud.
+
+1. On {{ paid_on }} I paid {{ amount | money(currency) }} by {{ payment_method }}{% if transaction_id %} (transaction reference {{ transaction_id }}){% endif %}{% if scammer_name %} to {{ scammer_name }}{% endif %}.
+2. What happened: {{ scam_description }}
+{% if scammer_contact %}3. Contact details used by the scammer: {{ scammer_contact }}
+{% endif %}{% if bank_name %}4. I have reported the payment to {{ bank_name }}.
+{% endif %}
+Copies of my payment receipt and messages are attached. I ask you to register this report and give me its reference number.
 
 {{ buyer_name }}

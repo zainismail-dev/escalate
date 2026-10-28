@@ -1,7 +1,14 @@
-Subject: Subscription {{ account_id }}
+Subject: Cancel my subscription (account {{ account_id }})
 
 Dear {{ company_name }},
 
-I asked to cancel my subscription (account {{ account_id }}) on {{ cancel_requested_on }}. I ask you to provide the following: {{ remedy_wanted }}.
+Please cancel my subscription{% if plan_name %} ({{ plan_name }}){% endif %} on account {{ account_id }} with immediate effect.
 
+I first asked you to cancel on {{ cancel_requested_on }}.{% if charges_after_cancel %} Since then you have charged me: {{ charges_after_cancel }}.{% endif %}
+
+I ask you to: {{ remedy_wanted }}.
+
+Please confirm in writing by {{ reply_by }} that the subscription is cancelled and that no further payments will be taken.
+
+Yours sincerely,
 {{ buyer_name }}

@@ -15,3 +15,4 @@ One line per task from `CLAUDE_CODE_PLAN.md`: task id, what was built, test resu
 - **2.5** — LangGraph case graph (11 nodes, SqliteSaver, interrupts), runner start/resume/retry/withdraw, LED end-to-end integration test — 135 passed, 2 skipped; LED case intake→seller→platform→legal notice→court draft passes
 - **2.6** — FastAPI (12 spec endpoints + start/ack/retry/confirm/printable/health), scheduler on startup, Streamlit New case/Review/Dashboard with privacy banner — 147 passed, 2 skipped; API and UI booted headless
 - **3.1** — 5 Pakistan templates in en and ur, condonation auto-attached when late, Unicode-digit fact check, en fallback required — 161 passed, 2 skipped; validator OK
+- **3.2** — subscription_cancel templates (cancel, final notice with charges, card dispute, authority), scam checklist-first flow + UI page, bank/police/national fraud letters, no-secrets validator rule — 170 passed, 2 skipped; both flows pass end to end

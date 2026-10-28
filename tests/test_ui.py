@@ -43,6 +43,12 @@ def fake_get(path: str, **params: Any) -> Any:
         return {"ok": True, "is_cloud": True, "llm_base_url": "https://cloud", "demo_mode": False}
     if path == "/cases":
         return [CASE]
+    if path == "/checklist":
+        return {
+            "country": "INTL",
+            "items": [{"title": "Call your bank now", "detail": "x"}],
+            "warnings": ["Never share OTPs"],
+        }
     if path == "/cases/1/timeline":
         return [{"created_at": "2026-10-01T09:00:00", "type": "draft_created"}]
     return CASE
@@ -59,6 +65,7 @@ def app(monkeypatch: pytest.MonkeyPatch) -> AppTest:
 
 
 def test_new_case_page_renders_with_privacy_banner(app: AppTest) -> None:
+    app.session_state["page"] = "New case"
     app.run()
     assert not app.exception
     assert any("cloud" in w.value for w in app.warning)
@@ -78,3 +85,11 @@ def test_review_page_shows_draft_and_facts(app: AppTest) -> None:
     assert not app.exception
     assert app.text_area[0].value == "Dear seller"
     assert [b.label for b in app.button][:2] == ["Approve & send", "Save edit"]
+
+
+def test_scam_page_shows_warnings_and_checklist(app: AppTest) -> None:
+    app.session_state["page"] = "I was scammed: do this now"
+    app.run()
+    assert not app.exception
+    assert any("OTP" in w.value for w in app.warning)
+    assert any("Call your bank now" in m.value for m in app.markdown)
