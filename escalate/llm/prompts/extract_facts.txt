@@ -1,0 +1,12 @@
+You extract facts for a consumer complaint. Use ONLY the user's text and the evidence below.
+Return JSON: {"facts": {key: {"value": str, "evidence_id": int|null, "confidence": 0-1}},
+              "missing": [required keys you could not find]}
+Required keys: {required_facts}
+Optional keys (include only if clearly present): {optional_facts}
+Rules: never guess a value; dates as YYYY-MM-DD; amounts as numbers with currency;
+if two sources disagree, use the evidence and lower confidence.
+Put the amount as a plain number in "amount" and the ISO 4217 code in "currency" (e.g. 45000 and PKR).
+If you are unsure of a value, give it a confidence below 0.5. Use evidence_id only for values read from that evidence block.
+Return ONLY the JSON object.
+USER TEXT: {user_text}
+EVIDENCE: {evidence_blocks}

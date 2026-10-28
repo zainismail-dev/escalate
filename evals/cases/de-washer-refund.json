@@ -1,0 +1,20 @@
+{
+  "id": "de-washer-refund",
+  "country": "DE",
+  "region": null,
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "I'm Jonas Weber in Berlin. Bought a washing machine from Hausgerate Shop on 2026-04-10, order HS-2026-311, 549 EUR. It leaks. They won't repair or refund. I want a refund. Email: service@hausgeraete.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Jonas Weber",
+    "seller_name": "Hausgerate Shop",
+    "seller_contact": "service@hausgeraete.example",
+    "order_id": "HS-2026-311",
+    "order_date": "2026-04-10",
+    "amount": "549",
+    "currency": "EUR",
+    "remedy_wanted": "refund"
+  }
+}

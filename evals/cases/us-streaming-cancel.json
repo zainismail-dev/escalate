@@ -1,0 +1,20 @@
+{
+  "id": "us-streaming-cancel",
+  "country": "US",
+  "region": "US-CA",
+  "language": "en",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "Hi, Maria Lopez here (San Diego). StreamBox won't let me cancel. Account ML-7781-SB. I asked to cancel in the app on June 2, 2026 and again by email to help@streambox.example. They keep billing $15.99 a month. I just want it cancelled and the June and July charges back.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Maria Lopez",
+    "company_name": "StreamBox",
+    "company_contact": "help@streambox.example",
+    "account_id": "ML-7781-SB",
+    "cancel_requested_on": "2026-06-02",
+    "amount": "15.99",
+    "currency": "USD",
+    "remedy_wanted": "cancel refund"
+  }
+}

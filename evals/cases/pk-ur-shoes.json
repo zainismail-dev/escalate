@@ -1,0 +1,19 @@
+{
+  "id": "pk-ur-shoes",
+  "country": "PK",
+  "region": "PK-PB",
+  "language": "ur",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "میرا نام سارہ احمد ہے۔ میں نے 2026-07-05 کو StepUp Shoes سے جوتے خریدے، آرڈر نمبر SU-7720، قیمت 6500 روپے۔ جوتے پہلے ہفتے میں پھٹ گئے۔ میں رقم واپس چاہتی ہوں۔ ای میل: help@stepup.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "سارہ احمد",
+    "seller_name": "StepUp Shoes",
+    "seller_contact": "help@stepup.example",
+    "order_id": "SU-7720",
+    "order_date": "2026-07-05",
+    "amount": "6500",
+    "currency": "PKR"
+  }
+}

@@ -9,3 +9,6 @@ that was not available. Each item names the task it came from.
 - [ ] **1.4 — Install Tesseract locally.** It was not installed on the build machine, so
   `test_real_ocr_reads_fixture_receipt` skipped locally (CI installs Tesseract and runs it).
   Install `tesseract` + language packs (e.g. `urd`), then run `uv run pytest tests/test_evidence.py`.
+- [ ] **1.6 / 3.6 / 4.1 — Run the evals against a real local model.** Only the offline
+  `--llm oracle` harness check ran during the build (it always scores 100% by design). After
+  pulling a model: `uv run python -m evals.run --suite all`, then read `evals/report.md`.

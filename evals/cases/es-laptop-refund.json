@@ -1,0 +1,24 @@
+{
+  "id": "es-laptop-refund",
+  "country": "ES",
+  "region": null,
+  "language": "es",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Me llamo Lucía García. Compré un portátil en TiendaTec el 2026-09-01, pedido TT-40991, por 799 EUR. Llegó con el teclado roto. Quiero el reembolso. Correo: atencion@tiendatec.example",
+  "evidence": [
+    {
+      "id": 4,
+      "text": "TiendaTec Factura\nPedido: TT-40991\nFecha: 01/09/2026\nTotal: 799,00 EUR"
+    }
+  ],
+  "expected_facts": {
+    "buyer_name": "Lucía García",
+    "seller_name": "TiendaTec",
+    "seller_contact": "atencion@tiendatec.example",
+    "order_id": "TT-40991",
+    "order_date": "2026-09-01",
+    "amount": "799",
+    "currency": "EUR"
+  }
+}

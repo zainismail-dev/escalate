@@ -1,0 +1,25 @@
+{
+  "id": "gb-sofa-from-evidence",
+  "country": "GB",
+  "region": null,
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "The sofa I ordered arrived with a broken frame and the shop won't take it back. The receipt is attached. I want a refund. I'm Hannah Price.",
+  "evidence": [
+    {
+      "id": 7,
+      "text": "Comfy Living Ltd\norders@comfyliving.example\nOrder: CL-118204\nDate: 12/08/2026\nTotal: £899.00"
+    }
+  ],
+  "expected_facts": {
+    "buyer_name": "Hannah Price",
+    "seller_name": "Comfy Living Ltd",
+    "seller_contact": "orders@comfyliving.example",
+    "order_id": "CL-118204",
+    "order_date": "2026-08-12",
+    "amount": "899",
+    "currency": "GBP",
+    "remedy_wanted": "refund"
+  }
+}

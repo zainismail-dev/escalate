@@ -1,0 +1,20 @@
+{
+  "id": "in-phone-refund",
+  "country": "IN",
+  "region": "IN-MH",
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "I am Priya Nair from Mumbai. I ordered a phone from QuickKart on 3 March 2026, order QK-55120, paid 18,999 rupees. The screen had a dead line on arrival. They refused the return saying the window closed, but I reported it the same day. I want a refund. Seller email care@quickkart.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Priya Nair",
+    "seller_name": "QuickKart",
+    "seller_contact": "care@quickkart.example",
+    "order_id": "QK-55120",
+    "order_date": "2026-03-03",
+    "amount": "18999",
+    "currency": "INR",
+    "remedy_wanted": "refund"
+  }
+}

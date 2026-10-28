@@ -1,0 +1,19 @@
+{
+  "id": "pk-scam-easypaisa",
+  "country": "PK",
+  "region": "PK-PB",
+  "language": "en",
+  "case_type": "scam",
+  "urgent": true,
+  "user_text": "I am Usman Tariq. Yesterday 2026-10-27 someone on Facebook sold me a bike, I sent Rs 60,000 by bank transfer from Meezan Bank, transaction ref MZ-882100. Now the seller's number is off. What do I do?",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Usman Tariq",
+    "amount": "60000",
+    "currency": "PKR",
+    "paid_on": "2026-10-27",
+    "payment_method": "bank transfer",
+    "bank_name": "Meezan Bank",
+    "transaction_id": "MZ-882100"
+  }
+}

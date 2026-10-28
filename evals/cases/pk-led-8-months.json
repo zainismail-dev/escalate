@@ -1,0 +1,27 @@
+{
+  "id": "pk-led-8-months",
+  "country": "PK",
+  "region": "PK-SD",
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "My name is Ali Raza. On 14 February 2026 I bought a 43 inch LED TV from BrightMart Electronics (order BM-48213) for Rs 45,000. It stopped working after 10 days - no picture, only sound. I returned it on 2026-02-28 by TCS, tracking 7731990. For 8 months they keep saying they will replace it when the company claim is approved. I want a replacement or a full refund. Their email is support@brightmart.example.",
+  "evidence": [
+    {
+      "id": 1,
+      "text": "BRIGHTMART ELECTRONICS\nOrder ID: BM-48213\nDate: 2026-02-14\nLED TV 43 inch\nTotal: 45000 PKR"
+    }
+  ],
+  "expected_facts": {
+    "buyer_name": "Ali Raza",
+    "seller_name": "BrightMart Electronics",
+    "seller_contact": "support@brightmart.example",
+    "order_id": "BM-48213",
+    "order_date": "2026-02-14",
+    "amount": "45000",
+    "currency": "PKR",
+    "return_shipped_on": "2026-02-28",
+    "return_tracking": "7731990",
+    "remedy_wanted": "replacement refund"
+  }
+}

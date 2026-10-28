@@ -68,3 +68,16 @@ Defaults chosen during the autonomous build, with the reason for each.
   build, so none were added. The validator warns on URL-less sources in non-generic packs.
 - `PK` court filing deadline: `from_fact: cause_of_action_on` if the user knows it, otherwise
   the clock starts when the 15-day notice period ends. This interpretation needs lawyer review.
+
+## Intake and evals (task 1.6)
+- Prompt files use `{name}` placeholders replaced by `render_prompt()`; other braces (the JSON
+  shapes in the prompts) are left alone, so prompts stay copy-paste readable.
+- The extraction prompt also lists the playbook's **optional** keys so useful extras
+  (return date, tracking number) are captured. Keys outside required+optional are discarded.
+- Facts with confidence < 0.5, empty values, and evidence ids that were not provided are never
+  stored. A user's typed answer (confidence 1.0) is never overwritten by a lower-confidence
+  extraction.
+- Eval scoring: exact match after normalising case, spaces and number formatting; free-text
+  fields (`remedy_wanted`, `defect_description`, …) pass when every expected word appears.
+- `evals.run --llm oracle` answers with the expected values. It only proves the harness works;
+  it is not a quality score.

@@ -1,0 +1,19 @@
+{
+  "id": "gb-gym-subscription",
+  "country": "GB",
+  "region": null,
+  "language": "en",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "I'm Tom Hughes. I cancelled my FitLife gym membership (member number FL-90211) by email on 2026-05-01 but they have charged me £29.99 twice since. I want the cancellation confirmed and the two payments refunded. Their address is members@fitlife.example.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Tom Hughes",
+    "company_name": "FitLife",
+    "company_contact": "members@fitlife.example",
+    "account_id": "FL-90211",
+    "cancel_requested_on": "2026-05-01",
+    "currency": "GBP",
+    "remedy_wanted": "cancellation refund"
+  }
+}

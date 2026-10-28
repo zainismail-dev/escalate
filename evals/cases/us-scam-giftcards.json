@@ -1,0 +1,19 @@
+{
+  "id": "us-scam-giftcards",
+  "country": "US",
+  "region": "US-TX",
+  "language": "en",
+  "case_type": "scam",
+  "urgent": false,
+  "user_text": "My name is Robert King. On 2026-08-15 a caller claiming to be from my bank told me to move money. I paid $2,400 with my credit card to TechSecure Ltd. My bank is Lone Star Bank.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Robert King",
+    "amount": "2400",
+    "currency": "USD",
+    "paid_on": "2026-08-15",
+    "payment_method": "credit card",
+    "bank_name": "Lone Star Bank",
+    "scammer_name": "TechSecure Ltd"
+  }
+}
