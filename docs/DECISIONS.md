@@ -108,3 +108,15 @@ Defaults chosen during the autonomous build, with the reason for each.
   then enforces it. To use a new value, the user adds it as a fact first.
 - Approve/reject live in `escalate/agent/approval.py`; a test asserts no other module assigns
   `approved_at`.
+
+## Channels (task 2.3)
+- `escalate.channels.send_message()` is the single place that records a send (`sent_at`,
+  status `sent`, `message_sent` event). It is idempotent and calls `require_approval()` before
+  touching a channel; every channel's own `send()` calls it again.
+- **post / court / web_form** return `delivered=False` and log `awaiting_user_delivery`. They
+  become `sent` via `confirm_delivery()`; post and court require an uploaded proof (Evidence of
+  the same case). **info** steps (guides for the user) are marked sent on approval.
+- Printable letters are generated on demand as PDF bytes (not stored on disk unencrypted).
+- Gmail API token is stored Fernet-encrypted at `secrets/gmail_token.enc` (single-user v0.1).
+- Email recipients must look like an email address; otherwise sending fails before any network
+  call (e.g. a WhatsApp number in `seller_contact`).

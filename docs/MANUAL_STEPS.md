@@ -12,3 +12,11 @@ that was not available. Each item names the task it came from.
 - [ ] **1.6 / 3.6 / 4.1 — Run the evals against a real local model.** Only the offline
   `--llm oracle` harness check ran during the build (it always scores 100% by design). After
   pulling a model: `uv run python -m evals.run --suite all`, then read `evals/report.md`.
+- [ ] **2.3 — Send one real approved email to yourself.** Not done during the build (no
+  credentials, and the build never sends real email). Create a Gmail app password, set
+  `SMTP_USER` / `SMTP_APP_PASSWORD`, open a test case with your own address as the seller
+  contact, approve the draft and check your inbox.
+- [ ] **2.3 — (Optional) Gmail API mode.** Create an OAuth client in Google Cloud, then
+  `uv run python scripts/gmail_auth.py client_secret.json` and set `EMAIL_MODE=gmail_api`.
+- [ ] **Install Pango locally (or use Docker)** so WeasyPrint PDF tests run on your machine; they
+  skipped on the build machine and run in CI.
