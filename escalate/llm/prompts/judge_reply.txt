@@ -5,4 +5,11 @@ Return JSON: {"verdict": "resolved"|"partial"|"refused"|"no_reply", "promise": s
 "promise_date": YYYY-MM-DD|null, "reason": str}
 A vague promise with no date ("we will replace when the claim is approved") is "refused".
 "resolved" means the consumer got (or is certainly getting, on a stated date) what they asked for.
+"partial" means they got or will get, on a stated date, only part of it (e.g. half the money, store credit instead of a refund).
+"no_reply" means an automatic acknowledgement or out-of-office message that says nothing about the request.
+Examples:
+- "We will replace the LED when the company claim is approved." -> {"verdict": "refused", "promise": "replace when the claim is approved", "promise_date": null, "reason": "undated promise"}
+- "A full refund was sent to your card today." (asked: a full refund) -> {"verdict": "resolved", "promise": null, "promise_date": null, "reason": "refund paid"}
+- "We can refund 50% as a goodwill gesture." (asked: a full refund) -> {"verdict": "partial", "promise": null, "promise_date": null, "reason": "half refund"}
+- "Ticket #123 received. An agent will respond." -> {"verdict": "no_reply", "promise": null, "promise_date": null, "reason": "auto-acknowledgement"}
 Return ONLY the JSON object.

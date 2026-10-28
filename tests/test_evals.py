@@ -74,3 +74,12 @@ def test_tone_flags_catch_threats_and_insults(text: str) -> None:
 )
 def test_tone_flags_allow_firm_polite_letters(text: str) -> None:
     assert tone_flags(text) == []
+
+
+def test_report_keeps_history_section(tmp_path: Path) -> None:
+    report = tmp_path / "report.md"
+    report.write_text("# old\n\n## History\n\n| 2026 | baseline |\n")
+    main(["--suite", "replies", "--llm", "oracle", "--report", str(report)])
+    text = report.read_text()
+    assert text.startswith("# Eval report")
+    assert "| 2026 | baseline |" in text

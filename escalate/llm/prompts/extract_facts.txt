@@ -6,6 +6,8 @@ Optional keys (include only if clearly present): {optional_facts}
 Rules: never guess a value; dates as YYYY-MM-DD; amounts as numbers with currency;
 if two sources disagree, use the evidence and lower confidence.
 Put the amount as a plain number in "amount" and the ISO 4217 code in "currency" (e.g. 45000 and PKR).
+Copy names, IDs and email addresses exactly as written (do not translate or transliterate them).
+If the text gives a currency symbol or word (Rs, rupees, £, $, euros), give the ISO code that fits the country.
 If you are unsure of a value, give it a confidence below 0.5. Use evidence_id only for values read from that evidence block.
 Return ONLY the JSON object.
 USER TEXT: {user_text}

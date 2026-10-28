@@ -191,3 +191,13 @@ def test_put_edit_then_plain_approve_is_still_checked(db: Session) -> None:
     with pytest.raises(UnsupportedFacts):
         approve_message(db, msg.id)
     assert msg.approved_at is None
+
+
+def test_rude_draft_fails_fact_check_on_tone() -> None:
+    llm = FakeLLM()
+    result = fact_check(
+        "Order BM-48213. You are liars and you will regret this.", LED_FACTS, llm=llm
+    )
+    assert not result.ok
+    assert any(i.startswith("tone:") for i in result.issues)
+    assert llm.calls == []  # the model check is skipped until the tone is fixed

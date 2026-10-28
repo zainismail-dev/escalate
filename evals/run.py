@@ -161,7 +161,8 @@ def oracle(cases: list[dict[str, Any]], replies: list[dict[str, Any]]) -> LLM:
         if prompt.startswith("List every factual claim"):
             return {"unsupported": []}
         if prompt.startswith("A company replied"):
-            r = next(r for t, r in by_reply.items() if t in prompt)
+            reply = prompt.split("THE REPLY:", 1)[1].split("\n", 1)[0].strip()
+            r = by_reply[reply]
             return {
                 "verdict": r["expected"],
                 "promise": None,
@@ -388,8 +389,20 @@ def write_report(results: dict[str, Any], mode: str, path: Path = REPORT) -> str
         if res.misses:
             lines += ["", f"## {title}", ""] + [f"- {m}" for m in res.misses[:40]]
     text = "\n".join(lines) + "\n"
-    path.write_text(text, encoding="utf-8")
+    history = _history(path)
+    path.write_text(text + history, encoding="utf-8")
     return text
+
+
+HISTORY = "## History"
+
+
+def _history(path: Path) -> str:
+    """Keep the hand-written before/after log at the end of the report across runs."""
+    if not path.is_file():
+        return ""
+    old = path.read_text(encoding="utf-8")
+    return "\n" + old[old.index(HISTORY):] if HISTORY in old else ""
 
 
 def main(argv: list[str] | None = None) -> int:

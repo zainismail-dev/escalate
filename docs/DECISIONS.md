@@ -251,3 +251,16 @@ Defaults chosen during the autonomous build, with the reason for each.
   case produces a draft.
 - **The committed `evals/report.md` is an oracle run** (harness check, labelled as such). No
   real model was available during the build; see MANUAL_STEPS.md.
+
+## Eval targets (task 4.1) — partial
+- Not verifiable without a model, so only fixes that help any model were applied:
+  - **Tone gate in production**: `fact_check` now fails a draft with tone flags, so it is
+    redrafted (and after 3 tries, the plain template is used). Approved drafts can't contain
+    flagged wording, whatever the model does.
+  - Reply judge: definitions of partial/no_reply and four few-shot examples, including the LED
+    "when the claim is approved" case and an auto-acknowledgement.
+  - Classifier: one-line definitions of each case type and city -> ISO region hints.
+  - Extraction: copy names/IDs/emails verbatim; map currency words/symbols to ISO codes.
+- `evals/report.md` keeps a hand-written `## History` table across runs for before/after
+  numbers; the real-model row is pending.
+- No model is named in the README as "recommended" because none was measured.

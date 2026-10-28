@@ -12,6 +12,7 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
+from escalate.agent.tone import tone_flags
 from escalate.llm import LLM, get_llm
 from escalate.llm.prompts import render_prompt
 from escalate.llm.structured import StructuredOutputError, ask_json
@@ -94,14 +95,16 @@ def find_ids(text: str) -> set[str]:
 class FactCheckResult:
     code_issues: list[str] = field(default_factory=list)
     model_issues: list[str] = field(default_factory=list)
+    tone_issues: list[str] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
-        return not self.code_issues and not self.model_issues
+        return not self.code_issues and not self.model_issues and not self.tone_issues
 
     @property
     def issues(self) -> list[str]:
-        return [*self.code_issues, *self.model_issues]
+        tone = [f"tone: {t} (keep it firm, polite and factual)" for t in self.tone_issues]
+        return [*self.code_issues, *tone, *self.model_issues]
 
 
 def ascii_digits(text: str) -> str:
@@ -159,7 +162,9 @@ def fact_check(
     llm: LLM | None = None,
     use_model: bool = True,
 ) -> FactCheckResult:
-    result = FactCheckResult(code_issues=code_check(draft, facts, reference))
-    if use_model and not result.code_issues:
+    result = FactCheckResult(
+        code_issues=code_check(draft, facts, reference), tone_issues=tone_flags(draft)
+    )
+    if use_model and not result.code_issues and not result.tone_issues:
         result.model_issues = model_check(draft, facts, llm)
     return result

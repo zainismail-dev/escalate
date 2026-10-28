@@ -38,3 +38,8 @@ that was not available. Each item names the task it came from.
   translated; the rest fall back to English).
 - [ ] **3.5 — Export the LED case PDF and click through every screen by hand** with a real
   model. Locally the PDF render was not possible (no Pango); CI runs the PDF test.
+- [ ] **4.1 — Reach the eval targets with a real local model** and name it in the README.
+  Targets: extraction ≥ 95%, classification ≥ 95%, 0 unsupported facts, 0 tone flags, reply
+  judge ≥ 90%. Run `uv run python -m evals.run --suite all`, add the numbers to the History
+  table in `evals/report.md`, and fix misses (prompt wording, few-shot examples, code checks)
+  without lowering targets. The build applied model-independent fixes only.
