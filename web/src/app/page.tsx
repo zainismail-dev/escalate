@@ -18,7 +18,6 @@ const EXAMPLES = [
   { locale: "en-US", currency: "USD", amount: 1249 },
 ];
 const EXAMPLE_DATE = "2026-10-28";
-const URDU_SAMPLE = "یہ دستاویز Escalate (ایک مفت سیلف ہیلپ ٹول) سے تیار کی گئی ہے۔ یہ قانونی مشورہ نہیں ہے۔";
 
 export default function Landing() {
   const t = useTranslations("landing");
@@ -70,7 +69,7 @@ export default function Landing() {
                 <p className="label-mono text-muted">{t("hero.caseLabel")}</p>
                 <p className="mt-1 font-display text-xl">{t("hero.caseTitle")}</p>
               </div>
-              <p className="font-mono text-2xl font-bold">{formatMoney(64500, "PKR", "en-PK")}</p>
+              <p className="text-2xl font-semibold text-text-2">{formatMoney(64500, "PKR", "en-PK")}</p>
             </div>
             <CaseChipStatic country="PK" currency="PKR" className="mt-3" />
             <EscalationLadder steps={steps} className="mt-6" />
@@ -127,6 +126,9 @@ export default function Landing() {
         <p className="label-mono text-muted">{t("global.eyebrow")}</p>
         <h2 id="global" className="mt-2 font-display text-3xl sm:text-4xl">{t("global.title")}</h2>
         <p className="mt-4 max-w-2xl text-text-2">{t("global.body")}</p>
+        <p className="mt-2 text-xs text-muted" data-testid="more-languages">
+          {t("global.moreLanguages")}
+        </p>
         <div className="mt-10 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
           <div className="rounded-2xl border border-line bg-card p-5">
             <p className="label-mono text-muted">{t("global.formatTitle")}</p>
@@ -136,22 +138,13 @@ export default function Landing() {
                   <span className="font-mono text-xs text-muted">
                     {e.locale} · {e.currency}
                   </span>
-                  <span className="font-mono text-lg font-semibold" dir="ltr">
-                    {formatMoney(e.amount, e.currency, e.locale)}
-                  </span>
+                  <span className="text-lg font-semibold">{formatMoney(e.amount, e.currency, e.locale)}</span>
                   <span className="basis-full text-end text-sm text-text-2 sm:basis-auto">{formatDate(EXAMPLE_DATE, e.locale, "long")}</span>
                 </li>
               ))}
             </ul>
           </div>
           <div className="space-y-4">
-            <div className="rounded-2xl border border-line bg-card p-5">
-              <p className="label-mono text-muted">{t("global.rtlTitle")}</p>
-              <p lang="ur" dir="rtl" className="letter mt-3 rounded-md border border-line p-4 text-lg">
-                {URDU_SAMPLE}
-              </p>
-              <p className="mt-2 text-xs text-muted">{t("global.rtlNote")}</p>
-            </div>
             <div className="rounded-2xl border border-line bg-card p-5">
               <p className="label-mono text-muted">{t("global.packsTitle")}</p>
               <div className="mt-3">

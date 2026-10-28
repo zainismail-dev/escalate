@@ -9,8 +9,10 @@ test("landing: dark hero, ladder, sections", async ({ page }) => {
   // Intl formats each example in its own locale.
   await expect(page.getByText("Rs 64,500").first()).toBeVisible();
   await expect(page.getByText("89,90 €")).toBeVisible();
-  await expect(page.getByText("$1,249.00")).toBeVisible();
-  await expect(page.locator("[lang=ur][dir=rtl]")).toBeVisible();
+  await expect(page.getByText("$1,249", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Every country. Every currency." })).toBeVisible();
+  await expect(page.getByText(/more languages are coming/i)).toHaveCount(1); // said once, small
+  await expect(page.getByText(/every script|right-to-left|any language/i)).toHaveCount(0);
 });
 
 test("my cases: urgent first, titles, real next steps, 2-column grid", async ({ page }) => {

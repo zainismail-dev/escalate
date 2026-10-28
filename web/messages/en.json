@@ -263,7 +263,7 @@
     "how": {
       "eyebrow": "How it works",
       "title": "From \"we'll get back to you\" to a court-ready file",
-      "s1": { "title": "Tell your story", "body": "In your own words, in any language. Pick your country, or any country." },
+      "s1": { "title": "Tell your story", "body": "In your own words. Pick your country: every country is supported." },
       "s2": { "title": "Add your evidence", "body": "Receipts, screenshots, emails. The agent reads the facts and shows where each one came from." },
       "s3": { "title": "Approve each letter", "body": "Every amount, date and ID is checked against your evidence. You approve, edit or reject." },
       "s4": { "title": "Climb the ladder", "body": "No reply or a refusal? The agent drafts the next rung, on time, up to consumer court." }
@@ -282,11 +282,10 @@
     },
     "global": {
       "eyebrow": "Global by design",
-      "title": "Every country, every currency, every script",
-      "body": "Money and dates are written the way each country writes them. Letters go out in the language you choose, right-to-left included. Where there's no local playbook, a generic route still works and says so.",
+      "title": "Every country. Every currency.",
+      "body": "Money and dates are written the way each country writes them. Where there's no local playbook, a generic route still works and says so.",
+      "moreLanguages": "Letters and the app are in English for now. More languages are coming.",
       "formatTitle": "Same agent, local formats",
-      "rtlTitle": "Right-to-left letters",
-      "rtlNote": "Urdu, Arabic, Persian and Hebrew letters render right to left.",
       "packsTitle": "Local packs today",
       "packsLoading": "Checking which countries have local packs…",
       "packsCount": "{all} countries supported; {local} with a local pack so far.",
@@ -327,7 +326,7 @@
     },
     "intros": {
       "where": "Your country picks the playbook, the currency and how dates are written.",
-      "what": "In your own words, in any language. Include what you bought, what went wrong and what they said.",
+      "what": "In your own words. Include what you bought, what went wrong and what they said.",
       "evidence": "Receipts, invoices, screenshots, emails. The agent reads them and shows each fact it finds.",
       "missing": "The agent needs these to write the first letter.",
       "review": "Check the route and the facts, then review your first letter."
