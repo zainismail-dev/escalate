@@ -18,6 +18,7 @@ export default defineConfig({
   use: { baseURL: WEB_URL, trace: "retain-on-failure", channel: process.env.PW_CHANNEL || undefined },
   projects: [
     { name: "smoke", testMatch: /smoke\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+    { name: "guard", testMatch: /console-guard\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
     { name: "rtl", testMatch: /rtl\.spec\.ts/, use: { ...devices["Desktop Chrome"], locale: "ar" } },
     { name: "dark", testMatch: /dark\.spec\.ts/, use: { ...devices["Desktop Chrome"], colorScheme: "dark" } },
     { name: "mobile", testMatch: /mobile\.spec\.ts/, use: { ...devices["Pixel 7"] } },

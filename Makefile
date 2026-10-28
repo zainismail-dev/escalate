@@ -55,8 +55,8 @@ web-lint:         ## eslint + TypeScript for the web app
 web-build:
 	cd web && NEXT_PUBLIC_API_URL=$(API_URL) npm run build
 
-web-e2e:          ## Playwright smoke tests (smoke, rtl, dark, mobile) against WEB_URL + API_URL
-	cd web && WEB_URL=$(WEB_URL) API_URL=$(API_URL) npx playwright test --project=smoke --project=rtl --project=dark --project=mobile
+web-e2e:          ## Playwright: smoke, console guard (light+dark), rtl, dark, mobile against WEB_URL + API_URL
+	cd web && WEB_URL=$(WEB_URL) API_URL=$(API_URL) npx playwright test --project=smoke --project=guard --project=rtl --project=dark --project=mobile
 
 screenshots:      ## docs/screenshots/*.png; wipes and re-seeds the API (use a throwaway, DEMO_MODE=true)
 	cd web && E2E_RESET=1 WEB_URL=$(WEB_URL) API_URL=$(API_URL) npx playwright test --project=screenshots

@@ -94,10 +94,10 @@ test("new case: every country listed, honest pack badge", async ({ page }) => {
   await expect(page.getByTestId("country-summary")).toContainText("Local pack");
 });
 
-test("settings: model, email, language, privacy", async ({ page }) => {
+test("settings: model, email, region, privacy", async ({ page }) => {
   await page.goto("/settings");
   await settled(page);
-  for (const h of ["AI model", "Email", "Language and region", "Privacy"]) {
+  for (const h of ["AI model", "Email", "Region", "Privacy"]) {
     await expect(page.getByRole("heading", { name: h })).toBeVisible();
   }
   await expect(page.getByLabel("App password")).toHaveAttribute("type", "password");

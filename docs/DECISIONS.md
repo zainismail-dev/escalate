@@ -368,3 +368,16 @@ Defaults chosen during the autonomous build, with the reason for each.
   the company, and unchanged so approved letters stay identical.
 - Dates and times in the web app are formatted with an explicit locale and `timeZone: "UTC"`
   (times show "UTC"), and nothing calls `Date.now()` while rendering.
+
+## Dev errors: theme script and console guard (pre-release polish)
+- next-themes rendered an inline `<script>` from a client component, which React 19 reports
+  as "Encountered a script tag while rendering React component". It is replaced by a tiny
+  `beforeInteractive` script in the root layout (`web/src/lib/theme-init.ts`) and a
+  `useSyncExternalStore` theme store (`web/src/lib/theme.ts`); one dependency fewer.
+- Anything rendered on the server and the client must produce identical text: dates use an
+  explicit locale and `timeZone: "UTC"`, case money comes pre-formatted from the API, and the
+  app-language selector (whose `Intl.DisplayNames` output differed between Node and browsers)
+  is not rendered in v0.1.
+- `web/e2e/console-guard.spec.ts` loads every page in light and dark and fails on any console
+  error or warning, uncaught error or hydration error. CI runs it against the production build
+  *and* `next dev` (React's detailed warnings only exist in development).

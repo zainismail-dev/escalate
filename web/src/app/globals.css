@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Dark mode follows the `dark` class that next-themes sets (system preference or the toggle). */
+/* Dark mode follows the `dark` class on <html>: set by src/lib/theme-init.ts before paint, then the toggle. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
