@@ -102,6 +102,7 @@ def draft_step(
         recipient=facts.get(step.recipient_fact) if step.recipient_fact else None,
         subject=final.subject,
         body=body,
+        original_body=f"{final.subject}\n{body}",
         status="draft",
     )
     session.add(msg)

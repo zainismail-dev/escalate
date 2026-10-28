@@ -31,7 +31,7 @@ def edit_message(
 ) -> list[str]:
     """Save the user's edit (still a draft). Returns code fact-check warnings for the UI."""
     msg = _get_draft(session, message_id)
-    reference = f"{msg.subject or ''}\n{msg.body}\n{_approved_text(msg)}"
+    reference = _approved_text(msg)
     msg.body = body
     if subject is not None:
         msg.subject = subject
@@ -40,10 +40,9 @@ def edit_message(
 
 
 def _approved_text(msg: Message) -> str:
-    """Text already approved in this case counts as known (e.g. a date the user confirmed)."""
-    return "\n".join(
-        f"{m.subject or ''}\n{m.body}" for m in msg.case.messages if m.approved_at is not None
-    )
+    """Known-good text: the fact-checked draft and anything already approved in this case."""
+    approved = [f"{m.subject or ''}\n{m.body}" for m in msg.case.messages if m.approved_at]
+    return "\n".join([msg.original_body or "", *approved])
 
 
 def approve_message(
@@ -53,18 +52,20 @@ def approve_message(
     edited_subject: str | None = None,
     reference: str = "",
 ) -> Message:
-    """Approve a draft, optionally with the user's edits, which must pass the code fact check."""
+    """Approve a draft. The final text (with any edits, including earlier PUT edits) must pass
+    the code fact check against the facts and the fact-checked draft."""
     msg = _get_draft(session, message_id)
-    if edited_body is not None or edited_subject is not None:
-        body = edited_body if edited_body is not None else msg.body
-        subject = edited_subject if edited_subject is not None else msg.subject
-        issues = code_check(
-            f"{subject or ''}\n{body}",
-            msg.case.fact_dict(),
-            f"{reference}\n{msg.subject or ''}\n{msg.body}\n{_approved_text(msg)}",
-        )
-        if issues:
-            raise UnsupportedFacts(issues)
+    edited = edited_body is not None or edited_subject is not None
+    body = edited_body if edited_body is not None else msg.body
+    subject = edited_subject if edited_subject is not None else msg.subject
+    issues = code_check(
+        f"{subject or ''}\n{body}",
+        msg.case.fact_dict(),
+        f"{reference}\n{_approved_text(msg)}",
+    )
+    if issues:
+        raise UnsupportedFacts(issues)
+    if edited:
         msg.body, msg.subject = body, subject
         log_event(session, msg.case_id, "draft_edited", {"message_id": msg.id})
     msg.status = "approved"

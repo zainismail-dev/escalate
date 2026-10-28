@@ -20,3 +20,7 @@ that was not available. Each item names the task it came from.
   `uv run python scripts/gmail_auth.py client_secret.json` and set `EMAIL_MODE=gmail_api`.
 - [ ] **Install Pango locally (or use Docker)** so WeasyPrint PDF tests run on your machine; they
   skipped on the build machine and run in CI.
+- [ ] **2.6 — Run the LED case by hand in the browser and record a rough screen capture.**
+  Start the API (`uv run uvicorn escalate.api.main:app --reload`) and the UI
+  (`uv run streamlit run ui/app.py`) with a local model configured. The build only booted both
+  servers headless and checked `/health`; no model was available to draft letters.

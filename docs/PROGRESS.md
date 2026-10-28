@@ -13,3 +13,4 @@ One line per task from `CLAUDE_CODE_PLAN.md`: task id, what was built, test resu
 - **2.3** — SMTP (SSL 465) + Gmail API email, post/court/web_form with proof-based confirm, idempotent send registry, printable PDF helper — 110 passed, 2 skipped (WeasyPrint/Tesseract need system libs; run in CI)
 - **2.4** — APScheduler with SQLAlchemy job store, schedule_wake/cancel, daily deadline scan, judge_reply (undated promise=refused), pick_next — 124 passed, 2 skipped; freezegun wake/restart tests pass
 - **2.5** — LangGraph case graph (11 nodes, SqliteSaver, interrupts), runner start/resume/retry/withdraw, LED end-to-end integration test — 135 passed, 2 skipped; LED case intake→seller→platform→legal notice→court draft passes
+- **2.6** — FastAPI (12 spec endpoints + start/ack/retry/confirm/printable/health), scheduler on startup, Streamlit New case/Review/Dashboard with privacy banner — 148 passed, 2 skipped; API and UI booted headless

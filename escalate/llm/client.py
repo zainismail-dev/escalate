@@ -11,6 +11,10 @@ from escalate.config import Settings, get_settings
 Slot = Literal["smart", "fast"]
 
 
+class LLMNotConfigured(RuntimeError):
+    pass
+
+
 class LLM(Protocol):
     """What the agent needs from a model. The real client and the test fake both satisfy it."""
 
@@ -40,7 +44,7 @@ class LLMClient:
     def model_for(self, slot: Slot) -> str:
         model = self.settings.model_smart if slot == "smart" else self.settings.model_fast_or_smart
         if not model or model.startswith("<"):
-            raise RuntimeError("No model configured: set MODEL_SMART (and MODEL_FAST) in .env")
+            raise LLMNotConfigured("No model configured: set MODEL_SMART (and MODEL_FAST) in .env")
         return model
 
     def complete(self, prompt: str, slot: Slot = "smart") -> str:

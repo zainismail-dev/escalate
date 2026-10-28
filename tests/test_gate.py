@@ -183,3 +183,11 @@ def test_only_approve_message_sets_approved_at() -> None:
         if re.search(r"\bapproved_at\s*=[^=]", line)
     ]
     assert [str(p) for p, _ in hits] == ["agent/approval.py"], hits
+
+
+def test_put_edit_then_plain_approve_is_still_checked(db: Session) -> None:
+    msg = _draft(db)
+    edit_message(db, msg.id, msg.body + "\nAnd 77,777 in damages.")
+    with pytest.raises(UnsupportedFacts):
+        approve_message(db, msg.id)
+    assert msg.approved_at is None

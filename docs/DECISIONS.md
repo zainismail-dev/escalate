@@ -152,3 +152,18 @@ Defaults chosen during the autonomous build, with the reason for each.
 - Logging a reply cancels the pending wake-up; a stale wake-up for another step is ignored.
 - A process-wide lock serialises graph runs (the scheduler thread and API can't interleave).
 - A failed node (e.g. SMTP down) can be re-run with `runner.retry(case_id)`.
+
+## API and UI (task 2.6)
+- Extra endpoints beyond section 10's 12: `POST /cases/{id}/start` (so evidence can be uploaded
+  before the agent reads the case; `POST /cases` also accepts `start: true`),
+  `POST /cases/{id}/checklist/ack`, `POST /cases/{id}/retry`,
+  `POST /messages/{id}/confirm-delivery`, `GET /messages/{id}/printable.pdf`, `GET /health`,
+  `GET /checklist`, `POST /settings/llm-test`.
+- **Every approval re-runs the code fact check** on the final text, against the facts and the
+  fact-checked draft (`Message.original_body`, new column + migration). So an edit saved with
+  `PUT /messages/{id}` can't slip an invented amount past approval.
+- On startup the API runs `alembic upgrade head`, compiles the graph and starts the scheduler
+  with the daily 09:00 UTC deadline scan.
+- Error mapping: wrong state 409, unsupported facts 422 (with `issues`), missing model or
+  unreachable LLM 503, PDF libs missing 503.
+- The UI reads the privacy banner from `GET /health` (`is_cloud`) so it stays API-only.

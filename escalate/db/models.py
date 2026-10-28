@@ -105,7 +105,8 @@ class Message(Base):
     recipient: Mapped[str | None] = mapped_column(String(300))
     subject: Mapped[str | None] = mapped_column(String(300))
     body: Mapped[str] = mapped_column(Text)
-    # draft | approved | sent | received | rejected
+    original_body: Mapped[str | None] = mapped_column(Text)  # as drafted and fact-checked
+    # draft | approved | sent | received | rejected | superseded
     status: Mapped[str] = mapped_column(String(20), default="draft")
     approved_at: Mapped[datetime | None]
     sent_at: Mapped[datetime | None]
