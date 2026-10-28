@@ -78,7 +78,7 @@ export function CaseDashboard({ id }: { id: number }) {
   const ui = useLocale();
   const router = useRouter();
   const label = useFactLabel();
-  const { data: c, error, loading, reload } = useApi(() => api.getCase(id), [id]);
+  const { data: c, error, loading, reload, setData } = useApi(() => api.getCase(id), [id]);
   const act = useAction();
   const [confirm, setConfirm] = useState<"withdraw" | "delete" | "delivery" | null>(null);
   const [proof, setProof] = useState<File | null>(null);
@@ -105,7 +105,7 @@ export function CaseDashboard({ id }: { id: number }) {
 
   return (
     <div className="space-y-6">
-      <CaseHeader c={c} back={{ href: "/cases", label: t("back") }} />
+      <CaseHeader c={c} onRenamed={setData} />
 
       {act.error && <ErrorState error={act.error} />}
       {stalled && (

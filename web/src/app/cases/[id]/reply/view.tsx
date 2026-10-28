@@ -60,7 +60,7 @@ export function LogReply({ id }: { id: number }) {
   const waiting = c.waiting_for === "waiting_reply";
   return (
     <div className="space-y-6">
-      <CaseHeader c={c} back={{ href: `/cases/${c.id}`, label: t("backToCase") }} title={t("title")} />
+      <CaseHeader c={c} heading={t("title")} />
       {act.error && <ErrorState error={act.error} />}
 
       {!result && !waiting && (

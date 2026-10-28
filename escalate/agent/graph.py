@@ -25,6 +25,7 @@ from escalate.agent.fact_check import fact_check as run_fact_check
 from escalate.agent.intake import extract, save_answers
 from escalate.agent.judge_reply import judge, log_verdict
 from escalate.agent.pick_next import pick_next as pick_next_step
+from escalate.agent.titles import ensure_title
 from escalate.channels import send_message
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Message
@@ -102,6 +103,7 @@ def intake(state: CaseState) -> CaseState:
                 extract(s, case, case.description, evidence, pb.required_facts, pb.optional_facts)
             except StructuredOutputError as exc:  # the user will be asked instead
                 log_event(s, case.id, "extraction_failed", {"error": str(exc)[:300]})
+        ensure_title(s, case)
         facts = case.fact_dict()
         missing = missing_for_step(pb, _step(pb, state, facts), facts)
         case.status = CaseStatus.INTAKE if missing else case.status
@@ -154,6 +156,7 @@ def draft(state: CaseState) -> CaseState:
         case = _case(s, state)
         pb = get_playbook(state["playbook_id"])
         step = pb.step(state["step_id"])
+        ensure_title(s, case)  # e.g. after the user answered missing-fact questions
         case.status = CaseStatus.DRAFTING
         try:
             msg = draft_step(

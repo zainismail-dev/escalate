@@ -57,6 +57,7 @@ def test_case_html_has_every_section(agent_env: AgentEnv, monkeypatch: pytest.Mo
     cid = _led_case_with_history(env)
     html = _html(env, cid, monkeypatch)
     assert f"Case file #{cid}" in html
+    assert "<h1>Refund refused by BrightMart Electronics</h1>" in html  # the case title
     assert "Ali Raza" in html and "BrightMart Electronics" in html
     assert "PKR 45,000.00" in html
     assert "Facts and their sources" in html

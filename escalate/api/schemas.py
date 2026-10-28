@@ -92,6 +92,7 @@ class DeadlineOut(BaseModel):
 
 class CaseOut(Orm):
     id: int
+    title: str | None = None  # stored or built from facts; never None in responses
     case_type: str | None
     country: str | None
     region: str | None
@@ -214,6 +215,18 @@ class HealthOut(BaseModel):
     llm_base_url: str
     demo_mode: bool
     email_mode: str
+
+
+class CaseUpdate(BaseModel):
+    title: str = Field(min_length=1, max_length=120)
+
+    @field_validator("title")
+    @classmethod
+    def _strip(cls, v: str) -> str:
+        v = " ".join(v.split())
+        if not v:
+            raise ValueError("title cannot be blank")
+        return v
 
 
 class LanguageIn(BaseModel):

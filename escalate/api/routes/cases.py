@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from escalate.agent import runner
 from escalate.agent.deadlines import deadline_status
+from escalate.agent.titles import display_title
 from escalate.api import views
 from escalate.api.deps import get_case, get_session
 from escalate.api.schemas import (
@@ -15,6 +16,7 @@ from escalate.api.schemas import (
     CaseDetail,
     CaseOut,
     CaseSummary,
+    CaseUpdate,
     DeadlineOut,
     EventOut,
     EvidenceOut,
@@ -59,6 +61,7 @@ def _playbook(case: Case) -> Playbook | None:
 
 def case_summary(case: Case) -> CaseSummary:
     out = CaseSummary.model_validate(case)
+    out.title = display_title(case)
     pending = runner.pending(case.id)
     out.waiting_for = pending.get("type") if pending else None
     pb = _playbook(case)
@@ -74,6 +77,7 @@ def case_summary(case: Case) -> CaseSummary:
 def case_detail(session: Session, case: Case) -> CaseDetail:
     session.refresh(case)
     detail = CaseDetail.model_validate(case)
+    detail.title = display_title(case)
     detail.pending = runner.pending(case.id)
     detail.waiting_for = detail.pending.get("type") if detail.pending else None
     detail.text_direction = "rtl" if is_rtl(case.language) else "ltr"
@@ -138,6 +142,18 @@ def list_cases(
 @router.get("/{case_id}", response_model=CaseDetail)
 def read_case(case_id: int, session: Session = Depends(get_session)) -> CaseDetail:
     return case_detail(session, get_case(session, case_id))
+
+
+@router.patch("/{case_id}", response_model=CaseDetail)
+def update_case(
+    case_id: int, body: CaseUpdate, session: Session = Depends(get_session)
+) -> CaseDetail:
+    """Rename a case. The agent never overwrites a title once it is set."""
+    case = get_case(session, case_id)
+    case.title = mask_pii(body.title)
+    log_event(session, case_id, "title_set", {"title": case.title, "by": "user"})
+    session.commit()
+    return case_detail(session, case)
 
 
 @router.post("/{case_id}/evidence", response_model=EvidenceOut, status_code=201)
@@ -263,7 +279,10 @@ def withdraw(case_id: int, body: WithdrawIn, session: Session = Depends(get_sess
         raise HTTPException(409, f"case is already {case.status}")
     session.close()
     runner.withdraw(case_id, body.reason)
-    return CaseOut.model_validate(get_case(session, case_id))
+    case = get_case(session, case_id)
+    out = CaseOut.model_validate(case)
+    out.title = display_title(case)
+    return out
 
 
 @router.delete("/{case_id}", status_code=204)

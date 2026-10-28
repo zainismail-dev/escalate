@@ -191,6 +191,7 @@
     "bank_name": { "label": "Bank or card issuer", "why": "The fraud report is addressed to them." },
     "buyer_address": { "label": "Your postal address", "why": "Legal notices and court forms must include it." },
     "buyer_contact": { "label": "Your phone or email", "why": "So they can reply to you." },
+    "product": { "label": "Product or service", "why": "Names what you bought, for the letter and the case title." },
     "buyer_name": { "label": "Your full name", "why": "Letters are signed with it and the company needs it to find your order." },
     "cancel_requested_on": { "label": "Date you asked to cancel", "why": "Charges after this date are the ones you can claim back." },
     "card_issuer": { "label": "Card issuer", "why": "Needed for the card dispute letter." },
@@ -390,6 +391,11 @@
   "dashboard": {
     "metaTitle": "Case {id}",
     "back": "My cases",
+    "breadcrumb": "Breadcrumb",
+    "rename": "Rename this case",
+    "titleLabel": "Case title",
+    "saveTitle": "Save title",
+    "cancelRename": "Cancel renaming",
     "ladder": "Escalation ladder",
     "currentStep": "Now: {step}",
     "noLadder": "The ladder appears once the agent has picked a playbook.",
@@ -453,7 +459,8 @@
     "case_resolved": "Case resolved",
     "case_withdrawn": "Case withdrawn",
     "ladder_complete": "Ladder finished",
-    "demo_case": "Demo case (fictional)"
+    "demo_case": "Demo case (fictional)",
+    "title_set": "Case title set"
   },
   "review": {
     "metaTitle": "Review draft",

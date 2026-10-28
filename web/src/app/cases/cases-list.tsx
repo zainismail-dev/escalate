@@ -45,7 +45,7 @@ function Title({ c }: { c: CaseSummary }) {
   const money = formatMoney(c.amount, c.currency, locale);
   return (
     <span className="inline-flex flex-wrap items-baseline gap-x-2">
-      <span>{c.company ?? t(c.case_type ?? "unknown")}</span>
+      <span>{c.title || t(c.case_type ?? "unknown")}</span>
       {money && (
         <span className="font-mono text-sm font-semibold text-text-2" dir="ltr">
           {money}

@@ -35,6 +35,10 @@ def test_cors_allows_only_the_web_origin(client: TestClient) -> None:  # noqa: F
     pre = {"Access-Control-Request-Method": "POST"}
     ok = client.options("/cases", headers={"Origin": WEB, **pre})
     assert ok.headers.get("access-control-allow-origin") == WEB
+    patch = client.options(
+        "/cases/1", headers={"Origin": WEB, "Access-Control-Request-Method": "PATCH"}
+    )
+    assert patch.status_code == 200  # renaming a case from the browser
     other = client.options("/cases", headers={"Origin": "https://evil.example", **pre})
     assert "access-control-allow-origin" not in other.headers
 
@@ -206,6 +210,12 @@ def test_demo_seed_runs_four_countries_and_sends_nothing(
     assert rows["IN"]["waiting_for"] == "urgent_checklist" and rows["IN"]["currency"] == "INR"
     assert rows["PK"]["waiting_for"] == "approve_draft" and rows["PK"]["amount"] == "64500.00"
     assert rows["GB"]["generic_playbook"] is True and rows["GB"]["language"] == "en"
+    assert {c: rows[c]["title"] for c in rows} == {
+        "PK": "Broken LED TV — refund refused",
+        "IN": "Fake delivery SMS payment",
+        "GB": "Gym still charging after cancelling",
+        "US": "Laptop refund refused",
+    }
     us = client.get(f"/cases/{rows['US']['id']}").json()
     review = client.get(f"/messages/{us['pending_draft']['id']}/review").json()
     assert review["blanks"] == ["your phone number"] and not review["can_approve"]

@@ -70,6 +70,7 @@ export const api = {
     return request<CaseSummary[]>("GET", `/cases${qs.size ? `?${qs}` : ""}`);
   },
   getCase: (id: number) => request<CaseDetail>("GET", `/cases/${id}`),
+  renameCase: (id: number, title: string) => request<CaseDetail>("PATCH", `/cases/${id}`, { title }),
   createCase: (body: { description: string; country?: string; region?: string; language?: string; company?: string }) =>
     request<CaseDetail>("POST", "/cases", body),
   uploadEvidence: (id: number, file: File) => {

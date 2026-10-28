@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="{{ case.language }}" dir="{{ 'rtl' if case.language in rtl else 'ltr' }}">
-<head><meta charset="utf-8"><title>Case {{ case.id }}</title>
+<head><meta charset="utf-8"><title>{{ title }} · case {{ case.id }}</title>
 <style>
 @page { size: A4; margin: 18mm 16mm; @bottom-right { content: "Case {{ case.id }} · page " counter(page); font-size: 8pt; color: #666; } }
 body { font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif; font-size: 10pt; color: #111; }
@@ -15,8 +15,8 @@ th { background: #f2f2f2; } .muted { color: #666; } .mono { font-family: "DejaVu
 </style></head>
 <body>
 <section class="cover">
-  <h1>Case file #{{ case.id }}</h1>
-  <p class="muted">Generated {{ generated }} UTC with Escalate</p>
+  <h1>{{ title }}</h1>
+  <p class="muted">Case file #{{ case.id }} · generated {{ generated }} UTC with Escalate</p>
   <table>
     <tr><th>Consumer</th><td>{{ facts.get('buyer_name', '—') }}</td></tr>
     <tr><th>Other party</th><td>{{ facts.get('seller_name') or facts.get('company_name') or case.company or '—' }}</td></tr>

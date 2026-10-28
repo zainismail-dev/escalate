@@ -86,7 +86,7 @@ export function UrgentChecklist({ id }: { id: number }) {
         <p className="mt-1 max-w-2xl text-sm opacity-95">{t("banner.body")}</p>
       </div>
 
-      <CaseHeader c={c} back={{ href: `/cases/${c.id}`, label: t("backToCase") }} title={t("title")} />
+      <CaseHeader c={c} heading={t("title")} />
       {act.error && <ErrorState error={act.error} />}
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">

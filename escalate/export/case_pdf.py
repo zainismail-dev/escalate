@@ -12,6 +12,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlalchemy.orm import Session
 
+from escalate.agent.titles import display_title
 from escalate.db.models import Case, Evidence, utcnow
 from escalate.evidence.store import load_plain
 from escalate.export.pdf import html_to_pdf
@@ -89,6 +90,7 @@ def build_case_html(session: Session, case: Case) -> str:
     generic = bool(case.playbook_id and case.playbook_id.startswith("intl-"))
     return _template.render(
         case=case,
+        title=display_title(case),
         facts=facts,
         amount=amount,
         evidence=evidence,

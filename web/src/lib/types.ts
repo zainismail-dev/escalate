@@ -77,6 +77,7 @@ export interface Deadline {
 
 export interface CaseSummary {
   id: number;
+  title: string;
   case_type: string | null;
   country: string | null;
   region: string | null;

@@ -24,6 +24,7 @@ from escalate.llm.client import Slot
 
 @dataclass
 class DemoCase:
+    title: str
     marker: str  # unique text in the description, so the scripted model knows the case
     country: str
     region: str | None
@@ -39,6 +40,7 @@ class DemoCase:
 
 CASES = [
     DemoCase(
+        title="Broken LED TV — refund refused",
         marker="BM-48213",
         country="PK",
         region="PK-SD",
@@ -56,6 +58,7 @@ CASES = [
         ),
         facts={
             "buyer_name": "Ayesha Siddiqui",
+            "product": "43-inch LED TV",
             "seller_name": "BrightMart Electronics",
             "seller_contact": "support@brightmart.example",
             "order_id": "BM-48213",
@@ -71,14 +74,16 @@ CASES = [
         },
     ),
     DemoCase(
+        title="Fake delivery SMS payment",
         marker="UPI-5521907",
         country="IN",
         region=None,
         language="en",
         case_type="scam",
         description=(
-            "Someone called saying a parcel for me was stuck at customs and I had to pay a fee. "
-            "I paid ₹18,000 by UPI (reference UPI-5521907) and the number stopped answering."
+            "I got an SMS saying a parcel for me was stuck and I had to pay a delivery fee "
+            "through a link. I paid ₹18,000 by UPI (reference UPI-5521907) and the number "
+            "stopped answering."
         ),
         evidence_name="upi-payment-screenshot.txt",
         evidence_text=(
@@ -92,11 +97,12 @@ CASES = [
             "payment_method": "UPI transfer",
             "transaction_id": "UPI-5521907",
             "scam_description": (
-                "A caller claimed to be from a courier and asked for a customs fee."
+                "An SMS claiming to be from a courier asked for a delivery fee via a link."
             ),
         },
     ),
     DemoCase(
+        title="Gym still charging after cancelling",
         marker="PF-220931",
         country="GB",
         region=None,
@@ -124,6 +130,7 @@ CASES = [
         },
     ),
     DemoCase(
+        title="Laptop refund refused",
         marker="NL-77120",
         country="US",
         region="US-CA",
@@ -140,6 +147,7 @@ CASES = [
         ),
         facts={
             "buyer_name": "Jordan Lee",
+            "product": "14-inch laptop",
             "seller_name": "Northline Computers",
             "seller_contact": "help@northline.example",
             "order_id": "NL-77120",
@@ -204,6 +212,7 @@ def _create(c: DemoCase) -> int:
     with session_scope() as s:
         case = Case(
             description=c.description,
+            title=c.title,
             country=c.country,
             region=c.region,
             language=c.language,

@@ -57,7 +57,7 @@ export function ReviewDraft({ id }: { id: number }) {
   if (!msgId || !r) {
     return (
       <div className="space-y-6">
-        <CaseHeader c={c} back={{ href: `/cases/${c.id}`, label: t("backToCase") }} />
+        <CaseHeader c={c} heading={t("noDraft.title")} />
         <div className="rounded-2xl border border-dashed border-line bg-card p-10 text-center" data-testid="no-draft">
           <h2 className="font-display text-xl">{t("noDraft.title")}</h2>
           <p className="mt-1 text-sm text-text-2">{t("noDraft.body")}</p>
@@ -132,7 +132,7 @@ export function ReviewDraft({ id }: { id: number }) {
 
   return (
     <div className="space-y-6">
-      <CaseHeader c={c} back={{ href: `/cases/${c.id}`, label: t("backToCase") }} title={t("title", { step: r.step_name ?? "" })} />
+      <CaseHeader c={c} heading={t("title", { step: r.step_name ?? "" })} />
 
       {act.error && act.error.kind !== "fact_check" && <ErrorState error={act.error} />}
       {act.error?.kind === "fact_check" ? (

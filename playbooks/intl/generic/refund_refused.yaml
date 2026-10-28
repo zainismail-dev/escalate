@@ -8,7 +8,7 @@ generic: true
 last_verified: 2026-10-28
 required_facts: [buyer_name, seller_name, seller_contact, order_id, order_date, amount,
                  currency, defect_description, remedy_wanted]
-optional_facts: [buyer_contact, return_shipped_on, return_tracking, last_promise_on,
+optional_facts: [product, buyer_contact, return_shipped_on, return_tracking, last_promise_on,
                  last_promise_text, authority_name, authority_contact]
 steps:
   - id: s1_written_demand

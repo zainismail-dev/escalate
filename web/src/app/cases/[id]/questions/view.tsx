@@ -34,7 +34,7 @@ export function CaseQuestions({ id }: { id: number }) {
 
   return (
     <div className="space-y-6">
-      <CaseHeader c={c} back={{ href: `/cases/${c.id}`, label: t("backToCase") }} title={t("title")} />
+      <CaseHeader c={c} heading={t("title")} />
       {act.error && <ErrorState error={act.error} />}
       {c.waiting_for === "questions" ? (
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">

@@ -14,7 +14,7 @@ case_type: refund_refused
 last_verified: 2026-10-28
 required_facts: [buyer_name, seller_name, seller_contact, order_id, order_date, amount,
                  currency, defect_description, remedy_wanted]
-optional_facts: [buyer_address, seller_address, buyer_contact, return_shipped_on,
+optional_facts: [product, buyer_address, seller_address, buyer_contact, return_shipped_on,
                  return_tracking, last_promise_on, last_promise_text]
 steps:
   - id: s1_written_demand

@@ -33,6 +33,7 @@ class Case(Base):
     __tablename__ = "cases"
     id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str] = mapped_column(Text, default="")  # the user's own words
+    title: Mapped[str | None] = mapped_column(String(160))  # from facts at intake, or the user's
     case_type: Mapped[str | None] = mapped_column(String(40))  # refund_refused | ... | scam
     country: Mapped[str | None] = mapped_column(String(2))  # ISO 3166-1; set by user or classify
     region: Mapped[str | None] = mapped_column(String(10))  # ISO 3166-2, e.g. US-CA, PK-SD
