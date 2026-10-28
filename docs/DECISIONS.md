@@ -304,3 +304,26 @@ Defaults chosen during the autonomous build, with the reason for each.
 - The Code of Conduct is written for this project (short, with harassment and "recovery scam"
   promotion called out) rather than copied from a standard text.
 - A test checks every local link in README/CONTRIBUTING exists and the issue templates parse.
+
+## Web frontend (web/)
+- The browser calls the API directly; CORS allows only `WEB_ORIGIN` (default
+  `http://localhost:3000`, comma-separated for several). Streamlit stays as the dev UI.
+- Countries come from CLDR via Babel (all ISO 3166-1 codes, minus groupings such as EU/UN/ZZ);
+  the currency is the country's legal tender (ISO 4217) and is set on the case at creation.
+  "Local pack" means a country playbook exists for that case type; otherwise "Generic route".
+- Letter language is a BCP-47 tag limited to `ll` or `ll-RR` (fits the existing column);
+  templates use the primary language (`ur-PK` -> `templates/pk/ur/`), formatting uses the
+  tag's region when CLDR knows it.
+- Settings saved from the web page go to `data/settings.json` (mode 600), which wins over
+  `.env` and the environment, so the page also works in Docker. Secrets are write-only.
+- Email works with any SMTP provider: `SMTP_HOST`/`SMTP_PORT` (465 = SSL, else STARTTLS).
+- Blanks in a draft are `[[what to fill in]]` or `____`. The review page highlights them and
+  approval is refused (server side too) until they are filled.
+- "Why this step?" reasons are codes plus parameters so every UI language can word them.
+- Switching the letter language rejects the waiting draft and the agent redrafts it (with the
+  fact check); the side-by-side preview is template-only and never sent.
+- Demo data (`make demo-data`, `POST /demo/seed`) runs the real graph with a scripted offline
+  model; cases stop at approval or the scam checklist, so nothing is sent. Turn it off with
+  `ALLOW_DEMO_SEED=false`.
+- Money in the web app uses `Intl.NumberFormat` with CLDR defaults for the case locale, so the
+  minor digits follow the currency (`Rs 64,500`, `₹18,000.00`, `£39.99`, `$1,249.00`).

@@ -3,6 +3,7 @@
 from sqlalchemy.orm import Session
 
 from escalate.agent.fact_check import code_check
+from escalate.agent.review import blanks
 from escalate.db.events import log_event
 from escalate.db.models import Message, utcnow
 from escalate.pii import mask_pii
@@ -33,7 +34,7 @@ def edit_message(
 ) -> list[str]:
     """Save the user's edit (still a draft). Returns code fact-check warnings for the UI."""
     msg = _get_draft(session, message_id)
-    reference = _approved_text(msg)
+    reference = approved_text(msg)
     body, subject = mask_pii(body), mask_pii(subject) if subject is not None else None
     msg.body = body
     if subject is not None:
@@ -42,7 +43,7 @@ def edit_message(
     return code_check(f"{msg.subject or ''}\n{msg.body}", msg.case.fact_dict(), reference)
 
 
-def _approved_text(msg: Message) -> str:
+def approved_text(msg: Message) -> str:
     """Known-good text: the fact-checked draft and anything already approved in this case."""
     approved = [f"{m.subject or ''}\n{m.body}" for m in msg.case.messages if m.approved_at]
     return "\n".join([msg.original_body or "", *approved])
@@ -64,8 +65,9 @@ def approve_message(
     issues = code_check(
         f"{subject or ''}\n{body}",
         msg.case.fact_dict(),
-        f"{reference}\n{_approved_text(msg)}",
+        f"{reference}\n{approved_text(msg)}",
     )
+    issues += [f"fill in the blank: {b}" for b in blanks(f"{subject or ''}\n{body}")]
     if issues:
         raise UnsupportedFacts(issues)
     check_recipient(session, msg)

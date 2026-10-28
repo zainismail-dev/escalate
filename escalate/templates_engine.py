@@ -98,7 +98,8 @@ def step_context(
     ctx.update(
         today=format_date(today, locale),
         reply_by=format_date(reply_by, locale),
-        language=language,
+        language=primary(language),
+        tag=language,
         locale=locale,
         generic=pb.generic,
         late=late,
@@ -108,16 +109,21 @@ def step_context(
 
 def render_ref(ref: str, ctx: dict[str, Any], templates_dir: Path | None = None) -> str:
     tdir = Path(templates_dir or get_settings().templates_dir)
-    path = template_file(tdir, ref, str(ctx.get("language", "en")))
+    path = template_file(tdir, ref, str(ctx.get("tag") or ctx.get("language", "en")))
     if path is None:
         raise FileNotFoundError(f"template {ref} not found under {tdir}")
     return render_file(path, ctx)
 
 
+def primary(language: str) -> str:
+    """BCP-47 `ur-PK` -> `ur`: templates branch on the primary language only."""
+    return language.replace("_", "-").split("-")[0].lower()
+
+
 def disclaimer(language: str, generic: bool, templates_dir: Path | None = None) -> str:
     tdir = Path(templates_dir or get_settings().templates_dir)
     return render_file(
-        tdir / "_shared" / "disclaimer.md.j2", {"language": language, "generic": generic}
+        tdir / "_shared" / "disclaimer.md.j2", {"language": primary(language), "generic": generic}
     ).strip()
 
 

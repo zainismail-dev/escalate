@@ -1,4 +1,7 @@
-"""Send email from the user's own Gmail address with an app password (SMTP over SSL, port 465)."""
+"""Send email from the user's own address with an app password: any provider's SMTP server.
+
+Port 465 uses SSL; any other port (usually 587) uses STARTTLS. The default is Gmail.
+"""
 
 import re
 import smtplib
@@ -35,7 +38,11 @@ def build_mime(msg: Message, sender: str, attachments: list[Attachment]) -> Emai
 
 
 def _ssl_factory(host: str, port: int) -> smtplib.SMTP:
-    return smtplib.SMTP_SSL(host, port, timeout=30)
+    if port == 465:
+        return smtplib.SMTP_SSL(host, port, timeout=30)
+    smtp = smtplib.SMTP(host, port, timeout=30)
+    smtp.starttls()
+    return smtp
 
 
 class SmtpChannel:
@@ -45,12 +52,13 @@ class SmtpChannel:
         self,
         settings: Settings | None = None,
         smtp_factory: SmtpFactory = _ssl_factory,
-        host: str = "smtp.gmail.com",
-        port: int = 465,
+        host: str | None = None,
+        port: int | None = None,
     ) -> None:
         self.settings = settings or get_settings()
         self.smtp_factory = smtp_factory
-        self.host, self.port = host, port
+        self.host = host or self.settings.smtp_host
+        self.port = port or self.settings.smtp_port
 
     def send(self, msg: Message, attachments: list[Attachment]) -> SendResult:
         require_approval(msg)

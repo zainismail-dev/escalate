@@ -2,9 +2,11 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from escalate.i18n.countries import normalize_language
 
 
 class Orm(BaseModel):
@@ -15,7 +17,9 @@ class CaseCreate(BaseModel):
     description: str = Field(min_length=10, max_length=20_000)
     country: str | None = Field(default=None, description="ISO 3166-1 alpha-2")
     region: str | None = Field(default=None, description="ISO 3166-2, e.g. PK-SD")
-    language: str = Field(default="en", description="ISO 639-1 language for drafts")
+    language: str | None = Field(
+        default=None, description="BCP-47 letter language, e.g. en, ur, pt-BR (default: settings)"
+    )
     company: str | None = None
 
     @field_validator("country", "region", mode="before")
@@ -32,11 +36,8 @@ class CaseCreate(BaseModel):
 
     @field_validator("language")
     @classmethod
-    def _iso_lang(cls, v: str) -> str:
-        v = v.strip().lower()
-        if len(v) != 2 or not v.isalpha():
-            raise ValueError("language must be an ISO 639-1 code, e.g. en")
-        return v
+    def _bcp47(cls, v: str | None) -> str | None:
+        return normalize_language(v) if v else None
 
 
 class FactOut(Orm):
@@ -104,6 +105,35 @@ class CaseOut(Orm):
     created_at: datetime
 
 
+class LadderStepOut(BaseModel):
+    id: str
+    name: str
+    channel: str
+    recipient_role: str | None
+    wait_days: int | None
+    state: Literal["done", "current", "future", "skipped"]
+
+
+class ReasonOut(BaseModel):
+    code: str
+    params: dict[str, Any] = Field(default_factory=dict)
+
+
+class SourceOut(BaseModel):
+    title: str
+    url: str | None = None
+
+
+class CaseSummary(CaseOut):
+    """A list row: enough for the My cases cards and the mini ladder."""
+
+    waiting_for: str | None = None
+    generic_playbook: bool = False
+    step_name: str | None = None
+    ladder: list[LadderStepOut] = Field(default_factory=list)
+    deadline_warning: bool = False
+
+
 class CaseDetail(CaseOut):
     description: str
     playbook_version: str | None
@@ -115,6 +145,11 @@ class CaseDetail(CaseOut):
     pending_draft: MessageOut | None = None
     deadlines: list[DeadlineOut] = Field(default_factory=list)
     step_name: str | None = None
+    waiting_for: str | None = None
+    ladder: list[LadderStepOut] = Field(default_factory=list)
+    reasons: list[ReasonOut] = Field(default_factory=list)
+    sources: list[SourceOut] = Field(default_factory=list)
+    text_direction: Literal["ltr", "rtl"] = "ltr"
 
 
 class RunOut(BaseModel):
@@ -171,3 +206,106 @@ class HealthOut(BaseModel):
     llm_base_url: str
     demo_mode: bool
     email_mode: str
+
+
+class LanguageIn(BaseModel):
+    language: str
+
+    @field_validator("language")
+    @classmethod
+    def _bcp47(cls, v: str) -> str:
+        return normalize_language(v)
+
+
+class SegmentOut(BaseModel):
+    text: str
+    kind: Literal["text", "fact", "blank"]
+    key: str | None = None
+
+
+class ReviewFactOut(BaseModel):
+    key: str
+    value: str
+    display: list[str]
+    confidence: float
+    source_evidence_id: int | None
+    source_filename: str | None
+    used: bool
+
+
+class CheckOut(BaseModel):
+    id: str
+    ok: bool
+    detail: list[str] = Field(default_factory=list)
+
+
+class ProblemOut(BaseModel):
+    kind: str
+    wrong: str
+    expected: list[str]
+
+
+class ReviewOut(BaseModel):
+    message: MessageOut
+    case_id: int
+    language: str
+    locale: str
+    text_direction: Literal["ltr", "rtl"]
+    subject_segments: list[SegmentOut]
+    body_segments: list[SegmentOut]
+    facts: list[ReviewFactOut]
+    blanks: list[str]
+    checks: list[CheckOut]
+    problems: list[ProblemOut]
+    can_approve: bool
+    template_languages: list[str]
+    step_name: str | None = None
+
+
+class PreviewOut(BaseModel):
+    language: str
+    available: bool
+    text_direction: Literal["ltr", "rtl"]
+    subject: str | None = None
+    body: str | None = None
+
+
+class SettingsOut(BaseModel):
+    llm_base_url: str
+    model_smart: str
+    model_fast: str
+    has_llm_api_key: bool
+    is_cloud: bool
+    email_mode: str
+    smtp_host: str
+    smtp_port: int
+    smtp_user: str
+    has_smtp_password: bool
+    default_country: str | None
+    default_language: str
+    demo_mode: bool
+    version: str
+
+
+class SettingsIn(BaseModel):
+    """Only these keys can be changed from the web app; secrets are write-only."""
+
+    llm_base_url: str | None = Field(default=None, pattern=r"^https?://")
+    llm_api_key: str | None = None
+    model_smart: str | None = None
+    model_fast: str | None = None
+    smtp_host: str | None = None
+    smtp_port: int | None = Field(default=None, ge=1, le=65535)
+    smtp_user: str | None = None
+    smtp_app_password: str | None = None
+    default_country: str | None = Field(default=None, pattern=r"^([A-Za-z]{2})?$")
+    default_language: str | None = None
+
+    @field_validator("default_language")
+    @classmethod
+    def _bcp47(cls, v: str | None) -> str | None:
+        return normalize_language(v) if v else None
+
+
+class DemoOut(BaseModel):
+    case_ids: list[int]

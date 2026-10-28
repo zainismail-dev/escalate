@@ -10,6 +10,7 @@ from typing import Any
 
 import openai
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from escalate import __version__
@@ -73,6 +74,14 @@ def create_app(startup: bool = True) -> FastAPI:
             sched.shutdown(wait=False)
 
     app = FastAPI(title="Escalate", version=__version__, lifespan=lifespan)
+    # The web app (web/) calls the API from the browser; only its origin is allowed.
+    origins = [o.strip() for o in get_settings().web_origin.split(",") if o.strip()]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_headers=["Content-Type"],
+    )
     app.include_router(cases.router)
     app.include_router(messages.router)
     app.include_router(system.router)

@@ -1,3 +1,4 @@
+import os
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -9,6 +10,9 @@ from sqlalchemy.orm import Session
 from escalate.config import Settings
 from escalate.db import session as db_session
 from escalate.db.models import Base
+
+# Never read a developer's saved web settings (data/settings.json) in tests.
+os.environ["ESCALATE_SETTINGS_FILE"] = os.devnull
 
 # pandas (pulled in by pytesseract) crashes if first imported while time is frozen.
 freezegun.configure(extend_ignore_list=["pandas", "pytesseract"])

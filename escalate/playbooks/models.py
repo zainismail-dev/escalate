@@ -95,9 +95,11 @@ def parse_when(expr: str) -> tuple[str, bool] | None:
 
 
 def template_file(templates_dir: Path, ref: str, language: str) -> Path | None:
-    """`pk/legal_notice.md.j2` -> templates/pk/<language>/legal_notice.md.j2, falling back to en."""
+    """`pk/legal_notice.md.j2` -> templates/pk/<language>/legal_notice.md.j2, falling back to the
+    primary language of a BCP-47 tag (`ur-PK` -> `ur`), then en."""
     pack, _, name = ref.partition("/")
-    for lang in dict.fromkeys([language, "en"]):
+    primary = language.replace("_", "-").split("-")[0].lower()
+    for lang in dict.fromkeys([language, primary, "en"]):
         p = Path(templates_dir) / pack / lang / name
         if p.is_file():
             return p

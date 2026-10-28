@@ -28,10 +28,13 @@ def _known(locale: str) -> bool:
 
 
 def locale_for(language: str | None, country: str | None = None) -> str:
-    """("en", "PK") -> "en_PK" when Babel knows it, else the language alone."""
-    lang = (language or "en").lower()
-    if country and len(country) == 2 and _known(f"{lang}_{country.upper()}"):
-        return f"{lang}_{country.upper()}"
+    """("en", "PK") -> "en_PK" when Babel knows it, else the language alone. A BCP-47 tag's own
+    region wins over the country: ("en-GB", "PK") -> "en_GB"."""
+    lang, _, tag_region = (language or "en").replace("_", "-").partition("-")
+    lang = lang.lower()
+    for reg in (tag_region.upper(), (country or "").upper()):
+        if len(reg) == 2 and _known(f"{lang}_{reg}"):
+            return f"{lang}_{reg}"
     return _locale(lang)
 
 

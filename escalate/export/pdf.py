@@ -4,6 +4,8 @@ import html
 import re
 from functools import lru_cache
 
+from escalate.i18n.countries import is_rtl
+
 
 class PdfUnavailable(RuntimeError):
     pass
@@ -55,7 +57,7 @@ p { margin: 0 0 9pt; }
 
 def letter_pdf(subject: str | None, body: str, lang: str = "en") -> bytes:
     title = f"<h1>{html.escape(subject)}</h1>" if subject else ""
-    direction = "rtl" if lang in {"ur", "ar", "fa", "he"} else "ltr"
+    direction = "rtl" if is_rtl(lang) else "ltr"
     doc = (
         f'<!doctype html><html lang="{html.escape(lang)}" dir="{direction}"><head>'
         f'<meta charset="utf-8"><style>{LETTER_CSS}</style></head>'

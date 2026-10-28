@@ -7,27 +7,35 @@ from sqlalchemy.orm import Session
 
 from escalate.agent import runner
 from escalate.agent.deadlines import deadline_status
+from escalate.api import views
 from escalate.api.deps import get_case, get_session
 from escalate.api.schemas import (
     AnswersIn,
     CaseCreate,
     CaseDetail,
     CaseOut,
+    CaseSummary,
     DeadlineOut,
     EventOut,
     EvidenceOut,
+    LadderStepOut,
+    LanguageIn,
     MessageOut,
+    ReasonOut,
     ReplyIn,
     ReplyOut,
     RunOut,
+    SourceOut,
     WithdrawIn,
 )
 from escalate.config import get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Event, Message
 from escalate.evidence.store import save_upload
+from escalate.i18n.countries import currency_for, is_rtl
 from escalate.pii import mask_pii
 from escalate.playbooks.loader import PlaybookError, get_playbook
+from escalate.playbooks.models import Playbook
 from escalate.safety import new_case_limiter, require_evidence
 
 router = APIRouter(prefix="/cases", tags=["cases"])
@@ -39,23 +47,47 @@ def run_out(r: runner.RunResult) -> RunOut:
     )
 
 
+def _playbook(case: Case) -> Playbook | None:
+    if not case.playbook_id:
+        return None
+    try:
+        return get_playbook(case.playbook_id)
+    except PlaybookError:
+        return None
+
+
+def case_summary(case: Case) -> CaseSummary:
+    out = CaseSummary.model_validate(case)
+    pending = runner.pending(case.id)
+    out.waiting_for = pending.get("type") if pending else None
+    pb = _playbook(case)
+    if pb is not None:
+        out.generic_playbook = pb.generic
+        out.ladder = [LadderStepOut(**r) for r in views.ladder(pb, case)]
+        out.deadline_warning = any(d.warn or d.late for d in deadline_status(case, pb))
+        if case.current_step:
+            out.step_name = pb.step(case.current_step).title
+    return out
+
+
 def case_detail(session: Session, case: Case) -> CaseDetail:
     session.refresh(case)
     detail = CaseDetail.model_validate(case)
     detail.pending = runner.pending(case.id)
+    detail.waiting_for = detail.pending.get("type") if detail.pending else None
+    detail.text_direction = "rtl" if is_rtl(case.language) else "ltr"
     if detail.pending and detail.pending.get("type") == "approve_draft":
         msg = session.get(Message, detail.pending["draft"]["message_id"])
         detail.pending_draft = MessageOut.model_validate(msg) if msg else None
-    if case.playbook_id:
-        try:
-            pb = get_playbook(case.playbook_id)
-        except PlaybookError:
-            pb = None
-        if pb is not None:
-            detail.generic_playbook = pb.generic
-            detail.deadlines = [DeadlineOut(**vars(d)) for d in deadline_status(case, pb)]
-            if case.current_step:
-                detail.step_name = pb.step(case.current_step).title
+    pb = _playbook(case)
+    if pb is not None:
+        detail.generic_playbook = pb.generic
+        detail.deadlines = [DeadlineOut(**vars(d)) for d in deadline_status(case, pb)]
+        detail.ladder = [LadderStepOut(**r) for r in views.ladder(pb, case)]
+        detail.reasons = [ReasonOut(**r) for r in views.reasons(pb, case)]
+        detail.sources = [SourceOut(title=x.title, url=x.url) for x in pb.sources]
+        if case.current_step:
+            detail.step_name = pb.step(case.current_step).title
     return detail
 
 
@@ -66,12 +98,14 @@ def create_case(
     settings = get_settings()
     client = request.client.host if request.client else "local"
     new_case_limiter.check(client, settings.max_new_cases_per_hour)
+    country = body.country or settings.default_country
     case = Case(
         description=mask_pii(body.description.strip()),
-        country=body.country or settings.default_country,
+        country=country,
         region=body.region,
-        language=body.language,
+        language=body.language or settings.default_language,
         company=body.company,
+        currency=currency_for(country),
     )
     if case.region and case.country and not case.region.startswith(case.country + "-"):
         raise HTTPException(422, f"region {case.region} is not in country {case.country}")
@@ -82,12 +116,22 @@ def create_case(
     return case_detail(session, case)
 
 
-@router.get("", response_model=list[CaseOut])
-def list_cases(status: str | None = None, session: Session = Depends(get_session)) -> list[CaseOut]:
-    q = select(Case).order_by(Case.id.desc())
+@router.get("", response_model=list[CaseSummary])
+def list_cases(
+    status: str | None = None,
+    country: str | None = None,
+    q: str | None = None,
+    session: Session = Depends(get_session),
+) -> list[CaseSummary]:
+    query = select(Case).order_by(Case.id.desc())
     if status:
-        q = q.where(Case.status == status)
-    return [CaseOut.model_validate(c) for c in session.scalars(q)]
+        query = query.where(Case.status == status)
+    if country:
+        query = query.where(Case.country == country.strip().upper())
+    if q and q.strip():
+        like = f"%{q.strip()}%"
+        query = query.where(Case.description.ilike(like) | Case.company.ilike(like))
+    return [case_summary(c) for c in session.scalars(query)]
 
 
 @router.get("/{case_id}", response_model=CaseDetail)
@@ -178,6 +222,24 @@ def export_pdf(case_id: int, session: Session = Depends(get_session)) -> Respons
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="escalate-case-{case_id}.pdf"'},
     )
+
+
+@router.post("/{case_id}/letter-language", response_model=RunOut)
+def letter_language(
+    case_id: int, body: LanguageIn, session: Session = Depends(get_session)
+) -> RunOut:
+    """Change the letter language. A draft waiting for approval is redrafted in it (the old draft
+    is rejected, never sent)."""
+    case = get_case(session, case_id)
+    old, case.language = case.language, body.language
+    log_event(session, case_id, "letter_language_changed", {"from": old, "to": body.language})
+    session.commit()
+    session.close()
+    p = runner.pending(case_id)
+    if p and p.get("type") == "approve_draft":
+        reason = f"letter language changed to {body.language}"
+        return run_out(runner.resume_with_decision(case_id, "reject", reason=reason))
+    return RunOut(case_id=case_id, waiting_for=p.get("type") if p else None, pending=p)
 
 
 @router.post("/{case_id}/withdraw", response_model=CaseOut)
