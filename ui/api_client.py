@@ -6,6 +6,9 @@ from typing import Any
 import httpx
 
 API_URL = os.environ.get("API_URL", "http://localhost:8000").rstrip("/")
+# Links opened by the browser (PDF downloads) need an address the browser can reach; inside
+# docker compose the UI talks to http://api:8000, which only works between containers.
+PUBLIC_API_URL = os.environ.get("PUBLIC_API_URL", API_URL).rstrip("/")
 
 
 class ApiError(Exception):

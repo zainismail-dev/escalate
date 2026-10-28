@@ -43,3 +43,7 @@ that was not available. Each item names the task it came from.
   judge ≥ 90%. Run `uv run python -m evals.run --suite all`, add the numbers to the History
   table in `evals/report.md`, and fix misses (prompt wording, few-shot examples, code checks)
   without lowering targets. The build applied model-independent fixes only.
+- [ ] **4.3 — Fresh-install test with Docker.** Docker was not available on the build machine.
+  On a machine with Docker: fresh clone, `make setup && make up`, open http://localhost:8501
+  and open a case. (CI builds the image and smoke-tests OCR and PDF rendering inside it.)
+  `make setup` pulls `llama3.1:8b` by default; pass `MODEL=<name>` to choose another.

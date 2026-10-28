@@ -166,7 +166,9 @@ def pending_panel(case: dict[str, Any]) -> None:
             st.subheader(t("pending.deliver"))
             st.write(p.get("note", ""))
             mid = p["message_id"]
-            st.link_button(t("pending.download_pdf"), f"{api.API_URL}/messages/{mid}/printable.pdf")
+            st.link_button(
+                t("pending.download_pdf"), f"{api.PUBLIC_API_URL}/messages/{mid}/printable.pdf"
+            )
             proof = st.file_uploader(t("pending.upload_proof"), key=f"proof{mid}")
             if st.button(t("pending.delivered"), type="primary"):
                 eid = None
@@ -203,7 +205,7 @@ def page_dashboard() -> None:
             st.error(t("dash.deadline_soon", days=d["days_left"], rule=d["rule"], due=d["due"]))
     pending_panel(case)
     c3, c4 = st.columns(2)
-    c3.link_button(t("dash.export"), f"{api.API_URL}/cases/{cid}/export.pdf")
+    c3.link_button(t("dash.export"), f"{api.PUBLIC_API_URL}/cases/{cid}/export.pdf")
     if case["status"] not in ("resolved", "withdrawn") and c4.button(t("dash.withdraw")):
         try:
             api.post(f"/cases/{cid}/withdraw", json={"reason": "withdrawn by user"})

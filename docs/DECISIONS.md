@@ -279,3 +279,19 @@ Defaults chosen during the autonomous build, with the reason for each.
   `DEMO_RETENTION_HOURS` (24).
 - `delete_case` order: scheduler jobs, graph checkpoint, evidence files, then the DB rows (so a
   half-failed delete never leaves orphaned files without a case to find them).
+
+## Docker (task 4.3)
+- The image puts `/app/.venv/bin` on `PATH` and compose runs `uvicorn` / `streamlit`
+  directly instead of `uv run` (which would try to install dev dependencies at start-up).
+- Extra system packages: Tesseract English and Hindi data (besides Urdu), HarfBuzz, DejaVu and
+  Noto fonts (for Urdu/Hindi PDFs), and `curl` for the API healthcheck.
+- Compose pins data paths to `/app/data` (database, checkpoints, evidence) so everything lives
+  in the mounted `./data` folder. The UI waits for the API healthcheck.
+- `PUBLIC_API_URL` (new): browser links (PDF downloads) use it, because `http://api:8000` only
+  resolves between containers.
+- `make setup` uses `scripts/setup_env.sh` (POSIX sh + openssl, no Python needed on the host)
+  to create `.env`, generate `FERNET_KEY` once and fill in the model names.
+- Default model for `make setup` is `llama3.1:8b`, chosen only because it is a common
+  7–8B instruct model in the Ollama library. It has **not** been evaluated (see 4.1).
+- The CI `docker` job builds the image and runs `tesseract --version` plus a real
+  WeasyPrint render inside it.

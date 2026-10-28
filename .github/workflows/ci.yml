@@ -12,3 +12,12 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run python -m escalate.playbooks.validate playbooks/
       - run: uv run pytest -q
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t escalate:ci .
+      - name: smoke test the image (imports, OCR binary, PDF rendering)
+        run: |
+          docker run --rm escalate:ci tesseract --version
+          docker run --rm escalate:ci python -c "import escalate.api.main; from escalate.export.pdf import letter_pdf; assert letter_pdf('t', 'hello').startswith(b'%PDF'); print('ok')"
