@@ -109,6 +109,26 @@ class Settings(BaseSettings):
         return self.model_fast or self.model_smart
 
 
+def env_file_problems(path: Path = Path(".env")) -> list[str]:
+    """Keys set more than once in `.env`: the last line wins, often an empty template line that
+    hides the real value (e.g. a second, blank FERNET_KEY=). Values are never included."""
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    seen: dict[str, list[int]] = {}
+    for n, line in enumerate(lines, 1):
+        key, sep, _ = line.strip().partition("=")
+        if sep and key and not key.startswith("#"):
+            seen.setdefault(key.strip().upper(), []).append(n)
+    return [
+        f"{key} is set {len(at)} times in {path} (lines {', '.join(map(str, at))}); "
+        "the last one wins, so remove the others"
+        for key, at in seen.items()
+        if len(at) > 1
+    ]
+
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

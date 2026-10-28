@@ -3,6 +3,7 @@
 uv run uvicorn escalate.api.main:app --reload
 """
 
+import logging
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -19,7 +20,7 @@ from escalate.agent.approval import ApprovalError, UnsupportedFacts
 from escalate.api.routes import cases, messages, system
 from escalate.channels import NotApproved, ProofRequired
 from escalate.channels.email_smtp import EmailConfigError
-from escalate.config import get_settings
+from escalate.config import env_file_problems, get_settings
 from escalate.db.models import Base
 from escalate.db.session import get_engine
 from escalate.evidence.store import EvidenceKeyMissing
@@ -41,6 +42,7 @@ def init_db() -> None:
         from alembic.config import Config
 
         cfg = Config(str(ini))
+        cfg.attributes["configure_logger"] = False  # keep uvicorn's logging (see migrations/env.py)
         cfg.set_main_option("script_location", str(ROOT / "migrations"))
         cfg.set_main_option("sqlalchemy.url", get_settings().database_url)
         command.upgrade(cfg, "head")
@@ -58,6 +60,18 @@ def _start_scheduler() -> Any:
     return sched
 
 
+log = logging.getLogger("uvicorn.error")  # shown with uvicorn's own startup lines
+
+
+def startup_warnings() -> list[str]:
+    """Config problems to show in the console at startup (they would otherwise surface later as
+    500s). Startup never contacts the network or the LLM."""
+    warnings = env_file_problems()
+    if not get_settings().fernet_key:
+        warnings.append("FERNET_KEY is empty: evidence uploads and demo data will fail until set")
+    return warnings
+
+
 def create_app(startup: bool = True) -> FastAPI:
     install_log_filter()
 
@@ -65,6 +79,8 @@ def create_app(startup: bool = True) -> FastAPI:
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         sched = None
         if startup:
+            for w in startup_warnings():
+                log.warning(w)
             init_db()
             runner.configure()
             sched = _start_scheduler()

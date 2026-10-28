@@ -9,8 +9,11 @@ from escalate.db.models import Base
 from escalate.db.session import make_engine
 
 config = context.config
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+# The `alembic` CLI configures logging from alembic.ini. Inside the API (init_db) it must not:
+# fileConfig() would replace the app's handlers and, by default, disable every existing logger,
+# which silences uvicorn ("Application startup complete", access logs, tracebacks).
+if config.config_file_name is not None and config.attributes.get("configure_logger", True):
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

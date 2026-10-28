@@ -5,15 +5,20 @@ MODEL="${1:-llama3.1:8b}"
 [ -f .env ] || cp .env.example .env
 tmp=$(mktemp)
 key=""
-if grep -q '^FERNET_KEY= *\(#.*\)\{0,1\}$' .env; then
+# Only generate a key when .env has no real one: replacing an existing key would make every
+# encrypted evidence file unreadable.
+if ! grep -q '^FERNET_KEY= *[^ #]' .env; then
   # A Fernet key is 32 random bytes, url-safe base64 encoded.
   key=$(openssl rand -base64 32 | tr '+/' '-_')
 fi
 awk -v key="$key" -v model="$MODEL" '
-  /^FERNET_KEY=/ && key != "" { print "FERNET_KEY=" key; next }
+  # Blank FERNET_KEY= lines (template leftovers) are dropped: a later blank line would win
+  # over the real key. The generated key, if any, goes on the first FERNET_KEY line.
+  /^FERNET_KEY= *(#.*)?$/ { if (key != "" && !done) { print "FERNET_KEY=" key; done = 1 } next }
   /^MODEL_SMART=<|^MODEL_SMART= *$/ { print "MODEL_SMART=" model; next }
   /^MODEL_FAST=<|^MODEL_FAST= *$/ { print "MODEL_FAST=" model; next }
   { print }
+  END { if (key != "" && !done) print "FERNET_KEY=" key }
 ' .env > "$tmp" && mv "$tmp" .env
 mkdir -p data secrets
 echo ".env ready (model: $(grep '^MODEL_SMART=' .env | cut -d= -f2 | cut -d' ' -f1))"

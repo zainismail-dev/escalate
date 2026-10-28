@@ -1,7 +1,7 @@
 # Escalate: one-command install. `make setup && make up`, then open http://localhost:3000
 MODEL ?= llama3.1:8b
 
-.PHONY: setup up down logs test lint evals pull demo-data web-install web-dev web-lint web-build web-e2e screenshots
+.PHONY: setup up down logs test lint evals pull api demo-data web-install web-dev web-lint web-build web-e2e screenshots
 
 setup:            ## create .env (FERNET_KEY, model), build images, pull the model
 	./scripts/setup_env.sh "$(MODEL)"
@@ -36,6 +36,9 @@ evals:            ## golden-set evals against the model in .env; writes evals/re
 
 API_URL ?= http://localhost:8000
 WEB_URL ?= http://localhost:3000
+
+api:              ## the API with auto-reload on http://localhost:8000 (watches escalate/ only)
+	uv run uvicorn escalate.api.main:app --reload --reload-dir escalate
 
 demo-data:        ## seed 4 fictional demo cases (PK, IN, GB, US) into the running API
 	curl -fsS -X POST $(API_URL)/demo/seed && echo

@@ -39,7 +39,16 @@ def test_dockerfile_matches_spec() -> None:
 
 def test_makefile_targets() -> None:
     text = (REPO / "Makefile").read_text()
-    for target in ("setup:", "up:", "test:", "evals:", "demo-data:", "web-dev:", "web-e2e:"):
+    for target in (
+        "setup:",
+        "up:",
+        "test:",
+        "evals:",
+        "api:",
+        "demo-data:",
+        "web-dev:",
+        "web-e2e:",
+    ):
         assert f"\n{target}" in text
 
 
@@ -61,3 +70,18 @@ def test_setup_env_script(tmp_path: Path) -> None:
     subprocess.run(run, cwd=tmp_path, check=True, capture_output=True)
     again = (tmp_path / ".env").read_text()
     assert f"FERNET_KEY={key}" in again  # never replaced once set
+
+
+@pytest.mark.skipif(shutil.which("openssl") is None, reason="openssl not installed")
+def test_setup_env_keeps_real_key_and_drops_blank_duplicates(tmp_path: Path) -> None:
+    """A blank FERNET_KEY= after the real one (template leftover) used to make the script
+    generate a new key and overwrite the real one, losing access to encrypted evidence."""
+    (tmp_path / "scripts").mkdir()
+    shutil.copy(REPO / "scripts" / "setup_env.sh", tmp_path / "scripts")
+    real = Fernet.generate_key().decode()
+    (tmp_path / ".env").write_text(
+        f"FERNET_KEY={real}\nMODEL_SMART=m\nFERNET_KEY=                # template comment\n"
+    )
+    subprocess.run(["sh", "scripts/setup_env.sh"], cwd=tmp_path, check=True, capture_output=True)
+    lines = [ln for ln in (tmp_path / ".env").read_text().splitlines() if ln.startswith("FERNET")]
+    assert lines == [f"FERNET_KEY={real}"]
