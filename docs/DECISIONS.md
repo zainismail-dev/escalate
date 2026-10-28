@@ -81,3 +81,17 @@ Defaults chosen during the autonomous build, with the reason for each.
   fields (`remedy_wanted`, `defect_description`, …) pass when every expected word appears.
 - `evals.run --llm oracle` answers with the expected values. It only proves the harness works;
   it is not a quality score.
+
+## Classification and drafting (task 2.1)
+- The user's own country/region choice always beats the classifier. A region that doesn't belong
+  to the country, or any non-ISO value, is dropped. Case type `other` falls back to
+  `refund_refused` (its generic ladder fits most disputes); the model's raw answer is logged.
+- `classify` never changes `case.language`: that is the **draft** language the user picks
+  (default `en`). The language the complaint was written in is logged in the `classified` event.
+- **Money in letters is ISO code + locale-formatted number** (`PKR 45,000.00`,
+  `INR 45,00,000.00`, `4.500.000,00 EUR`): symbols like `$` or `Rs` are ambiguous. The locale is
+  `<language>_<country>` when Babel knows it, otherwise the language alone.
+- Drafting: the template is rendered first (facts only), then the smart model polishes it. If the
+  model fails to return valid JSON after retries, the plain filled template is used. The
+  disclaimer is appended by code, never left to the model.
+- A new draft for a step marks older open drafts of that step `superseded`.

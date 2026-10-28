@@ -21,7 +21,7 @@ from escalate.templates_engine import make_env
 
 STALE_AFTER = timedelta(days=365)
 # Variables every template may use besides the playbook's facts (see escalate/templates_engine).
-TEMPLATE_CONTEXT = {"today", "reply_by", "language", "generic", "case_ref", "late"}
+TEMPLATE_CONTEXT = {"today", "reply_by", "language", "locale", "generic", "case_ref", "late"}
 
 
 @dataclass

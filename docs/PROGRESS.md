@@ -8,3 +8,4 @@ One line per task from `CLAUDE_CODE_PLAN.md`: task id, what was built, test resu
 - **1.4** — Fernet-encrypted evidence store with SHA-256, OCR (Tesseract/pypdf/eml/txt), needs_review below 60 — 30 passed, 1 skipped (real Tesseract OCR: binary not installed locally; runs in CI)
 - **1.5** — JSON schema, loader, resolver (company→region→country→generic), validator CLI, 3 generic + PK playbooks with templates — 52 passed, 1 skipped; validator OK 4 playbooks
 - **1.6** — extract_facts prompt, intake extract/save_answers, 10 golden cases incl. broken LED, evals/run.py extraction suite — 59 passed, 1 skipped; oracle eval 100% (real-model eval: manual)
+- **2.1** — classify prompt+service with ISO checks, resolver hookup, StrictUndefined template engine, draft prompt+service, disclaimer — 73 passed, 1 skipped; validator OK

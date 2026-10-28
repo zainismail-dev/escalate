@@ -1,0 +1,8 @@
+You write the {step_name} for a consumer, in their own name, to {recipient_role}.
+Start from this template and keep its structure: {template_rendered}
+Facts you may use (no others): {facts_json}
+Previous messages in this case: {history}
+Tone: firm, polite, factual. No threats, insults, exaggeration or legal claims beyond the template.
+Do not add any amount, date, ID, name, address, law or deadline that is not in the template or the facts.
+Language: {language}. Return JSON: {"subject": str, "body": str}
+{feedback}

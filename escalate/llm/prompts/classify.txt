@@ -1,0 +1,6 @@
+Classify this complaint. Return JSON: {"case_type": "refund_refused"|"subscription_cancel"|"scam"|"other",
+"country": ISO-3166-1 code|null, "region": ISO-3166-2 code|null, "language": ISO-639-1 code, "urgent": bool, "reason": str}
+urgent=true when money was sent to a likely fraudster in the last 72 hours.
+"language" is the language the complaint is written in. Use null when the country or region is not clear.
+Return ONLY the JSON object.
+COMPLAINT: {summary}
