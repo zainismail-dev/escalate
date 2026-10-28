@@ -24,3 +24,13 @@ Defaults chosen during the autonomous build, with the reason for each.
 - Foreign keys use `ON DELETE CASCADE` and SQLite `PRAGMA foreign_keys=ON`, so deletes cascade
   both via the ORM and at SQL level.
 - Timestamps are naive UTC via `escalate.db.models.utcnow()` (works with freezegun).
+
+## LLM (task 1.3)
+- Code gets the model through `escalate.llm.get_llm()`; tests install `FakeLLM` with `set_llm()`.
+  Services also accept an explicit `llm` argument.
+- The OpenAI SDK's own retries are off (`max_retries=0`); `LLMClient` retries HTTP 429 with
+  exponential backoff (1s, 2s, 4s, … up to 5 retries). The sleep function is injectable for tests.
+- `MODEL_FAST` falls back to `MODEL_SMART` when blank. A placeholder like `<local-instruct-model>`
+  raises a clear "set MODEL_SMART" error instead of a confusing 404.
+- `is_cloud()` treats `localhost`, `127.0.0.1`, `::1`, `ollama` (the compose service),
+  `host.docker.internal` and `*.local` as local.
