@@ -1,7 +1,7 @@
-# Escalate: one-command install. `make setup && make up`, then open http://localhost:8501
+# Escalate: one-command install. `make setup && make up`, then open http://localhost:3000
 MODEL ?= llama3.1:8b
 
-.PHONY: setup up down logs test lint evals pull
+.PHONY: setup up down logs test lint evals pull demo-data web-install web-dev web-lint web-build web-e2e screenshots
 
 setup:            ## create .env (FERNET_KEY, model), build images, pull the model
 	./scripts/setup_env.sh "$(MODEL)"
@@ -14,14 +14,15 @@ pull:             ## pull (another) model: make pull MODEL=name
 
 up:               ## start everything
 	docker compose up -d
-	@echo "UI:  http://localhost:8501"
-	@echo "API: http://localhost:8000/docs"
+	@echo "Web app:      http://localhost:3000"
+	@echo "API:          http://localhost:8000/docs"
+	@echo "Streamlit UI: http://localhost:8501 (dev)"
 
 down:
 	docker compose down
 
 logs:
-	docker compose logs -f api ui
+	docker compose logs -f api web ui
 
 test:             ## unit tests (offline: fake LLM, fake SMTP)
 	uv run pytest -q
@@ -32,3 +33,27 @@ lint:
 
 evals:            ## golden-set evals against the model in .env; writes evals/report.md
 	uv run python -m evals.run --suite all
+
+API_URL ?= http://localhost:8000
+WEB_URL ?= http://localhost:3000
+
+demo-data:        ## seed 4 fictional demo cases (PK, IN, GB, US) into the running API
+	curl -fsS -X POST $(API_URL)/demo/seed && echo
+
+web-install:
+	cd web && npm ci
+
+web-dev:          ## the web app with hot reload on http://localhost:3000 (API on :8000)
+	cd web && NEXT_PUBLIC_API_URL=$(API_URL) npm run dev
+
+web-lint:         ## eslint + TypeScript for the web app
+	cd web && npm run lint && npm run typecheck
+
+web-build:
+	cd web && NEXT_PUBLIC_API_URL=$(API_URL) npm run build
+
+web-e2e:          ## Playwright smoke tests (smoke, rtl, dark, mobile) against WEB_URL + API_URL
+	cd web && WEB_URL=$(WEB_URL) API_URL=$(API_URL) npx playwright test --project=smoke --project=rtl --project=dark --project=mobile
+
+screenshots:      ## docs/screenshots/*.png; wipes and re-seeds the API (use a throwaway, DEMO_MODE=true)
+	cd web && E2E_RESET=1 WEB_URL=$(WEB_URL) API_URL=$(API_URL) npx playwright test --project=screenshots

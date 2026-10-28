@@ -11,10 +11,10 @@ from cryptography.fernet import Fernet
 REPO = Path(__file__).resolve().parents[1]
 
 
-def test_compose_has_ollama_api_ui() -> None:
+def test_compose_has_ollama_api_web_ui() -> None:
     compose = yaml.safe_load((REPO / "docker-compose.yml").read_text())
     services = compose["services"]
-    assert set(services) == {"ollama", "api", "ui"}
+    assert set(services) == {"ollama", "api", "web", "ui"}
     api_env = services["api"]["environment"]
     assert "LLM_BASE_URL=http://ollama:11434/v1" in api_env
     assert all("/app/data" in e for e in api_env if e.startswith(("DATABASE_URL", "EVIDENCE")))
@@ -22,6 +22,11 @@ def test_compose_has_ollama_api_ui() -> None:
     ui_env = services["ui"]["environment"]
     assert "API_URL=http://api:8000" in ui_env
     assert "PUBLIC_API_URL=http://localhost:8000" in ui_env
+    web = services["web"]
+    assert web["ports"] == ["3000:3000"]
+    assert web["build"]["args"]["NEXT_PUBLIC_API_URL"] == "http://localhost:8000"
+    assert web["depends_on"]["api"]["condition"] == "service_healthy"
+    assert "WEB_ORIGIN=http://localhost:3000" in api_env  # CORS allows the web app only
 
 
 def test_dockerfile_matches_spec() -> None:
@@ -34,7 +39,7 @@ def test_dockerfile_matches_spec() -> None:
 
 def test_makefile_targets() -> None:
     text = (REPO / "Makefile").read_text()
-    for target in ("setup:", "up:", "test:", "evals:"):
+    for target in ("setup:", "up:", "test:", "evals:", "demo-data:", "web-dev:", "web-e2e:"):
         assert f"\n{target}" in text
 
 

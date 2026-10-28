@@ -12,6 +12,8 @@ services:
       - DATABASE_URL=sqlite:////app/data/escalate.db
       - CHECKPOINT_DB=/app/data/checkpoints.db
       - EVIDENCE_DIR=/app/data/evidence
+      - ESCALATE_SETTINGS_FILE=/app/data/settings.json
+      - WEB_ORIGIN=http://localhost:3000
     volumes: ["./data:/app/data", "./secrets:/app/secrets"]
     ports: ["8000:8000"]
     depends_on: [ollama]
@@ -19,7 +21,16 @@ services:
       test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
       interval: 10s
       retries: 12
-  ui:
+  web:                          # the web app: http://localhost:3000
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000   # what your browser uses to reach the API
+    ports: ["3000:3000"]
+    depends_on:
+      api:
+        condition: service_healthy
+  ui:                           # Streamlit dev UI: http://localhost:8501
     build: .
     command: streamlit run ui/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
     environment:
