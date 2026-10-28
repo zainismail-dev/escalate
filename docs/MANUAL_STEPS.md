@@ -24,3 +24,9 @@ that was not available. Each item names the task it came from.
   Start the API (`uv run uvicorn escalate.api.main:app --reload`) and the UI
   (`uv run streamlit run ui/app.py`) with a local model configured. The build only booted both
   servers headless and checked `/health`; no model was available to draft letters.
+- [ ] **3.1 / 4.2 — Lawyer or consumer-rights review of the Pakistan templates** (`templates/pk/en`
+  and `templates/pk/ur`): seller demand, platform escalation, 15-day legal notice, consumer
+  court complaint, condonation of delay. Record the review in the playbook changelog. Also
+  resolve the `TODO(verify …)` list at the top of `playbooks/pk/ecommerce/refund_refused.yaml`
+  (Act names per province, filing limit, notice requirement).
+- [ ] **3.1 — Native Urdu speaker review** of `templates/pk/ur/*` and the Urdu disclaimer line.

@@ -1,3 +1,10 @@
+# TODO(verify before v1, from official sources; record the review in the changelog below):
+#  - the name of each province's Consumer Protection Act (templates say "the applicable
+#    provincial Consumer Protection Act" until then) and the court for each region;
+#  - the 30-day filing limit and when the cause of action starts for each province;
+#  - whether a 15-day legal notice is required before filing in each province.
+# Changelog:
+#  - 0.1.0 (2026-10-28): first version; templates not yet reviewed by a lawyer.
 id: pk-ecommerce-refund-refused
 version: 0.1.0
 country: PK

@@ -76,8 +76,8 @@ def check_playbook(pb: Playbook, templates_dir: Path, report: Report, today: dat
             if not langs:
                 report.error(where, f"step {step.id}: missing template {ref}")
                 continue
-            if "en" not in langs:
-                report.warn(where, f"step {step.id}: {ref} has no English version")
+            if "en" not in langs:  # English is the fallback for every other language
+                report.error(where, f"step {step.id}: missing template {ref} (no en/ fallback)")
             pack, _, name = ref.partition("/")
             for lang in langs:
                 tpl = templates_dir / pack / lang / name

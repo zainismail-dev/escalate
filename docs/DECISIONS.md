@@ -167,3 +167,16 @@ Defaults chosen during the autonomous build, with the reason for each.
 - Error mapping: wrong state 409, unsupported facts 422 (with `issues`), missing model or
   unreachable LLM 503, PDF libs missing 503.
 - The UI reads the privacy banner from `GET /health` (`is_cloud`) so it stays API-only.
+
+## Pakistan pack (task 3.1)
+- Templates never name a specific Act, section or court address. They say "the applicable
+  provincial Consumer Protection Act" and "District Consumer Court" (as in the section 6 spec);
+  a `TODO(verify …)` block in the playbook lists what a lawyer must confirm.
+- Optional fact `court_name` overrides "DISTRICT CONSUMER COURT" in the court documents.
+- Late filing: `pick_next` computes `late` from the deadline tracker; the court step then
+  appends `adds_if_late` (condonation application) after a `---` separator.
+- **A missing `en/` template is now a validator error** (English is the fallback for every
+  draft language), not just a warning.
+- The fact check converts all Unicode decimal digits (Urdu, Devanagari, …) to ASCII first, so
+  an invented amount in another script is still caught.
+- The disclaimer gains an Urdu line for Urdu drafts; the English line always stays.

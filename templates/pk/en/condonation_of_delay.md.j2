@@ -1,7 +1,16 @@
-Subject: Order {{ order_id }}
+Subject: Application for condonation of delay
 
-Dear {{ seller_name }},
+BEFORE THE {% if court_name %}{{ court_name | upper }}{% else %}DISTRICT CONSUMER COURT{% endif %}
 
-Order {{ order_id }} of {{ order_date }} for {{ amount | money(currency) }}. The problem: {{ defect_description }}. I ask for: {{ remedy_wanted }}.
+In the complaint of {{ buyer_name }} versus {{ seller_name }}
 
-{{ buyer_name }}
+The complainant respectfully submits:
+
+1. The complaint is being filed after the time limit for filing.
+2. The delay was caused by the respondent, who kept promising to resolve the matter{% if last_promise_on %}, most recently on {{ last_promise_on }}{% if last_promise_text %}: "{{ last_promise_text }}"{% endif %}{% endif %}. The complainant relied on these promises in good faith and waited instead of filing.
+{% if delay_reason %}3. {{ delay_reason }}
+{% endif %}
+The delay was not deliberate. It is respectfully prayed that the delay be condoned and the complaint be heard on its merits.
+
+Complainant: {{ buyer_name }}
+Date: {{ today }}

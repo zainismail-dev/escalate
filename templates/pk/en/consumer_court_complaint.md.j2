@@ -1,7 +1,30 @@
-Subject: Order {{ order_id }}
+Subject: Consumer complaint: {{ buyer_name }} versus {{ seller_name }}
 
-Dear {{ seller_name }},
+BEFORE THE {% if court_name %}{{ court_name | upper }}{% else %}DISTRICT CONSUMER COURT{% endif %}
 
-Order {{ order_id }} of {{ order_date }} for {{ amount | money(currency) }}. The problem: {{ defect_description }}. I ask for: {{ remedy_wanted }}.
+Complainant: {{ buyer_name }}, {{ buyer_address }}
+Respondent: {{ seller_name }}, {{ seller_address }}
 
-{{ buyer_name }}
+COMPLAINT
+
+The complainant respectfully submits as follows:
+
+1. On {{ order_date }} the complainant bought from the respondent under order {{ order_id }} and paid {{ amount | money(currency) }}.
+2. The product/service was defective: {{ defect_description }}
+{% if return_shipped_on %}3. The complainant returned the item to the respondent on {{ return_shipped_on }}{% if return_tracking %} (tracking number {{ return_tracking }}){% endif %}.
+{% endif %}{% if last_promise_on %}4. On {{ last_promise_on }} the respondent stated{% if last_promise_text %}: "{{ last_promise_text }}"{% else %} that the matter would be resolved{% endif %}, but did not do so.
+{% endif %}5. The complainant asked the respondent in writing to provide the following: {{ remedy_wanted }}.
+6. The complainant served a legal notice on the respondent{% if notice_delivered_on %}, delivered on {{ notice_delivered_on }}{% endif %}, giving fifteen (15) days to provide the remedy. The respondent did not do so.
+
+PRAYER
+
+It is respectfully prayed that this Court direct the respondent to provide the following: {{ remedy_wanted }}; and to pay the costs of this complaint; and grant any other relief the Court considers just.
+
+Documents attached:
+- Order confirmation / receipt
+- All messages to and from the respondent
+- The legal notice and proof of its delivery
+- Case timeline
+
+Complainant: {{ buyer_name }}
+Date: {{ today }}

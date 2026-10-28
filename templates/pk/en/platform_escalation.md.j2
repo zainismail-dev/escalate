@@ -1,7 +1,16 @@
-Subject: Order {{ order_id }}
+Subject: Complaint about seller {{ seller_name }} (order {{ order_id }})
 
-Dear {{ seller_name }},
+Dear {{ platform_name }} customer support,
 
-Order {{ order_id }} of {{ order_date }} for {{ amount | money(currency) }}. The problem: {{ defect_description }}. I ask for: {{ remedy_wanted }}.
+I bought from {{ seller_name }} on your platform on {{ order_date }}, order {{ order_id }}, and paid {{ amount | money(currency) }}.
 
+The problem: {{ defect_description }}
+{% if return_shipped_on %}
+I returned the item on {{ return_shipped_on }}{% if return_tracking %} (tracking number {{ return_tracking }}){% endif %}.
+{% endif %}
+I asked the seller in writing to provide the following: {{ remedy_wanted }}. The seller has not resolved this.
+
+Please step in and make sure I receive: {{ remedy_wanted }}. Please reply by {{ reply_by }}. If this is not resolved, I will send the seller a formal legal notice.
+
+Yours sincerely,
 {{ buyer_name }}

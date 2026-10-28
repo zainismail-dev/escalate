@@ -1,7 +1,18 @@
-Subject: Order {{ order_id }}
+Subject: Order {{ order_id }}: request for {{ remedy_wanted }}
 
 Dear {{ seller_name }},
 
-Order {{ order_id }} of {{ order_date }} for {{ amount | money(currency) }}. The problem: {{ defect_description }}. I ask for: {{ remedy_wanted }}.
+On {{ order_date }} I bought from you under order {{ order_id }} and paid {{ amount | money(currency) }}.
 
+The problem: {{ defect_description }}
+{% if return_shipped_on %}
+I returned the item to you on {{ return_shipped_on }}{% if return_tracking %} (tracking number {{ return_tracking }}){% endif %}.
+{% endif %}{% if last_promise_on %}
+On {{ last_promise_on }} you told me{% if last_promise_text %}: "{{ last_promise_text }}"{% else %} that the matter would be resolved{% endif %}. It has still not been resolved.
+{% endif %}
+I ask you to provide the following: {{ remedy_wanted }}.
+
+Please do this by {{ reply_by }}. If I do not hear from you by then, I will escalate the matter{% if platform_name %} to {{ platform_name }}{% endif %} and send you a formal legal notice.
+
+Yours sincerely,
 {{ buyer_name }}

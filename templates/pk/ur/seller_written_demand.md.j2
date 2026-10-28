@@ -1,0 +1,18 @@
+Subject: آرڈر {{ order_id }}: {{ remedy_wanted }} کی درخواست
+
+محترم {{ seller_name }}،
+
+میں نے {{ order_date }} کو آپ سے آرڈر نمبر {{ order_id }} کے تحت خریداری کی اور {{ amount | money(currency) }} ادا کیے۔
+
+مسئلہ: {{ defect_description }}
+{% if return_shipped_on %}
+میں نے {{ return_shipped_on }} کو سامان آپ کو واپس بھیج دیا{% if return_tracking %} (ٹریکنگ نمبر {{ return_tracking }}){% endif %}۔
+{% endif %}{% if last_promise_on %}
+{{ last_promise_on }} کو آپ نے مجھ سے کہا{% if last_promise_text %}: "{{ last_promise_text }}"{% else %} کہ معاملہ حل ہو جائے گا{% endif %}۔ معاملہ اب تک حل نہیں ہوا۔
+{% endif %}
+میری درخواست ہے کہ آپ مجھے یہ فراہم کریں: {{ remedy_wanted }}۔
+
+براہ کرم {{ reply_by }} تک ایسا کریں۔ اگر اس تاریخ تک آپ کا جواب نہ آیا تو میں معاملہ آگے لے جاؤں گا{% if platform_name %} اور {{ platform_name }} سے رجوع کروں گا{% endif %}، اور آپ کو باقاعدہ قانونی نوٹس بھیجوں گا۔
+
+مخلص،
+{{ buyer_name }}

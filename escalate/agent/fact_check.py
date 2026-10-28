@@ -6,6 +6,7 @@ trusted template rendering (which is itself built only from facts, today and the
 
 import json
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -103,9 +104,16 @@ class FactCheckResult:
         return [*self.code_issues, *self.model_issues]
 
 
+def ascii_digits(text: str) -> str:
+    """'۴۵۰۰۰' (Urdu), '४५' (Devanagari) -> ASCII digits, so every script is checked alike."""
+    return "".join(str(unicodedata.decimal(c)) if c.isdecimal() else c for c in text)
+
+
 def code_check(draft: str, facts: dict[str, str], reference: str = "") -> list[str]:
     """Every number, date and ID in `draft` must come from `facts` or the trusted `reference`."""
-    corpus = "\n".join([*facts.values(), reference])
+    draft = ascii_digits(draft)
+    facts = {k: ascii_digits(v) for k, v in facts.items()}
+    corpus = "\n".join([*facts.values(), ascii_digits(reference)])
     ok_dates = find_dates(corpus)
     ok_ids = find_ids(corpus)
     ok_numbers = find_numbers(corpus) | {norm_number(v) for v in facts.values() if _is_num(v)}

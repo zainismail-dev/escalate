@@ -1,0 +1,16 @@
+Subject: فروخت کنندہ {{ seller_name }} کے خلاف شکایت (آرڈر {{ order_id }})
+
+محترم {{ platform_name }} کسٹمر سپورٹ،
+
+میں نے {{ order_date }} کو آپ کے پلیٹ فارم پر {{ seller_name }} سے آرڈر نمبر {{ order_id }} کے تحت خریداری کی اور {{ amount | money(currency) }} ادا کیے۔
+
+مسئلہ: {{ defect_description }}
+{% if return_shipped_on %}
+میں نے {{ return_shipped_on }} کو سامان واپس بھیج دیا{% if return_tracking %} (ٹریکنگ نمبر {{ return_tracking }}){% endif %}۔
+{% endif %}
+میں نے فروخت کنندہ سے تحریری طور پر یہ مانگا: {{ remedy_wanted }}۔ فروخت کنندہ نے معاملہ حل نہیں کیا۔
+
+براہ کرم مداخلت کریں اور یقینی بنائیں کہ مجھے یہ ملے: {{ remedy_wanted }}۔ براہ کرم {{ reply_by }} تک جواب دیں۔ اگر معاملہ حل نہ ہوا تو میں فروخت کنندہ کو باقاعدہ قانونی نوٹس بھیجوں گا۔
+
+مخلص،
+{{ buyer_name }}
