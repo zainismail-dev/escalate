@@ -1,6 +1,6 @@
 # Eval report
 
-- Run: 2026-10-28 11:36 UTC
+- Run: 2026-10-28 13:15 UTC
 - Model: oracle (expected answers)
 - Golden set: 50 cases, 40 sample replies
 - **Oracle run:** checks the harness only; not a quality score.

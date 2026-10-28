@@ -46,7 +46,7 @@ def fake_get(path: str, **params: Any) -> Any:
             "llm_base_url": "https://cloud",
             "demo_mode": False,
             "email_mode": "smtp",
-            "version": "0.0.1",
+            "version": "0.1.0",
         }
     if path == "/cases":
         return [CASE]

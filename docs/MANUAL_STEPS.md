@@ -54,3 +54,17 @@ that was not available. Each item names the task it came from.
   (`good first issue`, `playbook`, `country:pk`, …) and set the repo topics (`ai-agent`,
   `consumer-rights`, `langgraph`, `llm`, `legal-tech`, `i18n`, `self-hosted`). `gh` was not
   available during the build.
+- [ ] **4.5 — Tag v0.1.0, publish the GitHub release and open the good-first issues.** Release
+  notes are in `docs/releases/v0.1.0.md`. Commands:
+  ```bash
+  git pull --ff-only
+  git tag -a v0.1.0 -m "Escalate v0.1.0"
+  git push origin v0.1.0
+  # then on GitHub: Releases → Draft a new release → tag v0.1.0 → paste docs/releases/v0.1.0.md
+  # or, with the GitHub CLI: gh release create v0.1.0 --title "Escalate v0.1.0" --notes-file docs/releases/v0.1.0.md
+  ```
+- [ ] **After launch** (from the plan): launch posts, optional hosted demo in `DEMO_MODE`
+  (check current free-tier terms first), daily issue triage for two weeks.
+- [ ] **Git identity:** commits in this repo are authored as "Your Name <you@example.com>" (the
+  local git config). Set yours with `git config user.name` / `user.email` before tagging if you
+  want the release attributed to you.

@@ -1,6 +1,6 @@
 [project]
 name = "escalate"
-version = "0.0.1"
+version = "0.1.0"
 description = "Self-hostable AI agent that runs a consumer complaint from first message to consumer court."
 readme = "README.md"
 license = "MIT"
