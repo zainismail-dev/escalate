@@ -402,7 +402,7 @@ def _history(path: Path) -> str:
     if not path.is_file():
         return ""
     old = path.read_text(encoding="utf-8")
-    return "\n" + old[old.index(HISTORY):] if HISTORY in old else ""
+    return "\n" + old[old.index(HISTORY) :] if HISTORY in old else ""
 
 
 def main(argv: list[str] | None = None) -> int:

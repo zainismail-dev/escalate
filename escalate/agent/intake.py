@@ -10,6 +10,7 @@ from escalate.db.models import Case, CaseFact
 from escalate.llm import LLM, get_llm
 from escalate.llm.prompts import render_prompt
 from escalate.llm.structured import ask_json
+from escalate.pii import mask_pii
 
 MIN_CONFIDENCE = 0.5  # below this the model is guessing: ask the user instead
 
@@ -79,7 +80,7 @@ def extract(
     existing = {f.key: f for f in case.facts}
     saved: list[str] = []
     for key, fact in result.facts.items():
-        value = fact.value.strip()
+        value = mask_pii(fact.value.strip())
         if key not in allowed or not value or fact.confidence < MIN_CONFIDENCE:
             continue
         old = existing.get(key)
@@ -106,7 +107,7 @@ def save_answers(session: Session, case: Case, answers: dict[str, str]) -> list[
     existing = {f.key: f for f in case.facts}
     saved = []
     for key, raw in answers.items():
-        value = (raw or "").strip()
+        value = mask_pii((raw or "").strip())
         if not value:
             continue
         fact = existing.get(key)

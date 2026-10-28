@@ -1,0 +1,91 @@
+"""Mask secrets and identity numbers before they are logged, stored as case text or drafted.
+
+CLAUDE.md rule 5: never log full card numbers, IBANs, national IDs, passwords or OTPs.
+Masks keep the last 4 characters so the user can still recognise the item.
+"""
+
+import logging
+import re
+
+MASK = "•"
+
+_CARD = re.compile(r"(?<![\w-])(?:\d[ -]?){12,18}\d(?![\w-])")
+_IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{4}){2,7}(?:[ ]?[A-Z0-9]{1,4})?\b")
+_NATIONAL_IDS = [
+    re.compile(r"\b\d{5}-\d{7}-\d\b"),  # Pakistan CNIC
+    # India Aadhaar: exactly 12 digits, not part of a longer digit run
+    re.compile(r"(?<![\d-])(?<!\d )\d{4}[ -]\d{4}[ -]\d{4}(?![ -]?\d)"),
+    re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),  # US SSN
+    re.compile(r"\b[A-CEGHJ-PR-TW-Z]{2}\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]\b"),  # UK NI number
+]
+_SECRET = re.compile(
+    r"(?i)\b(password|passcode|passwd|pin|otp|one[- ]time (?:code|password)|cvv|cvc)\b"
+    r"(\s*[:=#-]?\s*(?:is|was|code)?\s*[:=#-]?\s*)(\S+)"
+)
+
+
+def _luhn_ok(digits: str) -> bool:
+    total = 0
+    for i, ch in enumerate(reversed(digits)):
+        n = int(ch)
+        if i % 2 == 1:
+            n *= 2
+            if n > 9:
+                n -= 9
+        total += n
+    return total % 10 == 0
+
+
+def _keep_last4(raw: str) -> str:
+    chars = re.sub(r"[\s-]", "", raw)
+    return MASK * 4 + " " + chars[-4:]
+
+
+def _card(m: re.Match[str]) -> str:
+    digits = re.sub(r"\D", "", m.group(0))
+    if 13 <= len(digits) <= 19 and _luhn_ok(digits):
+        return _keep_last4(digits)
+    return m.group(0)
+
+
+def mask_pii(text: str) -> str:
+    if not text:
+        return text
+    text = _SECRET.sub(lambda m: f"{m.group(1)}{m.group(2)}{MASK * 6}", text)
+    text = _CARD.sub(_card, text)
+    text = _IBAN.sub(lambda m: m.group(0)[:4] + " " + _keep_last4(m.group(0)), text)
+    for rx in _NATIONAL_IDS:
+        text = rx.sub(lambda m: _keep_last4(m.group(0)), text)
+    return text
+
+
+def mask_obj(value: object) -> object:
+    """Mask every string inside a JSON-like value (event payloads)."""
+    if isinstance(value, str):
+        return mask_pii(value)
+    if isinstance(value, dict):
+        return {k: mask_obj(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [mask_obj(v) for v in value]
+    return value
+
+
+class PiiFilter(logging.Filter):
+    """Logging filter: masks the formatted message of every record."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        try:
+            msg = record.getMessage()
+        except Exception:  # a broken format string is not our problem to fix here
+            return True
+        record.msg, record.args = mask_pii(msg), None
+        return True
+
+
+def install_log_filter(logger: logging.Logger | None = None) -> None:
+    target = logger or logging.getLogger()
+    if not any(isinstance(f, PiiFilter) for f in target.filters):
+        target.addFilter(PiiFilter())
+    for handler in target.handlers:
+        if not any(isinstance(f, PiiFilter) for f in handler.filters):
+            handler.addFilter(PiiFilter())

@@ -12,6 +12,7 @@ from escalate.db.models import Case, CaseStatus, Message
 from escalate.llm import LLM, get_llm
 from escalate.llm.prompts import render_prompt
 from escalate.llm.structured import StructuredOutputError, ask_json
+from escalate.pii import mask_pii
 from escalate.playbooks.models import Playbook, Step
 from escalate.templates_engine import Rendered, disclaimer, render_step
 
@@ -100,9 +101,9 @@ def draft_step(
         direction="out",
         channel=step.channel,
         recipient=facts.get(step.recipient_fact) if step.recipient_fact else None,
-        subject=final.subject,
-        body=body,
-        original_body=f"{final.subject}\n{body}",
+        subject=mask_pii(final.subject),
+        body=mask_pii(body),
+        original_body=mask_pii(f"{final.subject}\n{body}"),
         status="draft",
     )
     session.add(msg)

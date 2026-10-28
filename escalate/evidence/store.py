@@ -10,6 +10,7 @@ from escalate.config import Settings, get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Evidence
 from escalate.evidence.ocr import extract_text
+from escalate.pii import mask_pii
 
 KINDS = {
     ".png": "image",
@@ -71,7 +72,7 @@ def save_upload(
 
     if extract:
         result = extract_text(ev, s, data=data)
-        ev.extracted_text = result.text
+        ev.extracted_text = mask_pii(result.text)
         ev.ocr_confidence = result.confidence
         ev.needs_review = result.needs_review
 

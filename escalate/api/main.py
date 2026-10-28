@@ -24,7 +24,9 @@ from escalate.db.session import get_engine
 from escalate.evidence.store import EvidenceKeyMissing
 from escalate.export.pdf import PdfUnavailable
 from escalate.llm.client import LLMNotConfigured
+from escalate.pii import install_log_filter
 from escalate.playbooks.loader import PlaybookError
+from escalate.safety import HarassmentPattern, NoEvidence, RateLimited
 from escalate.scheduler import jobs
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -48,12 +50,16 @@ def init_db() -> None:
 def _start_scheduler() -> Any:
     sched = jobs.make_scheduler()
     jobs.add_daily_deadline_scan(sched)
+    if get_settings().demo_mode:
+        jobs.add_demo_cleanup(sched)
     sched.start()
     runner.set_scheduler(sched)
     return sched
 
 
 def create_app(startup: bool = True) -> FastAPI:
+    install_log_filter()
+
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         sched = None
@@ -73,6 +79,9 @@ def create_app(startup: bool = True) -> FastAPI:
 
     errors: list[tuple[type[Exception], int, Callable[[Exception], dict[str, Any]] | None]] = [
         (UnsupportedFacts, 422, lambda e: {"issues": e.issues}),  # type: ignore[attr-defined]
+        (RateLimited, 429, None),
+        (NoEvidence, 422, None),
+        (HarassmentPattern, 403, None),
         (runner.RunnerError, 409, None),
         (ApprovalError, 409, None),
         (NotApproved, 409, None),

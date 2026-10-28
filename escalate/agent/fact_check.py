@@ -16,6 +16,7 @@ from escalate.agent.tone import tone_flags
 from escalate.llm import LLM, get_llm
 from escalate.llm.prompts import render_prompt
 from escalate.llm.structured import StructuredOutputError, ask_json
+from escalate.pii import mask_pii
 
 _MONTHS = (
     "january|february|march|april|may|june|july|august|september|october|november|december|"
@@ -116,7 +117,11 @@ def code_check(draft: str, facts: dict[str, str], reference: str = "") -> list[s
     """Every number, date and ID in `draft` must come from `facts` or the trusted `reference`."""
     draft = ascii_digits(draft)
     facts = {k: ascii_digits(v) for k, v in facts.items()}
-    corpus = "\n".join([*facts.values(), ascii_digits(reference)])
+    reference = ascii_digits(reference)
+    # Masked forms (e.g. "•••• 1111" for a card number) count as known too.
+    corpus = "\n".join(
+        [*facts.values(), reference, mask_pii(reference)] + [mask_pii(v) for v in facts.values()]
+    )
     ok_dates = find_dates(corpus)
     ok_ids = find_ids(corpus)
     ok_numbers = find_numbers(corpus) | {norm_number(v) for v in facts.values() if _is_num(v)}

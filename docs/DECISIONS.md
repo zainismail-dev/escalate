@@ -264,3 +264,18 @@ Defaults chosen during the autonomous build, with the reason for each.
 - `evals/report.md` keeps a hand-written `## History` table across runs for before/after
   numbers; the real-model row is pending.
 - No model is named in the README as "recommended" because none was measured.
+
+## Safety hardening (task 4.2)
+- **Masking happens at write time** (stored text, events, drafts, logs), keeping the last 4
+  characters. The fact check also accepts masked forms of known facts.
+- **Evidence is required before `POST /cases/{id}/start`** (configurable with
+  `REQUIRE_EVIDENCE`). `POST /cases` no longer accepts `start: true`.
+- **Harassment guard at approval time**: more than `MAX_CASES_PER_RECIPIENT` (3) cases with
+  approved letters to the same address in `RECIPIENT_WINDOW_DAYS` (30) is refused (HTTP 403).
+  Letters within one case are never limited.
+- Rate limit: `MAX_NEW_CASES_PER_HOUR` per client IP, in memory (HTTP 429).
+- DEMO_MODE overrides any email channel with `DemoEmailChannel` (still requires approval),
+  caps uploads at `DEMO_UPLOAD_MB` (5) and runs an hourly job deleting cases older than
+  `DEMO_RETENTION_HOURS` (24).
+- `delete_case` order: scheduler jobs, graph checkpoint, evidence files, then the DB rows (so a
+  half-failed delete never leaves orphaned files without a case to find them).

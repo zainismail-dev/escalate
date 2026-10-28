@@ -9,6 +9,7 @@ from freezegun import freeze_time
 
 from escalate.api.main import create_app
 from escalate.config import get_settings
+from escalate.safety import new_case_limiter
 from tests.agent_env import AgentEnv, agent_env  # noqa: F401
 from tests.factories import LED_TEXT
 from tests.fakes.fake_smtp import FakeSMTP
@@ -27,9 +28,18 @@ def client(
     monkeypatch.setenv("EVIDENCE_DIR", str(tmp_path / "ev"))
     monkeypatch.setenv("LLM_BASE_URL", "https://api.example-cloud.com/v1")
     get_settings.cache_clear()
+    new_case_limiter.reset()
     with TestClient(create_app(startup=False)) as c:
         yield c
     get_settings.cache_clear()
+
+
+def _started(client: TestClient) -> int:
+    cid = _create(client)["id"]
+    files = {"file": ("receipt.txt", b"Order BM-48213, PKR 45000", "text/plain")}
+    assert client.post(f"/cases/{cid}/evidence", files=files).status_code == 201
+    assert client.post(f"/cases/{cid}/start").status_code == 200
+    return cid
 
 
 def _create(client: TestClient, **kw: object) -> dict:
@@ -114,7 +124,7 @@ def test_full_flow_over_http(client: TestClient) -> None:
 
 def test_reject_over_http(client: TestClient) -> None:
     with freeze_time(DAY0):
-        cid = _create(client, start=True)["id"]
+        cid = _started(client)
         mid = client.get(f"/cases/{cid}").json()["pending_draft"]["id"]
         r = client.post(f"/messages/{mid}/reject", json={"reason": "too long"}).json()
         assert r["waiting_for"] == "approve_draft"
@@ -126,7 +136,7 @@ def test_answers_endpoint(client: TestClient, agent_env: AgentEnv) -> None:  # n
 
     agent_env.llm.rules[0] = ("You extract facts", make_llm({"buyer_name": "Ali"}).rules[0][1])
     with freeze_time(DAY0):
-        cid = _create(client, start=True)["id"]
+        cid = _started(client)
         detail = client.get(f"/cases/{cid}").json()
         assert detail["pending"]["type"] == "questions"
         assert client.post(f"/cases/{cid}/replies", json={"text": "x"}).status_code == 409

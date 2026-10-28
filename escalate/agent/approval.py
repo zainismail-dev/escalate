@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from escalate.agent.fact_check import code_check
 from escalate.db.events import log_event
 from escalate.db.models import Message, utcnow
+from escalate.pii import mask_pii
+from escalate.safety import check_recipient
 
 
 class ApprovalError(Exception):
@@ -32,6 +34,7 @@ def edit_message(
     """Save the user's edit (still a draft). Returns code fact-check warnings for the UI."""
     msg = _get_draft(session, message_id)
     reference = _approved_text(msg)
+    body, subject = mask_pii(body), mask_pii(subject) if subject is not None else None
     msg.body = body
     if subject is not None:
         msg.subject = subject
@@ -56,8 +59,8 @@ def approve_message(
     the code fact check against the facts and the fact-checked draft."""
     msg = _get_draft(session, message_id)
     edited = edited_body is not None or edited_subject is not None
-    body = edited_body if edited_body is not None else msg.body
-    subject = edited_subject if edited_subject is not None else msg.subject
+    body = mask_pii(edited_body) if edited_body is not None else msg.body
+    subject = mask_pii(edited_subject) if edited_subject is not None else msg.subject
     issues = code_check(
         f"{subject or ''}\n{body}",
         msg.case.fact_dict(),
@@ -65,6 +68,7 @@ def approve_message(
     )
     if issues:
         raise UnsupportedFacts(issues)
+    check_recipient(session, msg)
     if edited:
         msg.body, msg.subject = body, subject
         log_event(session, msg.case_id, "draft_edited", {"message_id": msg.id})

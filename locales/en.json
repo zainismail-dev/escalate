@@ -109,5 +109,8 @@
   "settings.version": "Escalate version {version}",
   "dash.export": "Download case file (PDF)",
   "dash.withdraw": "Withdraw this case",
-  "dash.withdrawn": "Case withdrawn."
+  "dash.withdrawn": "Case withdrawn.",
+  "dash.delete": "Delete this case and all its files",
+  "dash.delete_confirm": "Yes, delete everything for this case",
+  "dash.deleted": "Case deleted."
 }

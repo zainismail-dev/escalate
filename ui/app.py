@@ -211,6 +211,12 @@ def page_dashboard() -> None:
             st.rerun()
         except api.ApiError as exc:
             show_error(exc)
+    with st.expander(t("dash.delete")):
+        if st.button(t("dash.delete_confirm"), type="secondary"):
+            api.delete(f"/cases/{cid}")
+            st.session_state.pop("case_id", None)
+            st.success(t("dash.deleted"))
+            go("cases")
     st.subheader(t("dash.timeline"))
     for ev in api.get(f"/cases/{cid}/timeline"):
         st.markdown(f"`{ev['created_at'][:16].replace('T', ' ')}` · {ev['type'].replace('_', ' ')}")

@@ -17,7 +17,6 @@ class CaseCreate(BaseModel):
     region: str | None = Field(default=None, description="ISO 3166-2, e.g. PK-SD")
     language: str = Field(default="en", description="ISO 639-1 language for drafts")
     company: str | None = None
-    start: bool = Field(default=False, description="start the agent now (else POST /start)")
 
     @field_validator("country", "region", mode="before")
     @classmethod

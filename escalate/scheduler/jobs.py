@@ -5,7 +5,7 @@ Job ids are `case-<id>-step-<step>`; re-adding replaces, so there are never dupl
 
 import importlib
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -132,3 +132,30 @@ def scan_deadlines() -> int:
         for case in s.scalars(select(Case).where(Case.status.in_([str(x) for x in ACTIVE]))):
             count += len(scan_case_deadlines(s, case))
     return count
+
+
+DEMO_CLEANUP_ID = "demo-cleanup"
+
+
+def add_demo_cleanup(scheduler: BaseScheduler) -> None:
+    scheduler.add_job(
+        "escalate.scheduler.jobs:cleanup_demo_cases",
+        trigger="interval",
+        hours=1,
+        id=DEMO_CLEANUP_ID,
+        replace_existing=True,
+    )
+
+
+def cleanup_demo_cases() -> list[int]:
+    """DEMO_MODE: delete every case older than DEMO_RETENTION_HOURS."""
+    s = get_settings()
+    if not s.demo_mode:
+        return []
+    cutoff = utcnow() - timedelta(hours=s.demo_retention_hours)
+    with session_scope() as session:
+        ids = list(session.scalars(select(Case.id).where(Case.created_at < cutoff)))
+    runner = importlib.import_module("escalate.agent.runner")
+    for cid in ids:
+        runner.delete_case(cid)
+    return ids

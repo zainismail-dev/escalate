@@ -44,3 +44,8 @@ def post(path: str, json: Any = None, files: Any = None) -> Any:
 def put(path: str, json: Any) -> Any:
     with _client() as c:
         return _check(c.put(path, json=json))
+
+
+def delete(path: str) -> Any:
+    with _client() as c:
+        return _check(c.delete(path))

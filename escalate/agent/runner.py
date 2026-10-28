@@ -186,6 +186,21 @@ def withdraw(case_id: int, reason: str = "") -> None:
         jobs.cancel_case_jobs(_scheduler, case_id)
 
 
+def delete_case(case_id: int) -> None:
+    """One-click deletion: scheduler jobs, graph checkpoint, evidence files, then DB rows."""
+    from escalate.evidence.store import delete_files
+
+    if _scheduler is not None:
+        jobs.cancel_case_jobs(_scheduler, case_id)
+    delete_thread(case_id)
+    delete_files(case_id)
+    with session_scope() as s:
+        case = s.get(Case, case_id)
+        if case is None:
+            raise RunnerError(f"case {case_id} not found")
+        s.delete(case)  # facts, evidence, messages and events cascade
+
+
 def delete_thread(case_id: int) -> None:
     """Forget the graph checkpoint for a deleted case."""
     with _lock:

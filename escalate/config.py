@@ -36,6 +36,20 @@ class Settings(BaseSettings):
     templates_dir: Path = Path("./templates")
     max_upload_mb: int = 25
 
+    # Safety limits (task 4.2).
+    max_new_cases_per_hour: int = 10
+    require_evidence: bool = True
+    max_cases_per_recipient: int = 3  # within recipient_window_days: a harassment pattern
+    recipient_window_days: int = 30
+    demo_upload_mb: int = 5
+    demo_retention_hours: int = 24
+
+    @property
+    def upload_limit_mb(self) -> int:
+        return (
+            min(self.max_upload_mb, self.demo_upload_mb) if self.demo_mode else self.max_upload_mb
+        )
+
     @field_validator("default_country", mode="before")
     @classmethod
     def _blank_country_is_none(cls, v: object) -> object:

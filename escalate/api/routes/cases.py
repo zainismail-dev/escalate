@@ -1,6 +1,6 @@
 """Case endpoints."""
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -26,7 +26,9 @@ from escalate.config import get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Event, Message
 from escalate.evidence.store import save_upload
+from escalate.pii import mask_pii
 from escalate.playbooks.loader import PlaybookError, get_playbook
+from escalate.safety import new_case_limiter, require_evidence
 
 router = APIRouter(prefix="/cases", tags=["cases"])
 
@@ -58,10 +60,14 @@ def case_detail(session: Session, case: Case) -> CaseDetail:
 
 
 @router.post("", response_model=CaseDetail, status_code=201)
-def create_case(body: CaseCreate, session: Session = Depends(get_session)) -> CaseDetail:
+def create_case(
+    body: CaseCreate, request: Request, session: Session = Depends(get_session)
+) -> CaseDetail:
     settings = get_settings()
+    client = request.client.host if request.client else "local"
+    new_case_limiter.check(client, settings.max_new_cases_per_hour)
     case = Case(
-        description=body.description.strip(),
+        description=mask_pii(body.description.strip()),
         country=body.country or settings.default_country,
         region=body.region,
         language=body.language,
@@ -73,8 +79,6 @@ def create_case(body: CaseCreate, session: Session = Depends(get_session)) -> Ca
     session.flush()
     log_event(session, case.id, "case_created", {"country": case.country, "region": case.region})
     session.commit()
-    if body.start:
-        runner.start_case(case.id)
     return case_detail(session, case)
 
 
@@ -97,10 +101,10 @@ async def upload_evidence(
 ) -> EvidenceOut:
     get_case(session, case_id)
     settings = get_settings()
-    limit = settings.max_upload_mb * 1024 * 1024
+    limit = settings.upload_limit_mb * 1024 * 1024
     data = await file.read(limit + 1)
     if len(data) > limit:
-        raise HTTPException(413, f"file is larger than {settings.max_upload_mb} MB")
+        raise HTTPException(413, f"file is larger than {settings.upload_limit_mb} MB")
     if not data:
         raise HTTPException(422, "empty file")
     ev = save_upload(session, case_id, file.filename or "upload", data)
@@ -110,7 +114,7 @@ async def upload_evidence(
 
 @router.post("/{case_id}/start", response_model=RunOut)
 def start(case_id: int, session: Session = Depends(get_session)) -> RunOut:
-    get_case(session, case_id)
+    require_evidence(get_case(session, case_id))
     session.close()
     if runner.pending(case_id) is not None:
         raise HTTPException(409, "case already started")
@@ -184,3 +188,11 @@ def withdraw(case_id: int, body: WithdrawIn, session: Session = Depends(get_sess
     session.close()
     runner.withdraw(case_id, body.reason)
     return CaseOut.model_validate(get_case(session, case_id))
+
+
+@router.delete("/{case_id}", status_code=204)
+def delete_case(case_id: int, session: Session = Depends(get_session)) -> Response:
+    get_case(session, case_id)
+    session.close()
+    runner.delete_case(case_id)
+    return Response(status_code=204)

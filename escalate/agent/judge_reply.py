@@ -11,6 +11,7 @@ from escalate.db.models import Case, Message, utcnow
 from escalate.llm import LLM, get_llm
 from escalate.llm.prompts import render_prompt
 from escalate.llm.structured import ask_json
+from escalate.pii import mask_pii
 
 Verdict = Literal["resolved", "partial", "refused", "no_reply"]
 
@@ -49,7 +50,7 @@ def record_reply(session: Session, case: Case, text: str, step_id: str | None = 
         step_id=step_id or case.current_step or "reply",
         direction="in",
         channel="email",
-        body=text.strip(),
+        body=mask_pii(text.strip()),
         status="received",
         sent_at=utcnow(),
     )

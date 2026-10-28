@@ -18,7 +18,19 @@ from escalate.db.events import log_event
 from escalate.db.models import Evidence, Message, utcnow
 
 
+class DemoEmailChannel:
+    """DEMO_MODE: approval is still required, but nothing leaves the machine."""
+
+    name = "email"
+
+    def send(self, msg: Message, attachments: list[Attachment]) -> SendResult:
+        require_approval(msg)
+        return SendResult(delivered=True, external_id=f"demo-{msg.id}", note="demo: not sent")
+
+
 def _email() -> Channel:
+    if get_settings().demo_mode:
+        return DemoEmailChannel()
     if get_settings().email_mode == "gmail_api":
         from escalate.channels.email_gmail import GmailApiChannel
 
@@ -41,7 +53,7 @@ _overrides: dict[str, Channel] = {}
 
 
 def get_channel(name: str) -> Channel:
-    if name in _overrides:
+    if name in _overrides and not (name == "email" and get_settings().demo_mode):
         return _overrides[name]
     try:
         return _REGISTRY[name]()
