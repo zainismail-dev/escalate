@@ -44,7 +44,7 @@ that was not available. Each item names the task it came from.
   table in `evals/report.md`, and fix misses (prompt wording, few-shot examples, code checks)
   without lowering targets. The build applied model-independent fixes only.
 - [ ] **4.3 — Fresh-install test with Docker.** Docker was not available on the build machine.
-  On a machine with Docker: fresh clone, `make setup && make up`, open http://localhost:8501
+  On a machine with Docker: fresh clone, `make setup && make up`, open http://localhost:3000 (web app; Streamlit dev UI on :8501)
   and open a case. (CI builds the image and smoke-tests OCR and PDF rendering inside it.)
   `make setup` pulls `llama3.1:8b` by default; pass `MODEL=<name>` to choose another.
 - [ ] **4.4 — Record the demo GIF** (30–45 s: broken-LED photo → draft → approve → timeline jumps
@@ -68,3 +68,15 @@ that was not available. Each item names the task it came from.
 - [ ] **Git identity:** commits in this repo are authored as "Your Name <you@example.com>" (the
   local git config). Set yours with `git config user.name` / `user.email` before tagging if you
   want the release attributed to you.
+
+## Web frontend (web/)
+- [ ] **Translate the UI.** `web/messages/{es,fr,pt,ar,hi,ur,id}.json` ship empty ("help
+  translate" note), so those languages show English. Native speakers: copy keys from `en.json`.
+- [ ] **Try the web app with a real model.** The build machine had no model, so drafting,
+  extraction and reply judging were only exercised through the scripted demo data and stubbed
+  screenshots (the reply verdict and missing-facts screenshots use stubbed API answers). Run a
+  real case end to end in the browser.
+- [ ] **Check accessibility by hand** with a screen reader and keyboard only, and run an automated
+  contrast check (e.g. axe) in both themes. Colours were chosen for 4.5:1 but not machine-verified.
+- [ ] **Verify the SMTP presets** in Settings (Gmail, Outlook.com, Yahoo, iCloud hosts and ports)
+  against each provider's current help page before relying on them.

@@ -30,7 +30,8 @@ You need [Docker](https://docs.docker.com/get-docker/) and about 8–16 GB of RA
 ```bash
 git clone https://github.com/zainismail-dev/escalate.git && cd escalate
 make setup     # creates .env (with an encryption key), builds images, pulls a local model
-make up        # then open http://localhost:8501
+make up        # then open http://localhost:3000
+make demo-data # optional: four fictional demo cases (PK, IN, GB, US); nothing is sent
 ```
 
 `make setup` pulls `llama3.1:8b` by default (`make setup MODEL=<name>` for another). No model has
@@ -45,18 +46,42 @@ Without `make`: `cp .env.example .env`, set `FERNET_KEY` and `MODEL_SMART`, then
 ```bash
 uv sync
 cp .env.example .env        # set FERNET_KEY, MODEL_SMART, MODEL_FAST
-uv run uvicorn escalate.api.main:app --reload
-uv run streamlit run ui/app.py
+uv run uvicorn escalate.api.main:app --reload     # API on :8000
+make web-install && make web-dev                  # web app on http://localhost:3000
+uv run streamlit run ui/app.py                    # optional: the Streamlit dev UI on :8501
 ```
 
-You also need Tesseract (OCR) and Pango (PDF export) installed on your system.
+You also need Node.js 20.9+ for the web app, and Tesseract (OCR) and Pango (PDF export) on your
+system.
 </details>
+
+## Screenshots
+
+The web app (`web/`, Next.js) is the main interface; the Streamlit UI stays as a developer UI.
+All screenshots use the fictional demo cases. Full set: [docs/screenshots/](docs/screenshots/).
+
+| | |
+| --- | --- |
+| ![Landing page with the escalation ladder](docs/screenshots/01-landing.png) | ![My cases: needs-you-today cards, filters and mini ladders](docs/screenshots/02-my-cases.png) |
+| **Landing** | **My cases** |
+| ![Case dashboard: ladder, next move and the agent's reasons](docs/screenshots/08-case-dashboard.png) | ![Review draft: verified facts highlighted, safety checks, decision card](docs/screenshots/09-review-draft.png) |
+| **Case dashboard** | **Review draft** |
+| ![Side-by-side letter in English and Urdu (right to left)](docs/screenshots/10-review-side-by-side-urdu.png) | ![A blank to fill keeps Approve disabled](docs/screenshots/11-review-blank-to-fill.png) |
+| **Side by side, right-to-left** | **Blanks block approval** |
+| ![Draft blocked by the fact check: wrong vs. evidence value](docs/screenshots/12-state-fact-check-blocked.png) | ![Scam urgent checklist](docs/screenshots/13-scam-urgent-checklist.png) |
+| **Blocked by the fact check** | **Scam: urgent checklist** |
+| ![New case wizard: where you are](docs/screenshots/03-new-case-where.png) | ![Missing facts with "why we ask"](docs/screenshots/07-missing-facts.png) |
+| **New case wizard** | **Missing facts** |
+| ![Reply verdict with offered, by when and condition](docs/screenshots/15-reply-verdict.png) | ![Settings: model, email, language, privacy](docs/screenshots/16-settings.png) |
+| **Reply verdict** | **Settings** |
+| ![Dark mode review](docs/screenshots/18-dark-review.png) | ![Arabic UI, right to left](docs/screenshots/19-rtl-arabic-cases.png) |
+| **Dark mode** | **Arabic UI (RTL)** |
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    U[You: story + evidence] --> UI[Streamlit UI]
+    U[You: story + evidence] --> UI[Web app: Next.js]
     UI <--> API[FastAPI]
     API --> G[LangGraph case agent]
     G --> I[intake: OCR + fact extraction]
@@ -80,8 +105,12 @@ flowchart LR
   a generic international ladder that works anywhere.
 - **Templates** (`templates/<country>/<language>/`) hold the letters. The model only polishes
   tone and language; the structure and every fact come from the template and your case.
-- **One process** runs the API and the scheduler (reminders survive restarts); the UI only talks
-  to the API, so a future mobile or chat front end can reuse it.
+- **One process** runs the API and the scheduler (reminders survive restarts). The web app
+  (`web/`) and the Streamlit dev UI (`ui/`) only talk to the API, so a future mobile or chat
+  front end can reuse it.
+- **Global by design:** every ISO country is listed; money and dates use each case's locale;
+  letters can be in any language, right-to-left included. Countries without a local pack get a
+  generic route, labelled as such.
 - **Free by default:** a local model through Ollama; any OpenAI-compatible endpoint works
   (Groq, Gemini, OpenRouter, paid APIs) by changing one line in `.env`.
 
@@ -115,11 +144,11 @@ rule must cite an official source.
 - **v0.1** (now): 3 case types, generic + 4 country packs, email/post/court channels, PDF case file.
 - **v0.2:** Telegram bot, more UI translations, detect replies in your inbox.
 - **v0.3:** more countries from the community, scam packs per bank.
-- **v1.0:** Next.js app, multi-user hosting, opt-in anonymous success rates per playbook.
+- **v1.0:** multi-user hosting, opt-in anonymous success rates per playbook.
 
 ## Contributing
 
-Contributions are welcome, especially country playbooks, translations and template reviews by
+Contributions are welcome, especially country playbooks, UI translations (`web/messages/`) and template reviews by
 lawyers or consumer-rights groups. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [good first issues](docs/good-first-issues.md). Please follow the
 [Code of Conduct](CODE_OF_CONDUCT.md).
@@ -127,6 +156,8 @@ lawyers or consumer-rights groups. Start with [CONTRIBUTING.md](CONTRIBUTING.md)
 ```bash
 make test    # offline unit and integration tests (fake LLM, fake email)
 make lint    # ruff, mypy and the playbook validator
+make web-lint  # eslint and TypeScript for the web app
+make web-e2e   # Playwright smoke tests (incl. Arabic RTL and dark mode) against a running app
 make evals   # golden-set evals against your model
 ```
 
@@ -136,5 +167,5 @@ make evals   # golden-set evals against your model
 
 ## Acknowledgements
 
-Built with LangGraph, FastAPI, Streamlit, SQLAlchemy, APScheduler, Tesseract, WeasyPrint,
+Built with LangGraph, FastAPI, Next.js, Tailwind CSS, shadcn/ui, next-intl, Streamlit, SQLAlchemy, APScheduler, Tesseract, WeasyPrint,
 Babel and Ollama. Pakistan's consumer-court route follows the CRCP guide cited in its playbook.

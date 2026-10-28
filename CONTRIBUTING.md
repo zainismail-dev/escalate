@@ -7,7 +7,10 @@ country playbooks, translations and reviews of letter templates are just as valu
 
 - **Add or correct a country playbook.** Read [docs/CONTRIBUTING-PLAYBOOKS.md](docs/CONTRIBUTING-PLAYBOOKS.md)
   first. Every rule needs an official source.
-- **Translate** the UI (`locales/<lang>.json`) or the letter templates (`templates/<cc>/<lang>/`).
+- **Translate** the web app (`web/messages/<locale>.json`: copy the keys from `en.json`, keep
+  `{placeholders}` as they are), the Streamlit dev UI (`locales/<lang>.json`) or the letter
+  templates (`templates/<cc>/<lang>/`). Untranslated keys fall back to English. To add a new UI
+  language, add its file and list it in `web/src/i18n/config.ts`.
 - **Review templates** if you are a lawyer or work at a consumer-rights group. Tell us what is
   wrong; we record reviews in each playbook's changelog.
 - **Fix bugs and pick up** a [good first issue](docs/good-first-issues.md).
@@ -23,6 +26,21 @@ make lint                # ruff, ruff format, mypy, playbook validator
 
 Tesseract and Pango are needed for the OCR and PDF tests; without them those tests are skipped
 locally and run in CI.
+
+The web app (`web/`, Node.js 20.9+):
+
+```bash
+make web-install         # npm ci
+make web-dev             # http://localhost:3000, talks to the API on :8000
+make web-lint            # eslint + TypeScript; CI also runs `node web/scripts/check-messages.mjs`
+make demo-data           # four fictional demo cases in the running API
+make web-e2e             # Playwright smoke tests: npx playwright install chromium first
+```
+
+Web rules: no hard-coded country, currency, language or date format (format with `Intl` and the
+case's locale); logical CSS only (`ps-`/`pe-`, `ms-`/`me-`, `start`/`end`), so right-to-left
+works; every string in `web/messages/en.json`; no analytics or third-party requests; Approve
+only ever calls `POST /messages/{id}/approve`.
 
 ## Rules every change must keep
 
