@@ -34,7 +34,7 @@ from escalate.api.schemas import (
 )
 from escalate.config import get_settings
 from escalate.db.events import log_event
-from escalate.db.models import Case, CaseStatus, Event, Message
+from escalate.db.models import Case, CaseStatus, Event, Message, utcnow
 from escalate.evidence.store import save_upload
 from escalate.i18n.countries import currency_for, default_letter_language, is_rtl
 from escalate.i18n.formatting import format_amount, locale_for
@@ -74,13 +74,27 @@ def case_summary(case: Case) -> CaseSummary:
     pending = runner.pending(case.id)
     out.waiting_for = pending.get("type") if pending else None
     pb = _playbook(case)
+    dues: list[int] = []
+    if case.next_action_at is not None:
+        dues.append((case.next_action_at.date() - utcnow().date()).days)
     if pb is not None:
         out.generic_playbook = pb.generic
         out.ladder = [LadderStepOut(**r) for r in views.ladder(pb, case)]
-        out.deadline_warning = any(d.warn or d.late for d in deadline_status(case, pb))
+        status = deadline_status(case, pb)
+        out.deadline_warning = any(d.warn or d.late for d in status)
+        dues += [d.days_left for d in status if d.days_left is not None]
         if case.current_step:
             out.step_name = pb.step(case.current_step).title
+    open_case = case.status not in (CaseStatus.RESOLVED, CaseStatus.WITHDRAWN)
+    out.days_left = min(dues) if dues and open_case else None
     return out
+
+
+def _list_order(c: CaseSummary) -> tuple[int, int, int]:
+    """Urgent (scam checklist) first, then the nearest deadline, then the newest."""
+    urgent = 0 if c.waiting_for == "urgent_checklist" else 1
+    due = c.days_left if c.days_left is not None else 10**6
+    return (urgent, due, -c.id)
 
 
 def case_detail(session: Session, case: Case) -> CaseDetail:
@@ -148,7 +162,7 @@ def list_cases(
     if q and q.strip():
         like = f"%{q.strip()}%"
         query = query.where(Case.description.ilike(like) | Case.company.ilike(like))
-    return [case_summary(c) for c in session.scalars(query)]
+    return sorted((case_summary(c) for c in session.scalars(query)), key=_list_order)
 
 
 @router.get("/{case_id}", response_model=CaseDetail)

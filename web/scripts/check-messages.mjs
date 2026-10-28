@@ -45,7 +45,7 @@ const DYNAMIC = {
   "why.reasons": ["first_step", "after_verdict", "skipped", "position", "channel", "channel_only", "wait", "proof", "deadline", "deadline_late", "playbook"],
   "errors": ["model_offline.title", "model_offline.body", "offline_api.title", "offline_api.body", "fact_check.title", "rate_limited.title", "other.title", "other.body"],
   "review.checks": ["facts", "blanks", "tone", "disclaimer", "no_secrets"],
-  "cases.cta": ["approve_draft", "questions", "urgent_checklist", "confirm_delivery", "deadline"],
+  "cases.cta": ["open", "approve_draft", "questions", "urgent_checklist", "confirm_delivery"],
   "progress.steps": ["classify", "playbook", "facts", "draft", "check", "reply", "judge", "next"],
   "wizard.steps": ["where", "what", "evidence", "missing", "review"],
   "wizard.titles": ["where", "what", "evidence", "missing", "review"],

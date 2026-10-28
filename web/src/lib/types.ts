@@ -97,6 +97,7 @@ export interface CaseSummary {
   step_name: string | null;
   ladder: LadderStep[];
   deadline_warning: boolean;
+  days_left: number | null;
 }
 
 export interface Pending {
@@ -110,7 +111,7 @@ export interface Pending {
   step?: string;
 }
 
-export interface CaseDetail extends Omit<CaseSummary, "deadline_warning"> {
+export interface CaseDetail extends Omit<CaseSummary, "deadline_warning" | "days_left"> {
   description: string;
   playbook_version: string | null;
   facts: Fact[];

@@ -112,7 +112,7 @@ export function CaseHeader({
           {!heading && c.company && <p className="mt-1 text-text-2" data-testid="case-company">{c.company}</p>}
         </div>
         {money && (
-          <p className="font-mono text-2xl font-bold" dir="ltr" data-testid="case-amount">
+          <p className="text-2xl font-semibold text-muted" data-testid="case-amount">
             {money}
           </p>
         )}

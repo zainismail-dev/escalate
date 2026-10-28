@@ -1,16 +1,15 @@
 "use client";
-import { AlertTriangle, ArrowRight, Plus, Search } from "lucide-react";
+import { AlertTriangle, ArrowRight, Clock, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useDeferredValue, useMemo, useState } from "react";
-import { CaseChip, PackBadge, StatusBadge } from "@/components/case-bits";
-import { MiniLadder } from "@/components/ladder";
+import { CaseChip } from "@/components/case-bits";
 import { EmptyState, ErrorState } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
-import { caseLocale, countryName, formatDateTime } from "@/lib/format";
+import { countryName } from "@/lib/format";
 import type { CaseStatus, CaseSummary } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 import { cn } from "@/lib/utils";
@@ -39,54 +38,87 @@ function actionHref(c: CaseSummary) {
   }
 }
 
-function Title({ c }: { c: CaseSummary }) {
-  const t = useTranslations("caseType");
-  const money = c.amount_display;
-  return (
-    <span className="inline-flex flex-wrap items-baseline gap-x-2">
-      <span>{c.title || t(c.case_type ?? "unknown")}</span>
-      {money && (
-        <span className="font-mono text-sm font-semibold text-text-2" dir="ltr">
-          {money}
-        </span>
-      )}
-    </span>
-  );
+/** The real next step: "Approve 15-day legal notice", "Do the checklist", "Waiting for a reply". */
+function useNextStep() {
+  const t = useTranslations("cases.next");
+  const ts = useTranslations("status");
+  return (c: CaseSummary) => {
+    const step = c.step_name ?? "";
+    switch (c.waiting_for) {
+      case "approve_draft":
+        return t("approve", { step });
+      case "questions":
+        return t("questions");
+      case "urgent_checklist":
+        return t("checklist");
+      case "confirm_delivery":
+        return t("confirmDelivery", { step });
+      case "waiting_reply":
+        return t("waitingReply");
+      default:
+        return ts(c.status);
+    }
+  };
 }
 
-function NeedsYouCard({ c }: { c: CaseSummary }) {
+function CaseCard({ c }: { c: CaseSummary }) {
   const t = useTranslations("cases");
-  const tw = useTranslations("waiting");
+  const nextStep = useNextStep();
   const urgent = c.waiting_for === "urgent_checklist";
-  const kind = c.waiting_for && NEEDS_YOU.has(c.waiting_for) ? c.waiting_for : "deadline";
+  const needsYou = !!c.waiting_for && NEEDS_YOU.has(c.waiting_for);
+  const cta = needsYou ? t(`cta.${c.waiting_for}`) : t("cta.open");
   return (
-    <li>
-      <Link
-        href={actionHref(c)}
-        className={cn(
-          "group flex h-full flex-col gap-3 rounded-2xl border p-4 transition-colors",
-          urgent ? "border-danger bg-danger-bg" : "border-line-strong bg-card hover:bg-raised",
-        )}
-        data-testid="needs-you-card"
-      >
-        <div className="flex items-center justify-between gap-2">
-          <span className={cn("label-mono font-bold", urgent ? "text-danger" : "text-text")}>
-            {urgent && <AlertTriangle className="me-1 inline size-3.5" aria-hidden />}
-            {kind === "deadline" ? t("deadlineSoon") : tw(kind)}
-          </span>
-          <span className="label-mono text-muted">#{c.id}</span>
-        </div>
-        <p className="font-display text-lg leading-tight">
-          <Title c={c} />
-        </p>
-        <CaseChip country={c.country} currency={c.currency} language={c.language} className="w-fit" />
-        <span className="mt-auto inline-flex items-center gap-1 text-sm font-semibold">
-          <span className={cn("rounded-lg px-2.5 py-1", urgent ? "bg-danger text-white dark:text-night" : "bg-lime text-on-lime")}>
-            {t(`cta.${kind}`)}
-          </span>
-          <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
+    <li
+      className={cn(
+        "flex h-full flex-col gap-3 rounded-2xl border bg-card p-5",
+        urgent ? "border-2 border-danger bg-danger-bg" : "border-line",
+      )}
+      data-testid="case-card"
+      data-urgent={urgent || undefined}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className={cn("label-mono font-bold", urgent ? "text-danger" : needsYou ? "text-text" : "text-muted")} data-testid="next-step">
+          {urgent && <AlertTriangle className="me-1 inline size-3.5 align-[-2px]" aria-hidden />}
+          {nextStep(c)}
         </span>
-      </Link>
+        <span className="label-mono text-muted">#{c.id}</span>
+      </div>
+      <div className="min-w-0">
+        <h3 className="font-display text-xl leading-tight">
+          <Link href={`/cases/${c.id}`} className="hover:underline">
+            {c.title}
+          </Link>
+        </h3>
+        {c.company && <p className="mt-0.5 text-sm text-text-2">{c.company}</p>}
+        {c.amount_display && (
+          <p className="mt-1 text-base font-semibold text-muted" data-testid="card-amount">
+            {c.amount_display}
+          </p>
+        )}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <CaseChip country={c.country} currency={c.currency} />
+        {c.days_left !== null && (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
+              c.days_left <= 3 ? "bg-danger-bg text-danger" : "bg-raised text-text-2",
+            )}
+            data-testid="days-left"
+          >
+            <Clock className="size-3.5" aria-hidden />
+            {c.days_left < 0 ? t("overdue", { days: -c.days_left }) : t("daysLeft", { days: c.days_left })}
+          </span>
+        )}
+      </div>
+      <div className="mt-auto pt-1">
+        <Button variant={urgent ? "danger" : needsYou ? "lime" : "outline"} asChild>
+          <Link href={actionHref(c)}>
+            {cta}
+            <ArrowRight className="rtl:rotate-180" aria-hidden />
+          </Link>
+        </Button>
+      </div>
     </li>
   );
 }
@@ -106,7 +138,7 @@ export function CasesList() {
     () => Array.from(new Set((all.data ?? []).map((c) => c.country).filter(Boolean) as string[])),
     [all.data],
   );
-  const needsYou = (all.data ?? []).filter((c) => (c.waiting_for && NEEDS_YOU.has(c.waiting_for)) || c.deadline_warning);
+  const needsYou = (all.data ?? []).filter((c) => (c.waiting_for && NEEDS_YOU.has(c.waiting_for)) || c.deadline_warning).length;
   const rows = filtered.data ?? [];
   const reloadAll = () => {
     void all.reload();
@@ -114,11 +146,16 @@ export function CasesList() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="label-mono text-muted">{t("eyebrow")}</p>
           <h1 className="mt-1 font-display text-3xl">{t("title")}</h1>
+          {needsYou > 0 && (
+            <p className="mt-1 text-sm text-text-2" data-testid="needs-you-count">
+              {t("needsYouCount", { count: needsYou })}
+            </p>
+          )}
         </div>
         <Button variant="lime" asChild>
           <Link href="/cases/new">
@@ -131,9 +168,9 @@ export function CasesList() {
       {all.error && <ErrorState error={all.error} onRetry={reloadAll} />}
 
       {all.loading && !all.data && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="skeleton">
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-40" />
+        <div className="grid gap-4 md:grid-cols-2" data-testid="skeleton">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-56" />
           ))}
         </div>
       )}
@@ -151,22 +188,8 @@ export function CasesList() {
         />
       )}
 
-      {needsYou.length > 0 && (
-        <section aria-labelledby="needs-you">
-          <h2 id="needs-you" className="font-display text-xl">
-            {t("needsYou")} <span className="label-mono ms-1 rounded-md bg-lime px-1.5 py-0.5 align-middle text-on-lime">{needsYou.length}</span>
-          </h2>
-          <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {needsYou.map((c) => (
-              <NeedsYouCard key={c.id} c={c} />
-            ))}
-          </ul>
-        </section>
-      )}
-
       {all.data && all.data.length > 0 && (
-        <section aria-labelledby="all-cases" className="space-y-3">
-          <h2 id="all-cases" className="font-display text-xl">{t("all")}</h2>
+        <>
           <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
             <div className="relative">
               <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
@@ -189,32 +212,15 @@ export function CasesList() {
               ))}
             </NativeSelect>
           </div>
-          {filtered.data && rows.length === 0 && <p className="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">{t("noMatch")}</p>}
-          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card" data-testid="case-list">
+          {filtered.data && rows.length === 0 && (
+            <p className="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">{t("noMatch")}</p>
+          )}
+          <ul className="grid gap-4 md:grid-cols-2" data-testid="case-grid" aria-label={t("all")}>
             {rows.map((c) => (
-              <li key={c.id}>
-                <Link href={`/cases/${c.id}`} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4 hover:bg-raised">
-                  <MiniLadder steps={c.ladder} label={t("ladderLabel", { step: c.step_name ?? "—" })} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">
-                      <Title c={c} />
-                    </p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <CaseChip country={c.country} currency={c.currency} language={c.language} />
-                      {c.playbook_id && <PackBadge generic={c.generic_playbook} />}
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 text-end">
-                    <StatusBadge status={c.status} />
-                    <span className="label-mono text-muted">
-                      {c.next_action_at ? t("nextOn", { when: formatDateTime(c.next_action_at, caseLocale(c.language, c.country)) ?? "" }) : c.step_name ?? ""}
-                    </span>
-                  </div>
-                </Link>
-              </li>
+              <CaseCard key={c.id} c={c} />
             ))}
           </ul>
-        </section>
+        </>
       )}
     </div>
   );

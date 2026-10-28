@@ -376,7 +376,18 @@
     "ladderLabel": "Escalation ladder, current step: {step}",
     "nextOn": "Next: {when}",
     "deadlineSoon": "Deadline soon",
+    "needsYouCount": "{count, plural, one {# case needs you today} other {# cases need you today}}",
+    "daysLeft": "{days, plural, =0 {due today} one {# day left} other {# days left}}",
+    "overdue": "{days, plural, one {# day overdue} other {# days overdue}}",
+    "next": {
+      "approve": "Approve {step}",
+      "questions": "Answer a few questions",
+      "checklist": "Do the checklist",
+      "confirmDelivery": "Confirm delivery of {step}",
+      "waitingReply": "Waiting for their reply"
+    },
     "cta": {
+      "open": "Open case",
       "approve_draft": "Review draft",
       "questions": "Answer questions",
       "urgent_checklist": "Do this now",

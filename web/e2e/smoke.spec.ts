@@ -13,17 +13,26 @@ test("landing: dark hero, ladder, sections", async ({ page }) => {
   await expect(page.locator("[lang=ur][dir=rtl]")).toBeVisible();
 });
 
-test("my cases: needs-you cards, filters and mini ladders", async ({ page }) => {
+test("my cases: urgent first, titles, real next steps, 2-column grid", async ({ page }) => {
   await page.goto("/cases");
   await settled(page);
-  await expect(page.getByTestId("needs-you-card").first()).toBeVisible();
-  const list = page.getByTestId("case-list");
-  await expect(list.getByRole("listitem")).toHaveCount(4);
-  await expect(list).toContainText("£39.99");
-  await expect(list).toContainText("₹18,000");
+  const cards = page.getByTestId("case-card");
+  await expect(cards).toHaveCount(4);
+  await expect(cards.first()).toHaveAttribute("data-urgent", "true");
+  await expect(cards.first().getByTestId("next-step")).toHaveText("Do the checklist");
+  await expect(cards.first()).toContainText("Fake delivery SMS payment");
+  const pk = cards.filter({ hasText: "Broken LED TV — refund refused" });
+  await expect(pk).toContainText("BrightMart Electronics");
+  await expect(pk.getByTestId("next-step")).toHaveText("Approve written demand to the seller");
+  const amounts = await page.getByTestId("card-amount").allInnerTexts();
+  expect(amounts.map((a) => a.replace(/\s/g, " ")).sort()).toEqual(["$1,249", "Rs 64,500", "£39.99", "₹18,000"].sort());
+  // Two columns on desktop: the first two cards share a row.
+  const [a, b] = [await cards.nth(0).boundingBox(), await cards.nth(1).boundingBox()];
+  expect(Math.abs(a!.y - b!.y)).toBeLessThan(2);
+  expect(b!.x).toBeGreaterThan(a!.x + a!.width - 1);
   await page.getByLabel("Filter by country").selectOption("GB");
-  await expect(list.getByRole("listitem")).toHaveCount(1);
-  await expect(list).toContainText("Generic route");
+  await expect(cards).toHaveCount(1);
+  await expect(cards).toContainText("Gym still charging after cancelling");
 });
 
 test("review: verified facts highlighted, approve gated by confirm dialog", async ({ page }) => {

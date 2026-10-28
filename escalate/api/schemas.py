@@ -136,6 +136,7 @@ class CaseSummary(CaseOut):
     step_name: str | None = None
     ladder: list[LadderStepOut] = Field(default_factory=list)
     deadline_warning: bool = False
+    days_left: int | None = None  # to the nearest deadline or reply-by date, if any
 
 
 class CaseDetail(CaseOut):

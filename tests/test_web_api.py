@@ -3,6 +3,7 @@ language, settings, delete-all and demo data."""
 
 import json
 import stat
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -256,3 +257,17 @@ def test_override_verdict_replays_from_the_reply(client: TestClient) -> None:  #
         assert types.count("verdict_overridden") == 2
         assert client.post(f"/cases/{cid}/verdict", json={"verdict": "maybe"}).status_code == 422
     assert len(FakeSMTP.all_sent()) == 1  # only the approved letter
+
+
+def test_list_order_urgent_then_deadline_then_newest(client: TestClient) -> None:  # noqa: F811
+    from escalate.db.models import Case
+
+    with freeze_time(DAY0):
+        client.post("/demo/seed")
+        with session_scope() as s:
+            cases = {c.country: c for c in s.query(Case)}
+            cases["GB"].next_action_at = datetime(2026, 10, 9)  # reply due in 8 days
+            cases["US"].next_action_at = datetime(2026, 10, 4)  # due in 3 days
+        rows = client.get("/cases").json()
+    assert [r["country"] for r in rows] == ["IN", "US", "GB", "PK"]
+    assert [r["days_left"] for r in rows] == [None, 3, 8, None]
