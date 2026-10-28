@@ -92,7 +92,11 @@ def test_resolver_full_fallback_chain(tree: Path) -> None:
         "pk-ecommerce-refund-refused"
     )
     assert resolve("PK", "PK-GB", "refund_refused", root=root).id == "pk-country"
+    # a PK company playbook never applies in another country
     assert resolve("IN", None, "refund_refused", "ACME Electronics", root=root).id == (
+        "in-general-refund-refused"
+    )
+    assert resolve("BR", None, "refund_refused", "ACME Electronics", root=root).id == (
         "intl-generic-refund-refused"
     )
 
