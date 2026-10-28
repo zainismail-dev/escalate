@@ -1,0 +1,25 @@
+# Generic scam checklist: shown first for every scam case where no country checklist exists.
+# Escalate never asks for passwords, PINs or one-time codes.
+country: INTL
+items:
+  - id: call_bank
+    title: "Call your bank or card issuer now"
+    detail: "Use the number on the back of your card or on the bank's official website, not a number the scammer gave you. Ask them to stop or reverse the payment and to flag it as fraud."
+  - id: block_card
+    title: "Block the card or account that was used"
+    detail: "Freeze or cancel the card in your banking app, or ask the bank to do it on the call."
+  - id: change_passwords
+    title: "Change your passwords"
+    detail: "Change the password of any account you used or shared with the scammer (email, banking, shopping, social media), and turn on two-step verification."
+  - id: report_national
+    title: "Report it to your national fraud or cybercrime reporting body"
+    detail: "Find the official reporting body on your government's website. A report number helps your bank dispute."
+  - id: keep_evidence
+    title: "Keep every piece of evidence"
+    detail: "Screenshots of chats, the scammer's phone number or profile, payment receipts and transaction IDs. Upload them here."
+    urgent: false
+warnings:
+  - "Escalate will never ask for your passwords, PINs or one-time codes (OTPs). Never share them with anyone, including callers who say they are from your bank."
+  - "Beware of 'recovery' scammers: people who contact you offering to get your money back for a fee are almost always running a second scam."
+sources:
+  - title: "Your bank's official fraud line (the number on the back of your card)"

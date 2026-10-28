@@ -132,3 +132,23 @@ Defaults chosen during the autonomous build, with the reason for each.
   uses `on_partial`, falling back to `on_refused`.
 - Deadline warnings are logged once per deadline per day (`deadline_warning` events), from
   10 days left (playbook `warn_when_days_left`) and after the deadline has passed.
+
+## Graph and runner (task 2.5)
+- **Graph changes vs. the section 7 skeleton** (same nodes, a few extra edges):
+  - `intake` classifies first when the case has no type yet, because extraction needs the
+    playbook's fact list. `classify` then re-resolves the playbook with the extracted company
+    name (no extra model call) and never switches playbooks mid-ladder.
+  - `draft -> ask_missing` when a step needs facts the case doesn't have (e.g. the seller's
+    postal address for the legal notice); answers loop back through `intake` (no re-extraction).
+  - `send` pauses with `interrupt({"type": "confirm_delivery"})` for post/court/web-form steps,
+    and ends the graph after a final step with no `wait_days`.
+  - Scam cases route to `urgent_checklist` only once (`checklist_done`).
+  - Routing uses `state["case_type"]` rather than `facts["case_type"]`.
+- **Fact-check loop is bounded**: after 3 failed attempts the plain facts-only template is
+  used (and the model check is skipped for it), so a small model can never loop forever.
+- The runner does the DB action (approve/reject/edit, record reply, confirm delivery) in its own
+  committed transaction **before** resuming the graph. Resuming with "approve" without
+  `approve_message` fails at `send` (test proves it).
+- Logging a reply cancels the pending wake-up; a stale wake-up for another step is ignored.
+- A process-wide lock serialises graph runs (the scheduler thread and API can't interleave).
+- A failed node (e.g. SMTP down) can be re-run with `runner.retry(case_id)`.
