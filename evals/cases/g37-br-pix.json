@@ -1,0 +1,19 @@
+{
+  "id": "g37-br-pix",
+  "country": "BR",
+  "region": "BR-SP",
+  "language": "pt",
+  "case_type": "scam",
+  "urgent": true,
+  "user_text": "Sou Lucas Ferreira. Hoje, 2026-10-28, paguei 1.500 BRL por Pix a um vendedor falso de um celular. Comprovante PIX-77302. Meu banco é Banco Aurora.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Lucas Ferreira",
+    "amount": "1500",
+    "currency": "BRL",
+    "paid_on": "2026-10-28",
+    "payment_method": "Pix",
+    "transaction_id": "PIX-77302",
+    "bank_name": "Banco Aurora"
+  }
+}

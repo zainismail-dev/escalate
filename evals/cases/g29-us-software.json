@@ -1,0 +1,19 @@
+{
+  "id": "g29-us-software",
+  "country": "US",
+  "region": "US-IL",
+  "language": "en",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "Michael Reed, Chicago. I cancelled my PhotoSuite Pro subscription (account PS-4471-MR) on 2026-01-10. They charged me $29.99 in February and March anyway. I want those charges refunded. billing@photosuite.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Michael Reed",
+    "company_name": "PhotoSuite Pro",
+    "company_contact": "billing@photosuite.example",
+    "account_id": "PS-4471-MR",
+    "cancel_requested_on": "2026-01-10",
+    "amount": "29.99",
+    "currency": "USD"
+  }
+}

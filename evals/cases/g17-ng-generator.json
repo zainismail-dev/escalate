@@ -1,0 +1,20 @@
+{
+  "id": "g17-ng-generator",
+  "country": "NG",
+  "region": "NG-LA",
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "My name is Chinedu Okafor, Lagos. I bought a generator from PowerHub on 2026-03-09, receipt PH-4410, for 450,000 naira. It stopped after 2 days. They won't refund or fix it. I want my money refunded. sales@powerhub.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Chinedu Okafor",
+    "seller_name": "PowerHub",
+    "seller_contact": "sales@powerhub.example",
+    "order_id": "PH-4410",
+    "order_date": "2026-03-09",
+    "amount": "450000",
+    "currency": "NGN",
+    "remedy_wanted": "refund"
+  }
+}

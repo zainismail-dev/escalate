@@ -1,0 +1,19 @@
+{
+  "id": "g30-ke-tv",
+  "country": "KE",
+  "region": null,
+  "language": "en",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "Peter Otieno, Nairobi. I asked SkyBox TV to stop my package, smartcard SB-60918, on 2026-07-01. They still deduct KES 1,800 monthly. I want it stopped and refunded. care@skybox.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Peter Otieno",
+    "company_name": "SkyBox TV",
+    "company_contact": "care@skybox.example",
+    "account_id": "SB-60918",
+    "cancel_requested_on": "2026-07-01",
+    "amount": "1800",
+    "currency": "KES"
+  }
+}

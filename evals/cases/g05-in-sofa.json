@@ -1,0 +1,19 @@
+{
+  "id": "g05-in-sofa",
+  "country": "IN",
+  "region": "IN-DL",
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "My name is Anjali Mehta, Delhi. FurniCraft delivered a sofa on 2026-04-02 against order FC-1209. I paid 45,000 INR. The frame cracked in a month. They ignore my calls. I want a replacement sofa. Email orders@furnicraft.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Anjali Mehta",
+    "seller_name": "FurniCraft",
+    "seller_contact": "orders@furnicraft.example",
+    "order_id": "FC-1209",
+    "amount": "45000",
+    "currency": "INR",
+    "remedy_wanted": "replacement"
+  }
+}

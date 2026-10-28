@@ -1,0 +1,19 @@
+{
+  "id": "g21-gb-broadband",
+  "country": "GB",
+  "region": null,
+  "language": "en",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "I'm Sophie Turner. I cancelled my FastNet broadband (account FN-118842) by phone and email on 2026-07-31, but they still take £34.50 every month. I want it cancelled and the August and September payments refunded. Email: billing@fastnet.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Sophie Turner",
+    "company_name": "FastNet",
+    "company_contact": "billing@fastnet.example",
+    "account_id": "FN-118842",
+    "cancel_requested_on": "2026-07-31",
+    "amount": "34.50",
+    "currency": "GBP"
+  }
+}

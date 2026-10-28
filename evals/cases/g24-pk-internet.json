@@ -1,0 +1,19 @@
+{
+  "id": "g24-pk-internet",
+  "country": "PK",
+  "region": "PK-PB",
+  "language": "en",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "Ayesha Siddiqui here, Lahore. I asked NetLink to disconnect my internet (customer number NL-77310) on 2026-05-05. They are still billing Rs 4,500 monthly. I want it disconnected and the extra bills cancelled. Email complaints@netlink.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Ayesha Siddiqui",
+    "company_name": "NetLink",
+    "company_contact": "complaints@netlink.example",
+    "account_id": "NL-77310",
+    "cancel_requested_on": "2026-05-05",
+    "amount": "4500",
+    "currency": "PKR"
+  }
+}

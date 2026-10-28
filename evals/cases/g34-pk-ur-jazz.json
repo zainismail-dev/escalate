@@ -1,0 +1,18 @@
+{
+  "id": "g34-pk-ur-jazz",
+  "country": "PK",
+  "region": "PK-SD",
+  "language": "ur",
+  "case_type": "scam",
+  "urgent": true,
+  "user_text": "میرا نام حمزہ رشید ہے۔ آج 2026-10-28 کو ایک شخص نے انعام کا جھانسہ دے کر مجھ سے 25000 روپے موبائل والٹ سے منگوا لیے، ٹرانزیکشن آئی ڈی TX-99120۔ میرا بینک Indus Bank ہے۔",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "حمزہ رشید",
+    "amount": "25000",
+    "currency": "PKR",
+    "paid_on": "2026-10-28",
+    "transaction_id": "TX-99120",
+    "bank_name": "Indus Bank"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "g13-fr-velo",
+  "country": "FR",
+  "region": null,
+  "language": "fr",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Bonjour, je suis Camille Dubois. Le 2026-06-30 j'ai commandé un vélo chez CycloShop (commande CS-2041) pour 640 EUR. Le cadre est fissuré. Ils ne répondent pas. Je demande un remplacement. Contact : aide@cycloshop.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Camille Dubois",
+    "seller_name": "CycloShop",
+    "seller_contact": "aide@cycloshop.example",
+    "order_id": "CS-2041",
+    "order_date": "2026-06-30",
+    "amount": "640",
+    "currency": "EUR"
+  }
+}

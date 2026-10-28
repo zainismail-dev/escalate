@@ -1,0 +1,19 @@
+{
+  "id": "g31-in-upi",
+  "country": "IN",
+  "region": "IN-MH",
+  "language": "en",
+  "case_type": "scam",
+  "urgent": true,
+  "user_text": "I am Sneha Patil. Today 2026-10-28 a caller said my electricity would be cut and made me pay Rs 12,000 by UPI to settle a bill. Transaction ID UPI-55102. My bank is Deccan Bank. I think it was a scam.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Sneha Patil",
+    "amount": "12000",
+    "currency": "INR",
+    "paid_on": "2026-10-28",
+    "payment_method": "UPI",
+    "bank_name": "Deccan Bank",
+    "transaction_id": "UPI-55102"
+  }
+}

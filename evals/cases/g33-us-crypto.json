@@ -1,0 +1,19 @@
+{
+  "id": "g33-us-crypto",
+  "country": "US",
+  "region": "US-FL",
+  "language": "en",
+  "case_type": "scam",
+  "urgent": false,
+  "user_text": "Kevin Price, Miami. An 'investment' site called CoinPeak took $8,500 I sent by wire on 2026-04-03 from Gulf Coast Bank. They won't let me withdraw anything.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Kevin Price",
+    "amount": "8500",
+    "currency": "USD",
+    "paid_on": "2026-04-03",
+    "payment_method": "wire",
+    "bank_name": "Gulf Coast Bank",
+    "scammer_name": "CoinPeak"
+  }
+}

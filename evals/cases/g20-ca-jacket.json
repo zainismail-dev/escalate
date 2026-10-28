@@ -1,0 +1,20 @@
+{
+  "id": "g20-ca-jacket",
+  "country": "CA",
+  "region": "CA-ON",
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Liam Tremblay, Toronto. Ordered a winter jacket from NorthWear on 2026-10-04, order NW-33019, CAD 260. The zipper broke on day one. They will only offer store credit. I want a refund to my card. care@northwear.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Liam Tremblay",
+    "seller_name": "NorthWear",
+    "seller_contact": "care@northwear.example",
+    "order_id": "NW-33019",
+    "order_date": "2026-10-04",
+    "amount": "260",
+    "currency": "CAD",
+    "remedy_wanted": "refund"
+  }
+}

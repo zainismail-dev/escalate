@@ -1,0 +1,242 @@
+[
+  {
+    "id": "r01",
+    "remedy_wanted": "a full refund",
+    "reply_text": "We have processed a full refund of PKR 45,000 to your card today. Ref RF-1001.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r02",
+    "remedy_wanted": "a full refund",
+    "reply_text": "Your refund has been issued in full. It will show in 3-5 working days.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r03",
+    "remedy_wanted": "a replacement",
+    "reply_text": "A replacement unit will be delivered on 2026-11-05. Please keep the old one for collection.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r04",
+    "remedy_wanted": "a replacement",
+    "reply_text": "We have dispatched a new LED TV. Tracking number TRK-5520, arriving 2026-11-02.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r05",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "Your subscription is cancelled and both charges have been refunded today.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r06",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "We confirm cancellation effective immediately and have refunded all payments since your request.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r07",
+    "remedy_wanted": "a full refund",
+    "reply_text": "Apologies. A full refund of $89.99 was sent to your original payment method this morning.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r08",
+    "remedy_wanted": "a replacement",
+    "reply_text": "Replacement approved and shipped today by courier; you will receive it by 2026-11-03.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r09",
+    "remedy_wanted": "a full refund",
+    "reply_text": "Hemos realizado el reembolso completo de 349 EUR hoy.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r10",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "Account closed. Refund of GBP 69.00 issued to your card on 2026-10-28.",
+    "expected": "resolved"
+  },
+  {
+    "id": "r11",
+    "remedy_wanted": "a full refund",
+    "reply_text": "We can refund 50% of the price as a goodwill gesture.",
+    "expected": "partial"
+  },
+  {
+    "id": "r12",
+    "remedy_wanted": "a full refund",
+    "reply_text": "We will refund the item price today but not the delivery charge.",
+    "expected": "partial"
+  },
+  {
+    "id": "r13",
+    "remedy_wanted": "a replacement",
+    "reply_text": "We can't replace it, but we have issued a 30% store voucher today.",
+    "expected": "partial"
+  },
+  {
+    "id": "r14",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "We have cancelled your subscription today, but the past charges are non-refundable.",
+    "expected": "partial"
+  },
+  {
+    "id": "r15",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "Cancellation confirmed. We refunded one of the two charges today.",
+    "expected": "partial"
+  },
+  {
+    "id": "r16",
+    "remedy_wanted": "a replacement",
+    "reply_text": "We have refunded PKR 10,000 for the inconvenience today; replacement is not possible.",
+    "expected": "partial"
+  },
+  {
+    "id": "r17",
+    "remedy_wanted": "a full refund",
+    "reply_text": "We will repair the item free of charge; collection is booked for 2026-11-04. A refund is not possible.",
+    "expected": "partial"
+  },
+  {
+    "id": "r18",
+    "remedy_wanted": "a full refund",
+    "reply_text": "Store credit for the full amount has been added to your account today.",
+    "expected": "partial"
+  },
+  {
+    "id": "r19",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "We have stopped future billing. Refunds for previous months are not available.",
+    "expected": "partial"
+  },
+  {
+    "id": "r20",
+    "remedy_wanted": "a replacement",
+    "reply_text": "We can offer a cheaper model as a replacement, shipping on 2026-11-06.",
+    "expected": "partial"
+  },
+  {
+    "id": "r21",
+    "remedy_wanted": "a replacement",
+    "reply_text": "We will replace the LED when the company claim is approved.",
+    "expected": "refused"
+  },
+  {
+    "id": "r22",
+    "remedy_wanted": "a full refund",
+    "reply_text": "Our policy does not allow refunds after 7 days. We cannot help.",
+    "expected": "refused"
+  },
+  {
+    "id": "r23",
+    "remedy_wanted": "a full refund",
+    "reply_text": "This damage is not covered by warranty. Your request is declined.",
+    "expected": "refused"
+  },
+  {
+    "id": "r24",
+    "remedy_wanted": "a replacement",
+    "reply_text": "Your case is with our technical team. We will update you soon.",
+    "expected": "refused"
+  },
+  {
+    "id": "r25",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "Subscriptions cannot be cancelled during the minimum term. Charges will continue.",
+    "expected": "refused"
+  },
+  {
+    "id": "r26",
+    "remedy_wanted": "a full refund",
+    "reply_text": "We are looking into it and will get back to you in due course.",
+    "expected": "refused"
+  },
+  {
+    "id": "r27",
+    "remedy_wanted": "a replacement",
+    "reply_text": "The manufacturer will decide. Please be patient, we will inform you when we hear back.",
+    "expected": "refused"
+  },
+  {
+    "id": "r28",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "Our records show no cancellation request, so the charges are valid.",
+    "expected": "refused"
+  },
+  {
+    "id": "r29",
+    "remedy_wanted": "a full refund",
+    "reply_text": "Refund will be processed once our finance department approves it.",
+    "expected": "refused"
+  },
+  {
+    "id": "r30",
+    "remedy_wanted": "a replacement",
+    "reply_text": "We will send a replacement as soon as stock arrives.",
+    "expected": "refused"
+  },
+  {
+    "id": "r31",
+    "remedy_wanted": "a full refund",
+    "reply_text": "We regret that we cannot accept returns on sale items.",
+    "expected": "refused"
+  },
+  {
+    "id": "r32",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "Please call our retention team to discuss your options.",
+    "expected": "refused"
+  },
+  {
+    "id": "r33",
+    "remedy_wanted": "a full refund",
+    "reply_text": "Nous ne pouvons pas rembourser ce produit.",
+    "expected": "refused"
+  },
+  {
+    "id": "r34",
+    "remedy_wanted": "a replacement",
+    "reply_text": "We are escalating your case. Expect a resolution shortly.",
+    "expected": "refused"
+  },
+  {
+    "id": "r35",
+    "remedy_wanted": "a full refund",
+    "reply_text": "Thank you for contacting us. Your ticket number is #88213. An agent will respond.",
+    "expected": "no_reply"
+  },
+  {
+    "id": "r36",
+    "remedy_wanted": "a replacement",
+    "reply_text": "This is an automated message: we have received your email.",
+    "expected": "no_reply"
+  },
+  {
+    "id": "r37",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "Out of office until Monday.",
+    "expected": "no_reply"
+  },
+  {
+    "id": "r38",
+    "remedy_wanted": "a full refund",
+    "reply_text": "Your message has been received. Please do not reply to this email.",
+    "expected": "no_reply"
+  },
+  {
+    "id": "r39",
+    "remedy_wanted": "a replacement",
+    "reply_text": "Ticket #4410 created. Average response time is 5 business days.",
+    "expected": "no_reply"
+  },
+  {
+    "id": "r40",
+    "remedy_wanted": "cancel the subscription and refund the charges",
+    "reply_text": "Thanks! We got your request and will be in touch.",
+    "expected": "no_reply"
+  }
+]

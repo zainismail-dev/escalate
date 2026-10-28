@@ -1,0 +1,18 @@
+{
+  "id": "g38-ng-job",
+  "country": "NG",
+  "region": "NG-FC",
+  "language": "en",
+  "case_type": "scam",
+  "urgent": false,
+  "user_text": "I'm Aisha Bello, Abuja. A fake recruiter asked me to pay a 'processing fee' of 150,000 naira by transfer on 2026-08-30 from Savannah Bank. The job does not exist.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Aisha Bello",
+    "amount": "150000",
+    "currency": "NGN",
+    "paid_on": "2026-08-30",
+    "payment_method": "transfer",
+    "bank_name": "Savannah Bank"
+  }
+}

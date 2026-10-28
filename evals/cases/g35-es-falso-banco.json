@@ -1,0 +1,18 @@
+{
+  "id": "g35-es-falso-banco",
+  "country": "ES",
+  "region": null,
+  "language": "es",
+  "case_type": "scam",
+  "urgent": true,
+  "user_text": "Me llamo Javier Moreno. Ayer, 2026-10-27, me llamaron haciéndose pasar por mi banco, BancoSol, y transferí 2.000 EUR a una cuenta 'segura'. Referencia TR-44019.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Javier Moreno",
+    "amount": "2000",
+    "currency": "EUR",
+    "paid_on": "2026-10-27",
+    "bank_name": "BancoSol",
+    "transaction_id": "TR-44019"
+  }
+}

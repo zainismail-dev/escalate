@@ -1,0 +1,20 @@
+{
+  "id": "g06-gb-boots",
+  "country": "GB",
+  "region": null,
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Hi, I'm Emma Clarke. I bought walking boots from TrailGear UK on 2026-09-05, order TG-44120, £129.00. The sole came off after two walks. They say it's wear and tear. I want my money back. Their email is help@trailgear.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Emma Clarke",
+    "seller_name": "TrailGear UK",
+    "seller_contact": "help@trailgear.example",
+    "order_id": "TG-44120",
+    "order_date": "2026-09-05",
+    "amount": "129",
+    "currency": "GBP",
+    "remedy_wanted": "money back"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "g26-fr-box",
+  "country": "FR",
+  "region": null,
+  "language": "fr",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "Je suis Thomas Petit. J'ai résilié mon abonnement BoxPlus (client BP-50981) le 2026-03-01, mais ils prélèvent encore 29,99 EUR par mois. Je veux la résiliation et le remboursement. Contact : resiliation@boxplus.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Thomas Petit",
+    "company_name": "BoxPlus",
+    "company_contact": "resiliation@boxplus.example",
+    "account_id": "BP-50981",
+    "cancel_requested_on": "2026-03-01",
+    "currency": "EUR"
+  }
+}

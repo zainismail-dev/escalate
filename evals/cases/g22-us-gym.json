@@ -1,0 +1,19 @@
+{
+  "id": "g22-us-gym",
+  "country": "US",
+  "region": "US-TX",
+  "language": "en",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "Daniel Brooks, Austin. PowerGym won't cancel my membership, member ID PG-55031. I sent a cancellation letter on 2026-06-15. They keep charging $49.99. I want the membership cancelled and a refund of charges since June. members@powergym.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Daniel Brooks",
+    "company_name": "PowerGym",
+    "company_contact": "members@powergym.example",
+    "account_id": "PG-55031",
+    "cancel_requested_on": "2026-06-15",
+    "amount": "49.99",
+    "currency": "USD"
+  }
+}

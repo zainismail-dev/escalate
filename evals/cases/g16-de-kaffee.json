@@ -1,0 +1,19 @@
+{
+  "id": "g16-de-kaffee",
+  "country": "DE",
+  "region": null,
+  "language": "de",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Ich heiße Lukas Becker. Am 2026-01-22 habe ich bei KaffeeWelt eine Kaffeemaschine gekauft, Bestellung KW-5530, für 279 EUR. Sie leckt. Der Händler lehnt die Erstattung ab. Ich möchte mein Geld zurück. E-Mail: kundendienst@kaffeewelt.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Lukas Becker",
+    "seller_name": "KaffeeWelt",
+    "seller_contact": "kundendienst@kaffeewelt.example",
+    "order_id": "KW-5530",
+    "order_date": "2026-01-22",
+    "amount": "279",
+    "currency": "EUR"
+  }
+}

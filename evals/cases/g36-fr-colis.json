@@ -1,0 +1,16 @@
+{
+  "id": "g36-fr-colis",
+  "country": "FR",
+  "region": null,
+  "language": "fr",
+  "case_type": "scam",
+  "urgent": false,
+  "user_text": "Je suis Nathalie Bernard. Le 2026-09-12 j'ai payé 1,99 EUR de 'frais de douane' sur un faux site de livraison, puis 780 EUR ont été débités de ma carte. Ma banque est Banque Lumière.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Nathalie Bernard",
+    "currency": "EUR",
+    "paid_on": "2026-09-12",
+    "bank_name": "Banque Lumière"
+  }
+}

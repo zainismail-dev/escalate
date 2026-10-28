@@ -1,0 +1,19 @@
+{
+  "id": "g02-pk-ur-mobile",
+  "country": "PK",
+  "region": "PK-SD",
+  "language": "ur",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "میرا نام عمران خان ہے، کراچی سے۔ میں نے 2026-08-03 کو PhoneZone سے موبائل خریدا، آرڈر PZ-5512، قیمت 54000 روپے۔ موبائل کی بیٹری خراب نکلی۔ وہ واپس نہیں لے رہے۔ مجھے پیسے واپس چاہئیں۔ ای میل: help@phonezone.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "عمران خان",
+    "seller_name": "PhoneZone",
+    "seller_contact": "help@phonezone.example",
+    "order_id": "PZ-5512",
+    "order_date": "2026-08-03",
+    "amount": "54000",
+    "currency": "PKR"
+  }
+}

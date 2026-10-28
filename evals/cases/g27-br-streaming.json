@@ -1,0 +1,18 @@
+{
+  "id": "g27-br-streaming",
+  "country": "BR",
+  "region": "BR-MG",
+  "language": "pt",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "Sou Rafael Souza. Cancelei a assinatura da TocaFilmes (conta TF-31207) em 2026-06-10, mas continuam cobrando 39,90 BRL. Quero o cancelamento e o estorno. E-mail: ajuda@tocafilmes.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Rafael Souza",
+    "company_name": "TocaFilmes",
+    "company_contact": "ajuda@tocafilmes.example",
+    "account_id": "TF-31207",
+    "cancel_requested_on": "2026-06-10",
+    "currency": "BRL"
+  }
+}

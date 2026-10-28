@@ -1,0 +1,19 @@
+{
+  "id": "g10-es-movil",
+  "country": "ES",
+  "region": null,
+  "language": "es",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Soy Carlos Ruiz, de Madrid. Compré un móvil en MóvilYa el 2026-05-11, pedido MY-30812, por 349 EUR. La pantalla parpadea. Se niegan a cambiarlo. Quiero un reembolso. Correo: soporte@movilya.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Carlos Ruiz",
+    "seller_name": "MóvilYa",
+    "seller_contact": "soporte@movilya.example",
+    "order_id": "MY-30812",
+    "order_date": "2026-05-11",
+    "amount": "349",
+    "currency": "EUR"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "g18-ke-phone",
+  "country": "KE",
+  "region": null,
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "I am Grace Wanjiru from Nairobi. On 2026-05-02 I bought a phone from SimuStore, order SS-1203, KES 23,500. It keeps restarting. They refuse to exchange it. I want an exchange. help@simustore.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Grace Wanjiru",
+    "seller_name": "SimuStore",
+    "seller_contact": "help@simustore.example",
+    "order_id": "SS-1203",
+    "order_date": "2026-05-02",
+    "amount": "23500",
+    "currency": "KES",
+    "remedy_wanted": "exchange"
+  }
+}

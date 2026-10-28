@@ -1,0 +1,18 @@
+{
+  "id": "g40-de-shop",
+  "country": "DE",
+  "region": null,
+  "language": "de",
+  "case_type": "scam",
+  "urgent": false,
+  "user_text": "Ich bin Jonas Wolf. Am 2026-09-03 habe ich in einem Fake-Shop Schuhe für 180 EUR per Überweisung bezahlt, Referenz FS-2290. Nichts kam an, der Shop ist weg. Meine Bank ist Nordbank.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Jonas Wolf",
+    "amount": "180",
+    "currency": "EUR",
+    "paid_on": "2026-09-03",
+    "transaction_id": "FS-2290",
+    "bank_name": "Nordbank"
+  }
+}

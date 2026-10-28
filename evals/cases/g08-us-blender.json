@@ -1,0 +1,20 @@
+{
+  "id": "g08-us-blender",
+  "country": "US",
+  "region": "US-NY",
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "I'm James Carter in New York. I bought a blender from KitchenPro on 2026-08-20, order KP-99021, $89.99. The motor smells of burning. They refuse returns after 14 days. I want a refund. Email: returns@kitchenpro.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "James Carter",
+    "seller_name": "KitchenPro",
+    "seller_contact": "returns@kitchenpro.example",
+    "order_id": "KP-99021",
+    "order_date": "2026-08-20",
+    "amount": "89.99",
+    "currency": "USD",
+    "remedy_wanted": "refund"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "g03-pk-ur-ac",
+  "country": "PK",
+  "region": "PK-IS",
+  "language": "ur",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "میں زینب علی ہوں۔ 2026-05-20 کو AirCool Traders سے اے سی لیا، رسید نمبر AC-0098، 120000 روپے۔ اے سی ٹھنڈا نہیں کرتا۔ دکاندار مرمت سے انکار کر رہا ہے۔ مجھے نیا اے سی چاہیے۔ رابطہ: sales@aircool.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "زینب علی",
+    "seller_name": "AirCool Traders",
+    "seller_contact": "sales@aircool.example",
+    "order_id": "AC-0098",
+    "order_date": "2026-05-20",
+    "amount": "120000",
+    "currency": "PKR"
+  }
+}

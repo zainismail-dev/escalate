@@ -1,0 +1,20 @@
+{
+  "id": "g19-ae-watch",
+  "country": "AE",
+  "region": null,
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Fatima Al Mansoori, Dubai. Bought a smartwatch from GadgetsME on 2026-09-21, order GM-80022, AED 899. The strap broke and the screen fogs. They refuse a refund. I want a full refund. support@gadgetsme.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Fatima Al Mansoori",
+    "seller_name": "GadgetsME",
+    "seller_contact": "support@gadgetsme.example",
+    "order_id": "GM-80022",
+    "order_date": "2026-09-21",
+    "amount": "899",
+    "currency": "AED",
+    "remedy_wanted": "full refund"
+  }
+}

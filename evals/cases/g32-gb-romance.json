@@ -1,0 +1,18 @@
+{
+  "id": "g32-gb-romance",
+  "country": "GB",
+  "region": null,
+  "language": "en",
+  "case_type": "scam",
+  "urgent": false,
+  "user_text": "My name is Margaret Hill. Over three months someone I met online asked for money. The last payment was £3,000 by bank transfer on 2026-05-19 from Albion Bank. He has now vanished.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Margaret Hill",
+    "amount": "3000",
+    "currency": "GBP",
+    "paid_on": "2026-05-19",
+    "payment_method": "bank transfer",
+    "bank_name": "Albion Bank"
+  }
+}

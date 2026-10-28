@@ -1,0 +1,18 @@
+{
+  "id": "g28-de-handy",
+  "country": "DE",
+  "region": null,
+  "language": "de",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "Ich bin Anna Schmidt. Ich habe meinen Handyvertrag bei FunkPlus (Kundennummer FP-88120) am 2026-02-14 gekündigt. Sie buchen weiter 24,99 EUR ab. Ich will die Kündigung bestätigt und das Geld zurück. E-Mail: vertrag@funkplus.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Anna Schmidt",
+    "company_name": "FunkPlus",
+    "company_contact": "vertrag@funkplus.example",
+    "account_id": "FP-88120",
+    "cancel_requested_on": "2026-02-14",
+    "currency": "EUR"
+  }
+}

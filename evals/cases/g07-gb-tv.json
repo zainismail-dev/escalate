@@ -1,0 +1,20 @@
+{
+  "id": "g07-gb-tv",
+  "country": "GB",
+  "region": null,
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Oliver Smith. Ordered a TV from BrightVision on 2 March 2026, order number BV-30017, paid £499.99. Dead pixels from day one. They want me to pay for return postage and then a repair. I want a replacement TV. orders@brightvision.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Oliver Smith",
+    "seller_name": "BrightVision",
+    "seller_contact": "orders@brightvision.example",
+    "order_id": "BV-30017",
+    "order_date": "2026-03-02",
+    "amount": "499.99",
+    "currency": "GBP",
+    "remedy_wanted": "replacement"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "g14-br-geladeira",
+  "country": "BR",
+  "region": "BR-SP",
+  "language": "pt",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Meu nome é Pedro Almeida, de São Paulo. Comprei uma geladeira na CasaFria em 2026-07-08, pedido CF-90011, por 3.200 BRL. Ela não gela. A loja se recusa a trocar. Quero o reembolso. E-mail: atendimento@casafria.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Pedro Almeida",
+    "seller_name": "CasaFria",
+    "seller_contact": "atendimento@casafria.example",
+    "order_id": "CF-90011",
+    "order_date": "2026-07-08",
+    "amount": "3200",
+    "currency": "BRL"
+  }
+}

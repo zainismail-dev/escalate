@@ -1,0 +1,19 @@
+{
+  "id": "g15-br-celular",
+  "country": "BR",
+  "region": "BR-RJ",
+  "language": "pt",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Sou Mariana Costa, do Rio. Em 2026-04-14 comprei um celular na FoneMax, pedido FM-7781, 1.899 BRL. Veio com a câmera quebrada. Não aceitam devolução. Quero a troca. Contato: suporte@fonemax.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Mariana Costa",
+    "seller_name": "FoneMax",
+    "seller_contact": "suporte@fonemax.example",
+    "order_id": "FM-7781",
+    "order_date": "2026-04-14",
+    "amount": "1899",
+    "currency": "BRL"
+  }
+}

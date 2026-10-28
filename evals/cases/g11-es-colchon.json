@@ -1,0 +1,19 @@
+{
+  "id": "g11-es-colchon",
+  "country": "ES",
+  "region": null,
+  "language": "es",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Me llamo Ana Torres. El 2026-02-27 compré un colchón en DescansoPlus (pedido DP-1180), pagué 520 EUR. Se hundió en dos semanas. No responden. Quiero que me devuelvan el dinero. Contacto: clientes@descansoplus.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Ana Torres",
+    "seller_name": "DescansoPlus",
+    "seller_contact": "clientes@descansoplus.example",
+    "order_id": "DP-1180",
+    "order_date": "2026-02-27",
+    "amount": "520",
+    "currency": "EUR"
+  }
+}

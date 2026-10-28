@@ -1,0 +1,17 @@
+{
+  "id": "g39-ca-tax",
+  "country": "CA",
+  "region": "CA-BC",
+  "language": "en",
+  "case_type": "scam",
+  "urgent": false,
+  "user_text": "Emily Chen, Vancouver. A caller claiming to be from the tax agency made me buy CAD 1,200 in gift cards on 2026-07-22 and read him the codes.",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Emily Chen",
+    "amount": "1200",
+    "currency": "CAD",
+    "paid_on": "2026-07-22",
+    "payment_method": "gift cards"
+  }
+}

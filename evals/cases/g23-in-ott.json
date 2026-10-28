@@ -1,0 +1,19 @@
+{
+  "id": "g23-in-ott",
+  "country": "IN",
+  "region": "IN-TN",
+  "language": "en",
+  "case_type": "subscription_cancel",
+  "urgent": false,
+  "user_text": "Karthik S, Chennai. I asked CineStream to cancel my plan (user ID CS-IN-90412) on 2026-08-01 but they auto-renewed and took 1,499 rupees. I want a refund and cancellation. help@cinestream.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Karthik S",
+    "company_name": "CineStream",
+    "company_contact": "help@cinestream.example",
+    "account_id": "CS-IN-90412",
+    "cancel_requested_on": "2026-08-01",
+    "amount": "1499",
+    "currency": "INR"
+  }
+}

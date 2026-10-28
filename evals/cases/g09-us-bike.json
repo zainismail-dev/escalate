@@ -1,0 +1,19 @@
+{
+  "id": "g09-us-bike",
+  "country": "US",
+  "region": "US-WA",
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Sarah Nguyen, Seattle. Bought an e-bike from VoltRide on June 1, 2026, order VR-2026-551 for $1,450. The battery stopped holding charge. They keep 'escalating' with no answer. I want a replacement battery. support@voltride.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Sarah Nguyen",
+    "seller_name": "VoltRide",
+    "seller_contact": "support@voltride.example",
+    "order_id": "VR-2026-551",
+    "order_date": "2026-06-01",
+    "amount": "1450",
+    "currency": "USD"
+  }
+}

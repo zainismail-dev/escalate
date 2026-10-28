@@ -237,3 +237,17 @@ Defaults chosen during the autonomous build, with the reason for each.
 - New screens: Questions, Log a reply (shows the verdict), My cases (status filter), Settings
   (LLM test button, email mode, default draft language). The dashboard adds PDF download and
   withdraw. Settings can't edit `.env` from the browser (by design); it explains what to set.
+
+## Golden set and eval report (task 3.6)
+- 50 golden cases (10 hand-made + 40 from `evals/make_golden.py`): 12 countries, 6 languages
+  (en, ur, es, fr, pt, de), all three case types. 40 sample replies in `evals/make_replies.py`
+  (resolved 10, partial 10, refused 14 including undated promises, auto-acknowledgements 6
+  labelled `no_reply`). All data is synthetic, with `.example` contacts.
+- Metrics: extraction field accuracy; classification = case type **and** country **and**
+  region (when the case states one), with type-only accuracy alongside; unsupported facts =
+  code check, then model check, on each case's first-step draft; tone = `escalate/agent/tone.py`
+  (code, deterministic); reply-judge accuracy.
+- Drafting evals fill required facts a golden case doesn't state from `DRAFT_DEFAULTS`, so every
+  case produces a draft.
+- **The committed `evals/report.md` is an oracle run** (harness check, labelled as such). No
+  real model was available during the build; see MANUAL_STEPS.md.

@@ -1,0 +1,20 @@
+{
+  "id": "g04-in-laptop",
+  "country": "IN",
+  "region": "IN-KA",
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Rahul Verma here, Bengaluru. Ordered a laptop from TechBazaar on 2026-07-15 (order TB-778812), paid Rs 62,990. It won't charge. Seller refuses refund saying it's physical damage, which is false. I want a full refund. Contact: support@techbazaar.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Rahul Verma",
+    "seller_name": "TechBazaar",
+    "seller_contact": "support@techbazaar.example",
+    "order_id": "TB-778812",
+    "order_date": "2026-07-15",
+    "amount": "62990",
+    "currency": "INR",
+    "remedy_wanted": "full refund"
+  }
+}

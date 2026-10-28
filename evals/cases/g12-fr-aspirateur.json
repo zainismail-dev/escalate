@@ -1,0 +1,19 @@
+{
+  "id": "g12-fr-aspirateur",
+  "country": "FR",
+  "region": null,
+  "language": "fr",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "Je m'appelle Julien Martin. J'ai acheté un aspirateur chez MaisonTech le 2026-03-18, commande MT-66310, pour 199 EUR. Il ne s'allume plus. Le vendeur refuse le remboursement. Je veux être remboursé. E-mail : service@maisontech.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Julien Martin",
+    "seller_name": "MaisonTech",
+    "seller_contact": "service@maisontech.example",
+    "order_id": "MT-66310",
+    "order_date": "2026-03-18",
+    "amount": "199",
+    "currency": "EUR"
+  }
+}

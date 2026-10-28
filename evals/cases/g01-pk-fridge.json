@@ -1,0 +1,20 @@
+{
+  "id": "g01-pk-fridge",
+  "country": "PK",
+  "region": "PK-PB",
+  "language": "en",
+  "case_type": "refund_refused",
+  "urgent": false,
+  "user_text": "I'm Bilal Ahmed from Lahore. Bought a fridge from CoolHome Appliances on 2026-06-12, invoice CH-20931, for 98,500 rupees. The compressor died in 3 weeks. They refuse to replace it. I want a replacement. Their email: care@coolhome.example",
+  "evidence": [],
+  "expected_facts": {
+    "buyer_name": "Bilal Ahmed",
+    "seller_name": "CoolHome Appliances",
+    "seller_contact": "care@coolhome.example",
+    "order_id": "CH-20931",
+    "order_date": "2026-06-12",
+    "amount": "98500",
+    "currency": "PKR",
+    "remedy_wanted": "replacement"
+  }
+}
