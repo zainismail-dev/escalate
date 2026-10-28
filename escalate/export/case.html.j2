@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="{{ case.language }}" dir="{{ 'rtl' if case.language in rtl else 'ltr' }}">
+<head><meta charset="utf-8"><title>Case {{ case.id }}</title>
+<style>
+@page { size: A4; margin: 18mm 16mm; @bottom-right { content: "Case {{ case.id }} · page " counter(page); font-size: 8pt; color: #666; } }
+body { font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif; font-size: 10pt; color: #111; }
+h1 { font-size: 20pt; margin: 0 0 4pt; } h2 { font-size: 13pt; border-bottom: 1px solid #999; padding-bottom: 2pt; margin-top: 0; }
+section { page-break-before: always; } section.cover { page-break-before: auto; }
+table { width: 100%; border-collapse: collapse; } td, th { text-align: start; vertical-align: top; padding: 3pt 4pt; border-bottom: 1px solid #ddd; }
+th { background: #f2f2f2; } .muted { color: #666; } .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 8pt; word-break: break-all; }
+.msg { border: 1px solid #ccc; padding: 6pt 8pt; margin-bottom: 10pt; page-break-inside: avoid; }
+.msg pre { white-space: pre-wrap; font-family: inherit; margin: 6pt 0 0; }
+.thumb { max-width: 60mm; max-height: 60mm; border: 1px solid #ccc; }
+.notice { margin-top: 16pt; font-size: 8.5pt; color: #444; border-top: 1px solid #999; padding-top: 6pt; }
+</style></head>
+<body>
+<section class="cover">
+  <h1>Case file #{{ case.id }}</h1>
+  <p class="muted">Generated {{ generated }} UTC with Escalate</p>
+  <table>
+    <tr><th>Consumer</th><td>{{ facts.get('buyer_name', '—') }}</td></tr>
+    <tr><th>Other party</th><td>{{ facts.get('seller_name') or facts.get('company_name') or case.company or '—' }}</td></tr>
+    <tr><th>Case type</th><td>{{ (case.case_type or '—').replace('_', ' ') }}</td></tr>
+    <tr><th>Amount</th><td>{{ amount }}</td></tr>
+    <tr><th>Country / region</th><td>{{ case.country or '—' }}{% if case.region %} / {{ case.region }}{% endif %}</td></tr>
+    <tr><th>Status</th><td>{{ case.status.replace('_', ' ') }}</td></tr>
+    <tr><th>Playbook</th><td>{{ case.playbook_id or '—' }}{% if case.playbook_version %} (v{{ case.playbook_version }}){% endif %}</td></tr>
+    <tr><th>Opened</th><td>{{ case.created_at.strftime('%Y-%m-%d') }}</td></tr>
+  </table>
+  <h2 style="margin-top:14pt">In the consumer's words</h2>
+  <p>{{ case.description }}</p>
+  <div class="notice">{{ notice }}</div>
+</section>
+
+<section>
+  <h2>Facts and their sources</h2>
+  <table>
+    <tr><th>Fact</th><th>Value</th><th>Source</th><th>Confidence</th></tr>
+    {% for f in case.facts %}
+    <tr><td>{{ f.key.replace('_', ' ') }}</td><td>{{ f.value }}</td>
+        <td>{% if f.source_evidence_id %}evidence #{{ f.source_evidence_id }} ({{ evidence_names.get(f.source_evidence_id, '') }}){% else %}consumer's statement{% endif %}</td>
+        <td>{{ '%.0f' % (f.confidence * 100) }}%</td></tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section>
+  <h2>Timeline</h2>
+  <table>
+    <tr><th>Date (UTC)</th><th>Event</th><th>Details</th></tr>
+    {% for e in case.events %}
+    <tr><td>{{ e.created_at.strftime('%Y-%m-%d %H:%M') }}</td><td>{{ e.type.replace('_', ' ') }}</td>
+        <td class="muted">{{ describe(e) }}</td></tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section>
+  <h2>Messages</h2>
+  {% for m in messages %}
+  <div class="msg">
+    <strong>{{ 'Sent' if m.direction == 'out' else 'Received' }}{% if m.sent_at %} {{ m.sent_at.strftime('%Y-%m-%d') }}{% endif %}</strong>
+    · {{ m.channel }} · step {{ m.step_id }} · {{ m.status }}{% if m.recipient %} · to {{ m.recipient }}{% endif %}
+    {% if m.subject %}<div><strong>{{ m.subject }}</strong></div>{% endif %}
+    <pre>{{ m.body }}</pre>
+  </div>
+  {% else %}<p class="muted">No messages yet.</p>{% endfor %}
+</section>
+
+<section>
+  <h2>Evidence</h2>
+  <table>
+    <tr><th>#</th><th>File</th><th>Preview</th><th>SHA-256</th></tr>
+    {% for ev in evidence %}
+    <tr><td>{{ ev.id }}</td><td>{{ ev.filename }}<br><span class="muted">{{ ev.kind }}, uploaded {{ ev.uploaded_at.strftime('%Y-%m-%d') }}</span></td>
+        <td>{% if ev.thumb %}<img class="thumb" src="{{ ev.thumb }}">{% else %}<span class="muted">{{ ev.excerpt }}</span>{% endif %}</td>
+        <td class="mono">{{ ev.sha256 }}</td></tr>
+    {% else %}<tr><td colspan="4" class="muted">No evidence uploaded.</td></tr>{% endfor %}
+  </table>
+  <div class="notice">{{ notice }}</div>
+</section>
+</body></html>

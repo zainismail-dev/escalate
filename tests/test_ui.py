@@ -40,7 +40,14 @@ CASE = {
 
 def fake_get(path: str, **params: Any) -> Any:
     if path == "/health":
-        return {"ok": True, "is_cloud": True, "llm_base_url": "https://cloud", "demo_mode": False}
+        return {
+            "ok": True,
+            "is_cloud": True,
+            "llm_base_url": "https://cloud",
+            "demo_mode": False,
+            "email_mode": "smtp",
+            "version": "0.0.1",
+        }
     if path == "/cases":
         return [CASE]
     if path == "/checklist":
@@ -116,7 +123,40 @@ def test_every_ui_key_exists_in_english() -> None:
     en = json.loads((UI.parent / "locales" / "en.json").read_text())
     source = (UI / "app.py").read_text()
     keys = {k for k in re.findall(r"""\bt\(\s*["']([\w.]+)["']""", source) if not k.endswith(".")}
-    keys |= {f"page.{p}" for p in ["scam", "new_case", "dashboard", "review"]}
+    keys |= {
+        f"page.{p}"
+        for p in [
+            "scam",
+            "new_case",
+            "cases",
+            "dashboard",
+            "questions",
+            "review",
+            "reply",
+            "settings",
+        ]
+    }
+    keys |= {f"verdict.{v}" for v in ["resolved", "partial", "refused", "no_reply"]}
     keys |= {f"status.{s.value}" for s in CaseStatus}  # built as t("status." + status)
     assert keys, "no t() calls found"
     assert sorted(keys - set(en)) == []
+
+
+@pytest.mark.parametrize("page", ["cases", "questions", "reply", "settings"])
+def test_other_pages_render(app: AppTest, page: str) -> None:
+    app.session_state["page"] = page
+    app.run()
+    assert not app.exception
+
+
+def test_settings_llm_test_button(app: AppTest, monkeypatch: pytest.MonkeyPatch) -> None:
+    import api_client
+
+    def fake_post(path: str, json: Any = None, files: Any = None) -> Any:
+        return {"ok": False, "error": "LLMNotConfigured: set MODEL_SMART"}
+
+    monkeypatch.setattr(api_client, "post", fake_post)
+    app.session_state["page"] = "settings"
+    app.run()
+    app.button[0].click().run()
+    assert any("MODEL_SMART" in e.value for e in app.error)

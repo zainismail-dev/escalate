@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from escalate.config import Settings, get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Evidence
+from escalate.evidence.ocr import extract_text
 
 KINDS = {
     ".png": "image",
@@ -69,8 +70,6 @@ def save_upload(
     session.flush()
 
     if extract:
-        from escalate.evidence.ocr import extract_text
-
         result = extract_text(ev, s, data=data)
         ev.extracted_text = result.text
         ev.ocr_confidence = result.confidence

@@ -7,6 +7,10 @@ from dataclasses import dataclass
 from email import policy
 from email.message import EmailMessage
 
+import pytesseract
+from PIL import Image
+from pypdf import PdfReader
+
 from escalate.config import Settings, get_settings
 from escalate.db.models import Evidence
 
@@ -42,9 +46,6 @@ def extract_text(
 
 
 def _image(data: bytes, langs: str) -> ExtractResult:
-    import pytesseract
-    from PIL import Image
-
     try:
         img = Image.open(io.BytesIO(data))
         d = pytesseract.image_to_data(img, lang=langs, output_type=pytesseract.Output.DICT)
@@ -66,8 +67,6 @@ def _image(data: bytes, langs: str) -> ExtractResult:
 
 
 def _pdf(data: bytes) -> ExtractResult:
-    from pypdf import PdfReader
-
     try:
         reader = PdfReader(io.BytesIO(data))
         text = "\n".join((page.extract_text() or "") for page in reader.pages).strip()

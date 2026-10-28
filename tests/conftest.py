@@ -1,6 +1,7 @@
 from collections.abc import Iterator
 from pathlib import Path
 
+import freezegun
 import pytest
 from cryptography.fernet import Fernet
 from sqlalchemy.orm import Session
@@ -8,6 +9,9 @@ from sqlalchemy.orm import Session
 from escalate.config import Settings
 from escalate.db import session as db_session
 from escalate.db.models import Base
+
+# pandas (pulled in by pytesseract) crashes if first imported while time is frozen.
+freezegun.configure(extend_ignore_list=["pandas", "pytesseract"])
 
 
 @pytest.fixture

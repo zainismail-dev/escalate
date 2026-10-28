@@ -36,3 +36,5 @@ that was not available. Each item names the task it came from.
   limits), or open issues labelled `country:<cc>` and `good first issue` for contributors.
 - [ ] **3.4 — Complete `locales/ur.json`** with a native speaker (only ~20 strings are
   translated; the rest fall back to English).
+- [ ] **3.5 — Export the LED case PDF and click through every screen by hand** with a real
+  model. Locally the PDF render was not possible (no Pango); CI runs the PDF test.

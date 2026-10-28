@@ -11,7 +11,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Escalate", page_icon="⚖️", layout="wide")
 
-PAGE_IDS = ["scam", "new_case", "dashboard", "review"]
+PAGE_IDS = ["scam", "new_case", "cases", "dashboard", "questions", "review", "reply", "settings"]
 STATUS_COLOURS = {
     "resolved": "green",
     "withdrawn": "gray",
@@ -105,7 +105,9 @@ def page_new_case() -> None:
         c1, c2, c3 = st.columns(3)
         country = c1.text_input(t("new.country"), max_chars=2)
         region = c2.text_input(t("new.region"), max_chars=6)
-        language = c3.text_input(t("new.language"), value="en", max_chars=2)
+        language = c3.text_input(
+            t("new.language"), value=st.session_state.get("draft_lang", "en"), max_chars=2
+        )
         submitted = st.form_submit_button(t("new.submit"), type="primary")
     if not submitted:
         return
@@ -130,6 +132,14 @@ def page_new_case() -> None:
     go("dashboard")
 
 
+def questions_form(cid: int, missing: list[str]) -> None:
+    with st.form("answers"):
+        answers = {k: st.text_input(k.replace("_", " ").capitalize()) for k in missing}
+        if st.form_submit_button(t("pending.save_answers"), type="primary"):
+            api.post(f"/cases/{cid}/answers", json={"answers": answers})
+            st.rerun()
+
+
 def pending_panel(case: dict[str, Any]) -> None:
     p = case.get("pending")
     cid = case["id"]
@@ -139,13 +149,7 @@ def pending_panel(case: dict[str, Any]) -> None:
     try:
         if kind == "questions":
             st.subheader(t("pending.questions"))
-            with st.form("answers"):
-                answers = {
-                    k: st.text_input(k.replace("_", " ").capitalize()) for k in p.get("missing", [])
-                }
-                if st.form_submit_button(t("pending.save_answers"), type="primary"):
-                    api.post(f"/cases/{cid}/answers", json={"answers": answers})
-                    st.rerun()
+            questions_form(cid, p.get("missing", []))
         elif kind == "urgent_checklist":
             st.error(t("pending.urgent"))
             params = {"country": case["country"]} if case["country"] else {}
@@ -198,6 +202,15 @@ def page_dashboard() -> None:
         elif d["warn"]:
             st.error(t("dash.deadline_soon", days=d["days_left"], rule=d["rule"], due=d["due"]))
     pending_panel(case)
+    c3, c4 = st.columns(2)
+    c3.link_button(t("dash.export"), f"{api.API_URL}/cases/{cid}/export.pdf")
+    if case["status"] not in ("resolved", "withdrawn") and c4.button(t("dash.withdraw")):
+        try:
+            api.post(f"/cases/{cid}/withdraw", json={"reason": "withdrawn by user"})
+            st.success(t("dash.withdrawn"))
+            st.rerun()
+        except api.ApiError as exc:
+            show_error(exc)
     st.subheader(t("dash.timeline"))
     for ev in api.get(f"/cases/{cid}/timeline"):
         st.markdown(f"`{ev['created_at'][:16].replace('T', ' ')}` · {ev['type'].replace('_', ' ')}")
@@ -254,11 +267,106 @@ def page_review() -> None:
         show_error(exc)
 
 
+def page_questions() -> None:
+    cid = pick_case()
+    if cid is None:
+        return
+    st.header(t("page.questions"))
+    p = api.get(f"/cases/{cid}").get("pending") or {}
+    if p.get("type") != "questions":
+        st.info(t("questions.none"))
+        return
+    st.caption(t("questions.intro"))
+    try:
+        questions_form(cid, p.get("missing", []))
+    except api.ApiError as exc:
+        show_error(exc)
+
+
+def page_reply() -> None:
+    cid = pick_case()
+    if cid is None:
+        return
+    st.header(t("reply.header"))
+    p = api.get(f"/cases/{cid}").get("pending") or {}
+    if p.get("type") != "waiting_reply":
+        st.info(t("reply.not_waiting"))
+        return
+    with st.form("reply"):
+        text = st.text_area(t("reply.text"), height=240)
+        submitted = st.form_submit_button(t("reply.submit"), type="primary")
+    if submitted and text.strip():
+        try:
+            res = api.post(f"/cases/{cid}/replies", json={"text": text})
+        except api.ApiError as exc:
+            show_error(exc)
+            return
+        verdict = res.get("verdict") or "no_reply"
+        show = st.success if verdict == "resolved" else st.warning
+        show(t("reply.verdict", verdict=t(f"verdict.{verdict}")))
+        if res.get("reason"):
+            st.write(t("reply.reason", reason=res["reason"]))
+
+
+def page_cases() -> None:
+    st.header(t("cases.header"))
+    cases = api.get("/cases")
+    statuses = sorted({c["status"] for c in cases})
+    chosen = st.multiselect(
+        t("cases.filter"), statuses, default=statuses, format_func=lambda s: t(f"status.{s}")
+    )
+    rows = [
+        {
+            t("cases.col_id"): c["id"],
+            t("cases.col_company"): c.get("company") or "",
+            t("cases.col_type"): (c.get("case_type") or "").replace("_", " "),
+            t("cases.col_country"): c.get("country") or "",
+            t("cases.col_status"): t(f"status.{c['status']}"),
+            t("cases.col_next"): (c.get("next_action_at") or "")[:10],
+        }
+        for c in cases
+        if c["status"] in chosen
+    ]
+    st.dataframe(rows, hide_index=True, use_container_width=True)
+    ids = [c["id"] for c in cases if c["status"] in chosen]
+    if ids:
+        pick = st.selectbox(t("cases.open"), ids, format_func=lambda i: f"#{i}")
+        if st.button(t("cases.open"), type="primary"):
+            st.session_state["case_id"] = pick
+            go("dashboard")
+
+
+def page_settings() -> None:
+    st.header(t("settings.header"))
+    health = api.get("/health")
+    st.subheader(t("settings.llm"))
+    st.write(t("settings.llm_endpoint", url=health["llm_base_url"]))
+    if st.button(t("settings.llm_test")):
+        res = api.post("/settings/llm-test")
+        if res["ok"]:
+            st.success(t("settings.llm_ok", reply=res["reply"]))
+        else:
+            st.error(t("settings.llm_fail", error=res["error"]))
+    st.subheader(t("settings.email"))
+    st.write(t("settings.email_mode", mode=health["email_mode"]))
+    st.caption(t("settings.email_help"))
+    st.subheader(t("settings.languages"))
+    st.session_state["draft_lang"] = st.text_input(
+        t("settings.draft_language"), value=st.session_state.get("draft_lang", "en"), max_chars=2
+    )
+    st.caption(t("settings.ui_language_help"))
+    st.caption(t("settings.version", version=health["version"]))
+
+
 PAGES = {
     "scam": page_scam,
     "new_case": page_new_case,
+    "cases": page_cases,
     "dashboard": page_dashboard,
+    "questions": page_questions,
     "review": page_review,
+    "reply": page_reply,
+    "settings": page_settings,
 }
 
 

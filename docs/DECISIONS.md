@@ -221,3 +221,19 @@ Defaults chosen during the autonomous build, with the reason for each.
   accepts e.g. `en_ZZ`).
 - Drafts already use `case.language` (templates per language, falling back to `en/` with the
   model asked to write in the case language).
+
+## Case PDF and full UI (task 3.5)
+- The case file is built from `escalate/export/case.html.j2` (autoescaped, so user text can't
+  inject HTML) and rendered with WeasyPrint. `build_case_html()` is tested locally;
+  the real PDF test (text extracted with pypdf must contain the case number and every event
+  date) runs where Pango is installed (CI, Docker).
+- Pages: cover (parties, amount, status, playbook), facts with source evidence and confidence,
+  dated timeline (only whitelisted payload fields, never free text), sent/received/approved
+  messages in full, evidence with JPEG thumbnails (decrypted in memory) and SHA-256. The
+  disclaimer appears on the cover and at the end.
+- `pytesseract`/`pypdf`/`PIL` are now imported at module level in `escalate/evidence/ocr.py`:
+  importing pandas (a pytesseract dependency) for the first time while freezegun is active
+  crashes the interpreter. Tests also tell freezegun to ignore pandas.
+- New screens: Questions, Log a reply (shows the verdict), My cases (status filter), Settings
+  (LLM test button, email mode, default draft language). The dashboard adds PDF download and
+  withdraw. Settings can't edit `.env` from the browser (by design); it explains what to set.

@@ -19,5 +19,9 @@
   "review.message": "پیغام",
   "review.approve": "منظور کریں اور بھیجیں",
   "review.reject": "مسترد کریں",
-  "status.resolved": "حل ہو گیا"
+  "status.resolved": "حل ہو گیا",
+  "page.questions": "سوالات",
+  "page.reply": "جواب درج کریں",
+  "page.cases": "میرے کیس",
+  "page.settings": "ترتیبات"
 }
