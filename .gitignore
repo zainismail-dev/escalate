@@ -24,3 +24,6 @@ secrets/
 .DS_Store
 .idea/
 .vscode/
+
+# Security scan output
+zap-out/

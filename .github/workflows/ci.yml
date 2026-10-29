@@ -1,34 +1,88 @@
 name: ci
 on: [push, pull_request]
+
+# Least privilege: every job only reads the repository. Actions are pinned to commit SHAs
+# (Dependabot keeps them current); downloaded tools are checked against a SHA-256.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  GITLEAKS_VERSION: 8.30.1
+  GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+  ZAP_VERSION: 2.17.0
+  ZAP_SHA256: 94c8f767b1c2e94f0db66b3ae56514d5e3f5a728ee1b6c798e0c8fe2d61fbff0
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
       - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-urd libpango-1.0-0 libpangoft2-1.0-0
       - run: uv sync
       - run: uv run ruff check .
       - run: uv run ruff format --check .
+      - run: uv run mypy escalate
       - run: uv run python -m escalate.playbooks.validate playbooks/
       - run: uv run pytest -q
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { fetch-depth: 0, persist-credentials: false } # full history for gitleaks
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+      - name: gitleaks (full git history)
+        run: |
+          curl -fsSLo gl.tgz https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+          echo "${GITLEAKS_SHA256}  gl.tgz" | sha256sum -c -
+          tar xzf gl.tgz gitleaks && ./gitleaks git . --redact --exit-code 1
+      - name: pip-audit (locked dependencies)
+        run: |
+          # The Intel-macOS-only cryptography pin is a documented residual (docs/SECURITY_AUDIT.md).
+          uv export --frozen --no-hashes --no-emit-project --all-groups \
+            | grep -v "platform_machine == 'x86_64' and sys_platform == 'darwin'" > reqs.txt
+          uvx pip-audit -r reqs.txt --disable-pip --no-deps --strict
+      - name: bandit
+        run: uvx bandit -c pyproject.toml -r escalate ui -q
+      - name: semgrep
+        run: >
+          uvx semgrep scan --metrics=off --error -q
+          --config p/python --config p/fastapi --config p/secrets
+          --config p/typescript --config p/react --config p/nextjs
+      - name: npm audit (high and critical)
+        working-directory: web
+        run: npm audit --audit-level=high
+      - run: uv sync
+      - name: security tests
+        run: uv run pytest -q tests/security
+
   docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
       - run: docker build -t escalate:ci .
       - name: smoke test the image (imports, OCR binary, PDF rendering)
         run: |
           docker run --rm escalate:ci tesseract --version
           docker run --rm escalate:ci python -c "import escalate.api.main; from escalate.export.pdf import letter_pdf; assert letter_pdf('t', 'hello').startswith(b'%PDF'); print('ok')"
+
   web:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -39,34 +93,27 @@ jobs:
       - run: node scripts/check-messages.mjs
       - run: npm test
       - run: npm run build
-        env:
-          NEXT_TELEMETRY_DISABLED: 1
+      - name: scan the bundle (no secrets, no demo data)
+        run: node scripts/scan-bundle.mjs
+
   web-e2e:
     runs-on: ubuntu-latest
     needs: web
     env:
-      NEXT_TELEMETRY_DISABLED: 1
       API_URL: http://localhost:8000
       WEB_URL: http://localhost:3000
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: uv sync
       - name: start the API (demo mode, throwaway data, no AI model)
-        run: |
-          export FERNET_KEY=$(uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
-          mkdir -p /tmp/esc
-          DEMO_MODE=true DATABASE_URL=sqlite:////tmp/esc/escalate.db CHECKPOINT_DB=/tmp/esc/cp.db \
-          EVIDENCE_DIR=/tmp/esc/ev ESCALATE_SETTINGS_FILE=/tmp/esc/settings.json \
-          MODEL_SMART=none MODEL_FAST=none LLM_BASE_URL=http://127.0.0.1:9/v1 \
-          WEB_ORIGIN=http://localhost:3000,http://localhost:3001 \
-          nohup uv run uvicorn escalate.api.main:app --port 8000 > /tmp/esc/api.log 2>&1 &
-          for i in $(seq 30); do curl -fsS $API_URL/health && break; sleep 1; done
+        run: scripts/ci_api.sh
       - name: build and start the web app
         working-directory: web
         run: |
@@ -88,7 +135,88 @@ jobs:
       - if: failure()
         run: tail -100 /tmp/esc/api.log /tmp/esc/web.log /tmp/esc/dev.log
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: playwright-report
           path: web/playwright-report
+
+  demo:
+    # The public live demo (Vercel): NEXT_PUBLIC_DEMO_STATIC=true, sample data, no API at all.
+    runs-on: ubuntu-latest
+    needs: web
+    defaults:
+      run:
+        working-directory: web
+    env:
+      WEB_URL: http://localhost:3000
+      DEMO_E2E: 1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build:demo
+      - name: scan the demo bundle (no secrets, no internal or local URLs)
+        run: |
+          node scripts/scan-bundle.mjs --demo
+          curl -fsSLo gl.tgz https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+          echo "${GITLEAKS_SHA256}  gl.tgz" | sha256sum -c -
+          tar xzf gl.tgz gitleaks && ./gitleaks dir .next/static --redact --exit-code 1
+      - name: start the demo (no API is started)
+        run: |
+          cp -r .next/static .next/standalone/.next/
+          PORT=3000 nohup node .next/standalone/server.js > /tmp/demo-web.log 2>&1 &
+          for i in $(seq 30); do curl -fsS -o /dev/null $WEB_URL && break; sleep 1; done
+          if curl -fsS -m 2 http://localhost:8000/health; then echo "an API is running" && exit 1; fi
+      - run: npx playwright install --with-deps chromium
+      - name: demo smoke, no-network test and console guard
+        run: npx playwright test --project=demo --project=guard
+      - if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: demo-playwright-report
+          path: web/playwright-report
+
+  zap:
+    # OWASP ZAP baseline (passive) against a production web build and a DEMO_MODE API.
+    runs-on: ubuntu-latest
+    needs: web
+    env:
+      API_URL: http://localhost:8000
+      WEB_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: uv sync
+      - run: scripts/ci_api.sh
+      - name: build and start the web app
+        working-directory: web
+        run: |
+          npm ci
+          NEXT_PUBLIC_API_URL=$API_URL npm run build
+          cp -r .next/static .next/standalone/.next/
+          PORT=3000 nohup node .next/standalone/server.js > /tmp/esc/web.log 2>&1 &
+          for i in $(seq 30); do curl -fsS -o /dev/null $WEB_URL && break; sleep 1; done
+          curl -fsS -X POST -H "Origin: $WEB_URL" -H "X-Escalate-Request: 1" $API_URL/demo/seed
+      - name: ZAP baseline
+        run: |
+          curl -fsSLo zap.zip https://github.com/zaproxy/zaproxy/releases/download/v${ZAP_VERSION}/ZAP_${ZAP_VERSION}_Crossplatform.zip
+          echo "${ZAP_SHA256}  zap.zip" | sha256sum -c -
+          unzip -q zap.zip && mkdir -p zap-out
+          JAVA_HOME=$JAVA_HOME_17_X64 ZAP_OUT=$PWD/zap-out ZAP_${ZAP_VERSION}/zap.sh -cmd -dir $RUNNER_TEMP/zaphome -silent -autorun $PWD/.zap/baseline.yaml
+          uv run python .zap/gate.py zap-out/zap-report.json
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: zap-report
+          path: zap-out

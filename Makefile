@@ -1,7 +1,8 @@
 # Escalate: one-command install. `make setup && make up`, then open http://localhost:3000
 MODEL ?= llama3.1:8b
 
-.PHONY: setup up down logs test lint evals pull api demo-data web-install web-dev web-lint web-build web-e2e screenshots
+.PHONY: setup up down logs test lint evals pull api demo-data web-install web-dev web-lint web-build web-e2e screenshots \
+	demo-fixtures demo-build demo-e2e hooks security zap
 
 setup:            ## create .env (FERNET_KEY, model), build images, pull the model
 	./scripts/setup_env.sh "$(MODEL)"
@@ -71,3 +72,31 @@ web-e2e:          ## Playwright: smoke, console guard (light+dark), rtl, dark, m
 
 screenshots:      ## docs/screenshots/*.png; wipes and re-seeds the API (use a throwaway, DEMO_MODE=true)
 	cd web && E2E_RESET=1 WEB_URL=$(WEB_URL) API_URL=$(API_URL) npx playwright test --project=screenshots
+
+demo-fixtures:    ## rebuild the live demo's sample data (web/src/demo/*.json) from a throwaway API
+	uv run python scripts/demo_fixtures.py
+
+demo-build:       ## the static live demo (no API): what Vercel builds; then scans the bundle
+	cd web && npm run build:demo && node scripts/scan-bundle.mjs --demo
+
+demo-e2e:         ## Playwright against a running demo build (WEB_URL); no API needed
+	cd web && DEMO_E2E=1 WEB_URL=$(WEB_URL) npx playwright test --project=demo --project=guard
+
+hooks:            ## install the pre-commit hooks (gitleaks, no .env/*.db, ruff)
+	uvx pre-commit install
+
+security:         ## the CI security checks, locally (needs gitleaks on PATH)
+	gitleaks git . --redact
+	# The Intel-macOS-only cryptography pin is a documented residual (docs/SECURITY_AUDIT.md).
+	uv export --frozen --no-hashes --no-emit-project --all-groups \
+	  | grep -v "platform_machine == 'x86_64' and sys_platform == 'darwin'" > /tmp/escalate-reqs.txt
+	uvx pip-audit -r /tmp/escalate-reqs.txt --disable-pip --no-deps --strict
+	uvx bandit -c pyproject.toml -r escalate ui -q
+	uvx semgrep scan --config p/python --config p/fastapi --config p/secrets --config p/typescript --config p/react --config p/nextjs --metrics=off --error -q
+	cd web && npm audit --audit-level=high
+	uv run pytest -q tests/security
+
+ZAP ?= zap.sh
+zap:              ## OWASP ZAP baseline against WEB_URL + API_URL (throwaway DEMO_MODE instances!)
+	mkdir -p zap-out && WEB_URL=$(WEB_URL) API_URL=$(API_URL) ZAP_OUT=$(CURDIR)/zap-out $(ZAP) -cmd -autorun $(CURDIR)/.zap/baseline.yaml
+	uv run python .zap/gate.py zap-out/zap-report.json

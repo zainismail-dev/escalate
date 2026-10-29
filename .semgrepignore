@@ -1,0 +1,11 @@
+# Tests and evals hold deliberate attack strings and fake keys; build output and dependencies
+# are not our source.
+tests/
+evals/
+.venv/
+node_modules/
+web/node_modules/
+web/.next/
+web/test-results/
+web/playwright-report/
+zap-out/
