@@ -27,7 +27,7 @@ else
 	docker compose up -d
 endif
 	@echo "Web app:      http://localhost:3000"
-	@echo "API:          http://localhost:8000/docs"
+	@echo "API:          http://localhost:8000 (interactive docs: make api, or API_DOCS=true)"
 	@echo "Streamlit UI: http://localhost:8501 (dev)"
 
 down:
@@ -50,7 +50,7 @@ API_URL ?= http://localhost:8000
 WEB_URL ?= http://localhost:3000
 
 api:              ## the API with auto-reload on http://localhost:8000 (watches escalate/ only)
-	uv run uvicorn escalate.api.main:app --reload --reload-dir escalate
+	API_DOCS=true uv run uvicorn escalate.api.main:app --reload --reload-dir escalate
 
 demo-data:        ## seed 4 fictional demo cases (PK, IN, GB, US) into the running API
 	curl -fsS -X POST -H "Origin: $(WEB_URL)" -H "X-Escalate-Request: 1" $(API_URL)/demo/seed && echo

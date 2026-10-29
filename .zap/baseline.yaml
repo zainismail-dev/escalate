@@ -5,7 +5,8 @@ env:
     - name: web
       urls: ["${WEB_URL}"]
     - name: api
-      urls: ["${API_URL}"]
+      urls: ["${API_URL}/openapi.json"]  # the API has no page at / (and /docs is dev-only)
+      includePaths: ["${API_URL}.*"]
   parameters:
     failOnError: true
     progressToStdout: true
@@ -22,7 +23,6 @@ jobs:
   - type: spider
     parameters:
       context: api
-      url: "${API_URL}/docs"
       maxDuration: 1
   - type: passiveScan-wait
     parameters:

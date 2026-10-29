@@ -52,7 +52,7 @@ ROUTES = {
     ("GET", "/messages/{message_id}/review"),
     ("GET", "/messages/{message_id}/preview"),
 }
-DOCS = {"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"}
+DOCS = {"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"}  # 401 when locked, on or off
 FAKE_ID = "00000000-0000-4000-8000-000000000000"
 
 
