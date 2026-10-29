@@ -389,9 +389,13 @@ function PrivacySection({ s }: { s: Settings }) {
               variant="danger"
               disabled={act.busy}
               onClick={async () => {
-                await act.run(() => api.deleteAll());
+                // deleteAll returns nothing (204): mark success explicitly, or a failure looks done.
+                const ok = await act.run(async () => {
+                  await api.deleteAll();
+                  return true;
+                });
                 setOpen(false);
-                setDone(true);
+                if (ok) setDone(true);
               }}
             >
               {t("deleteCta")}

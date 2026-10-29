@@ -7,7 +7,9 @@ export function contentSecurityPolicy(nonce: string, { dev = false, https = fals
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
-    `style-src 'self' 'nonce-${nonce}'`,
+    // Dev only: hot reload injects <style> tags without a nonce (and a nonce would make
+    // browsers ignore 'unsafe-inline'). Production builds are nonce-only.
+    dev ? "style-src 'self' 'unsafe-inline'" : `style-src 'self' 'nonce-${nonce}'`,
     // React sets some styles as attributes (Radix positioning, progress widths). Attribute styles
     // cannot run script; scripts stay nonce-only.
     "style-src-attr 'unsafe-inline'",

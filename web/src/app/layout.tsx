@@ -11,10 +11,16 @@ import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
+  const demo = process.env.NEXT_PUBLIC_DEMO_STATIC === "true";
+  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL; // set by Vercel at build time
   return {
     title: { default: t("title"), template: "%s · Escalate" },
     description: t("description"),
-    robots: { index: false }, // self-hosted, personal data
+    // Self-hosted installs hold personal data: never indexed. The public demo may be.
+    robots: { index: demo },
+    metadataBase: host ? new URL(`https://${host}`) : undefined,
+    openGraph: { title: t("title"), description: t("description"), siteName: "Escalate", type: "website" },
+    twitter: { card: "summary_large_image" },
   };
 }
 

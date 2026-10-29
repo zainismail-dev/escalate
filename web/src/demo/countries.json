@@ -1,0 +1,1765 @@
+[
+  {
+    "code": "AD",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AE",
+    "currency": "AED",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AF",
+    "currency": "AFN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AG",
+    "currency": "XCD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AI",
+    "currency": "XCD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AL",
+    "currency": "ALL",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AM",
+    "currency": "AMD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AO",
+    "currency": "AOA",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AQ",
+    "currency": null,
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AR",
+    "currency": "ARS",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AS",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AT",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AU",
+    "currency": "AUD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AW",
+    "currency": "AWG",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AX",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "AZ",
+    "currency": "AZN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BA",
+    "currency": "BAM",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BB",
+    "currency": "BBD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BD",
+    "currency": "BDT",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BE",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BF",
+    "currency": "XOF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BG",
+    "currency": "BGN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BH",
+    "currency": "BHD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BI",
+    "currency": "BIF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BJ",
+    "currency": "XOF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BL",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BM",
+    "currency": "BMD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BN",
+    "currency": "BND",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BO",
+    "currency": "BOB",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BQ",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BR",
+    "currency": "BRL",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BS",
+    "currency": "BSD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BT",
+    "currency": "INR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BV",
+    "currency": "NOK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BW",
+    "currency": "BWP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BY",
+    "currency": "BYN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "BZ",
+    "currency": "BZD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CA",
+    "currency": "CAD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CC",
+    "currency": "AUD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CD",
+    "currency": "CDF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CF",
+    "currency": "XAF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CG",
+    "currency": "XAF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CH",
+    "currency": "CHF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CI",
+    "currency": "XOF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CK",
+    "currency": "NZD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CL",
+    "currency": "CLP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CM",
+    "currency": "XAF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CN",
+    "currency": "CNY",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CO",
+    "currency": "COP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CR",
+    "currency": "CRC",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CU",
+    "currency": "CUP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CV",
+    "currency": "CVE",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CW",
+    "currency": "XCG",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CX",
+    "currency": "AUD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CY",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "CZ",
+    "currency": "CZK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "DE",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "DJ",
+    "currency": "DJF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "DK",
+    "currency": "DKK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "DM",
+    "currency": "XCD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "DO",
+    "currency": "DOP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "DZ",
+    "currency": "DZD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "EC",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "EE",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "EG",
+    "currency": "EGP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "EH",
+    "currency": "MAD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ER",
+    "currency": "ERN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ES",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ET",
+    "currency": "ETB",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "FI",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "FJ",
+    "currency": "FJD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "FK",
+    "currency": "FKP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "FM",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "FO",
+    "currency": "DKK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "FR",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GA",
+    "currency": "XAF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GB",
+    "currency": "GBP",
+    "local_pack": true,
+    "packs": {
+      "refund_refused": "gb-general-refund-refused"
+    },
+    "regions": []
+  },
+  {
+    "code": "GD",
+    "currency": "XCD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GE",
+    "currency": "GEL",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GF",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GG",
+    "currency": "GBP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GH",
+    "currency": "GHS",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GI",
+    "currency": "GIP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GL",
+    "currency": "DKK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GM",
+    "currency": "GMD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GN",
+    "currency": "GNF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GP",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GQ",
+    "currency": "XAF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GR",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GS",
+    "currency": "GBP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GT",
+    "currency": "GTQ",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GU",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GW",
+    "currency": "XOF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "GY",
+    "currency": "GYD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "HK",
+    "currency": "HKD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "HM",
+    "currency": "AUD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "HN",
+    "currency": "HNL",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "HR",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "HT",
+    "currency": "HTG",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "HU",
+    "currency": "HUF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ID",
+    "currency": "IDR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "IE",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "IL",
+    "currency": "ILS",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "IM",
+    "currency": "GBP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "IN",
+    "currency": "INR",
+    "local_pack": true,
+    "packs": {
+      "refund_refused": "in-general-refund-refused"
+    },
+    "regions": []
+  },
+  {
+    "code": "IO",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "IQ",
+    "currency": "IQD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "IR",
+    "currency": "IRR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "IS",
+    "currency": "ISK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "IT",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "JE",
+    "currency": "GBP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "JM",
+    "currency": "JMD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "JO",
+    "currency": "JOD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "JP",
+    "currency": "JPY",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KE",
+    "currency": "KES",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KG",
+    "currency": "KGS",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KH",
+    "currency": "KHR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KI",
+    "currency": "AUD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KM",
+    "currency": "KMF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KN",
+    "currency": "XCD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KP",
+    "currency": "KPW",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KR",
+    "currency": "KRW",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KW",
+    "currency": "KWD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KY",
+    "currency": "KYD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "KZ",
+    "currency": "KZT",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LA",
+    "currency": "LAK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LB",
+    "currency": "LBP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LC",
+    "currency": "XCD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LI",
+    "currency": "CHF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LK",
+    "currency": "LKR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LR",
+    "currency": "LRD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LS",
+    "currency": "ZAR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LT",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LU",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LV",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "LY",
+    "currency": "LYD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MA",
+    "currency": "MAD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MC",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MD",
+    "currency": "MDL",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ME",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MF",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MG",
+    "currency": "MGA",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MH",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MK",
+    "currency": "MKD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ML",
+    "currency": "XOF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MM",
+    "currency": "MMK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MN",
+    "currency": "MNT",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MO",
+    "currency": "MOP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MP",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MQ",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MR",
+    "currency": "MRU",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MS",
+    "currency": "XCD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MT",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MU",
+    "currency": "MUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MV",
+    "currency": "MVR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MW",
+    "currency": "MWK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MX",
+    "currency": "MXN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MY",
+    "currency": "MYR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "MZ",
+    "currency": "MZN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NA",
+    "currency": "ZAR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NC",
+    "currency": "XPF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NE",
+    "currency": "XOF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NF",
+    "currency": "AUD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NG",
+    "currency": "NGN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NI",
+    "currency": "NIO",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NL",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NO",
+    "currency": "NOK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NP",
+    "currency": "NPR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NR",
+    "currency": "AUD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NU",
+    "currency": "NZD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "NZ",
+    "currency": "NZD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "OM",
+    "currency": "OMR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PA",
+    "currency": "PAB",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PE",
+    "currency": "PEN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PF",
+    "currency": "XPF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PG",
+    "currency": "PGK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PH",
+    "currency": "PHP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PK",
+    "currency": "PKR",
+    "local_pack": true,
+    "packs": {
+      "refund_refused": "pk-ecommerce-refund-refused"
+    },
+    "regions": [
+      "PK-IS",
+      "PK-KP",
+      "PK-PB",
+      "PK-SD"
+    ]
+  },
+  {
+    "code": "PL",
+    "currency": "PLN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PM",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PN",
+    "currency": "NZD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PR",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PS",
+    "currency": "ILS",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PT",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PW",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "PY",
+    "currency": "PYG",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "QA",
+    "currency": "QAR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "RE",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "RO",
+    "currency": "RON",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "RS",
+    "currency": "RSD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "RU",
+    "currency": "RUB",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "RW",
+    "currency": "RWF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SA",
+    "currency": "SAR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SB",
+    "currency": "SBD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SC",
+    "currency": "SCR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SD",
+    "currency": "SDG",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SE",
+    "currency": "SEK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SG",
+    "currency": "SGD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SH",
+    "currency": "SHP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SI",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SJ",
+    "currency": "NOK",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SK",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SL",
+    "currency": "SLE",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SM",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SN",
+    "currency": "XOF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SO",
+    "currency": "SOS",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SR",
+    "currency": "SRD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SS",
+    "currency": "SSP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ST",
+    "currency": "STN",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SV",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SX",
+    "currency": "XCG",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SY",
+    "currency": "SYP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "SZ",
+    "currency": "SZL",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TC",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TD",
+    "currency": "XAF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TF",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TG",
+    "currency": "XOF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TH",
+    "currency": "THB",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TJ",
+    "currency": "TJS",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TK",
+    "currency": "NZD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TL",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TM",
+    "currency": "TMT",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TN",
+    "currency": "TND",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TO",
+    "currency": "TOP",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TR",
+    "currency": "TRY",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TT",
+    "currency": "TTD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TV",
+    "currency": "AUD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TW",
+    "currency": "TWD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "TZ",
+    "currency": "TZS",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "UA",
+    "currency": "UAH",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "UG",
+    "currency": "UGX",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "UM",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "US",
+    "currency": "USD",
+    "local_pack": true,
+    "packs": {
+      "refund_refused": "us-general-refund-refused"
+    },
+    "regions": []
+  },
+  {
+    "code": "UY",
+    "currency": "UYU",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "UZ",
+    "currency": "UZS",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "VA",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "VC",
+    "currency": "XCD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "VE",
+    "currency": "VES",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "VG",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "VI",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "VN",
+    "currency": "VND",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "VU",
+    "currency": "VUV",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "WF",
+    "currency": "XPF",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "WS",
+    "currency": "WST",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "XK",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "YE",
+    "currency": "YER",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "YT",
+    "currency": "EUR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ZA",
+    "currency": "ZAR",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ZM",
+    "currency": "ZMW",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  },
+  {
+    "code": "ZW",
+    "currency": "USD",
+    "local_pack": false,
+    "packs": {},
+    "regions": []
+  }
+]

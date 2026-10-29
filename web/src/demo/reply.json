@@ -1,0 +1,20 @@
+{
+  "case_id": "380e7416-3621-47d8-8071-c691016788df",
+  "result": {
+    "case_id": "380e7416-3621-47d8-8071-c691016788df",
+    "condition": "you return the item in its original packaging",
+    "pending": {
+      "missing": [
+        "seller_address"
+      ],
+      "type": "questions"
+    },
+    "promise": "a 50% refund as a goodwill gesture",
+    "promise_date": null,
+    "reason": "undated promise: a 50% refund as a goodwill gesture",
+    "verdict": "refused",
+    "waiting_for": "questions",
+    "warnings": []
+  },
+  "text": "Dear customer, thank you for your patience. We can offer a 50% refund as a goodwill gesture within 14 days, provided you return the item in its original packaging."
+}

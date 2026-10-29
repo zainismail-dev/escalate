@@ -1,0 +1,826 @@
+{
+  "24ff5963-0342-4817-896c-09a895163713": {
+    "amount": "39.99",
+    "amount_display": "£39.99",
+    "case_type": "subscription_cancel",
+    "company": "PulseFit Gyms",
+    "country": "GB",
+    "created_at": "2026-10-29T10:36:33.075520",
+    "currency": "GBP",
+    "current_step": "s1_cancel_request",
+    "deadlines": [],
+    "description": "I cancelled my PulseFit gym membership (member PF-220931) on 31 August, but they keep taking £39.99 every month and say I must visit in person.",
+    "evidence": [
+      {
+        "extracted_text": "To: members@pulsefit.example\nDate: 2026-08-31\nSubject: Cancel membership PF-220931\nPlease cancel my monthly membership (GBP 39.99 per month) from today.\n",
+        "filename": "pulsefit-cancellation-email.txt",
+        "id": 3,
+        "kind": "text",
+        "needs_review": false,
+        "ocr_confidence": null,
+        "sha256": "731ea1ea5a802b75e9b5c63ab71827142e043e851caa5554c11484ae3080c5b7",
+        "uploaded_at": "2026-10-29T10:36:33.078240"
+      }
+    ],
+    "facts": [
+      {
+        "confidence": 0.95,
+        "display": "Sam Taylor",
+        "key": "buyer_name",
+        "source_evidence_id": 3,
+        "value": "Sam Taylor"
+      },
+      {
+        "confidence": 0.95,
+        "display": "PulseFit Gyms",
+        "key": "company_name",
+        "source_evidence_id": 3,
+        "value": "PulseFit Gyms"
+      },
+      {
+        "confidence": 0.95,
+        "display": "members@pulsefit.example",
+        "key": "company_contact",
+        "source_evidence_id": 3,
+        "value": "members@pulsefit.example"
+      },
+      {
+        "confidence": 0.95,
+        "display": "PF-220931",
+        "key": "account_id",
+        "source_evidence_id": 3,
+        "value": "PF-220931"
+      },
+      {
+        "confidence": 0.95,
+        "display": "31 August 2026",
+        "key": "cancel_requested_on",
+        "source_evidence_id": 3,
+        "value": "2026-08-31"
+      },
+      {
+        "confidence": 0.95,
+        "display": "confirm the cancellation and refund every charge after 31 August",
+        "key": "remedy_wanted",
+        "source_evidence_id": 3,
+        "value": "confirm the cancellation and refund every charge after 31 August"
+      },
+      {
+        "confidence": 0.95,
+        "display": "monthly membership",
+        "key": "plan_name",
+        "source_evidence_id": 3,
+        "value": "monthly membership"
+      },
+      {
+        "confidence": 0.95,
+        "display": "£39.99",
+        "key": "amount",
+        "source_evidence_id": 3,
+        "value": "39.99"
+      },
+      {
+        "confidence": 0.95,
+        "display": "GBP",
+        "key": "currency",
+        "source_evidence_id": 3,
+        "value": "GBP"
+      }
+    ],
+    "generic_playbook": true,
+    "id": "24ff5963-0342-4817-896c-09a895163713",
+    "ladder": [
+      {
+        "channel": "email",
+        "id": "s1_cancel_request",
+        "name": "cancellation request",
+        "recipient_role": "the company",
+        "state": "current",
+        "wait_days": 7
+      },
+      {
+        "channel": "email",
+        "id": "s2_final_notice",
+        "name": "final notice listing the charges",
+        "recipient_role": "the company",
+        "state": "future",
+        "wait_days": 14
+      },
+      {
+        "channel": "email",
+        "id": "s3_card_dispute",
+        "name": "card-issuer dispute letter",
+        "recipient_role": "your card issuer or bank",
+        "state": "future",
+        "wait_days": 30
+      },
+      {
+        "channel": "web_form",
+        "id": "s4_authority",
+        "name": "complaint to the consumer authority",
+        "recipient_role": "the national consumer authority or ombudsman",
+        "state": "future",
+        "wait_days": null
+      }
+    ],
+    "language": "en",
+    "messages": [
+      {
+        "approved_at": null,
+        "body": "Dear PulseFit Gyms,\n\nPlease cancel my subscription (monthly membership) on account PF-220931 with immediate effect.\n\nI first asked you to cancel on 2026-08-31.\n\nI ask you to: confirm the cancellation and refund every charge after 31 August.\n\nPlease confirm in writing by 5 November 2026 that the subscription is cancelled and that no further payments will be taken.\n\nYours sincerely,\nSam Taylor\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice. Check the rules in your country.\n",
+        "channel": "email",
+        "created_at": "2026-10-29T10:36:33.107665",
+        "direction": "out",
+        "id": "d39c4902-997c-42c9-82b3-c28bf74ea96a",
+        "recipient": "members@pulsefit.example",
+        "rejection_reason": null,
+        "sent_at": null,
+        "status": "draft",
+        "step_id": "s1_cancel_request",
+        "subject": "Cancel my subscription (account PF-220931)"
+      }
+    ],
+    "next_action_at": null,
+    "pending": {
+      "draft": {
+        "body": "Dear PulseFit Gyms,\n\nPlease cancel my subscription (monthly membership) on account PF-220931 with immediate effect.\n\nI first asked you to cancel on 2026-08-31.\n\nI ask you to: confirm the cancellation and refund every charge after 31 August.\n\nPlease confirm in writing by 5 November 2026 that the subscription is cancelled and that no further payments will be taken.\n\nYours sincerely,\nSam Taylor\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice. Check the rules in your country.\n",
+        "channel": "email",
+        "message_id": "d39c4902-997c-42c9-82b3-c28bf74ea96a",
+        "recipient": "members@pulsefit.example",
+        "subject": "Cancel my subscription (account PF-220931)"
+      },
+      "type": "approve_draft"
+    },
+    "pending_draft": {
+      "approved_at": null,
+      "body": "Dear PulseFit Gyms,\n\nPlease cancel my subscription (monthly membership) on account PF-220931 with immediate effect.\n\nI first asked you to cancel on 2026-08-31.\n\nI ask you to: confirm the cancellation and refund every charge after 31 August.\n\nPlease confirm in writing by 5 November 2026 that the subscription is cancelled and that no further payments will be taken.\n\nYours sincerely,\nSam Taylor\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice. Check the rules in your country.\n",
+      "channel": "email",
+      "created_at": "2026-10-29T10:36:33.107665",
+      "direction": "out",
+      "id": "d39c4902-997c-42c9-82b3-c28bf74ea96a",
+      "recipient": "members@pulsefit.example",
+      "rejection_reason": null,
+      "sent_at": null,
+      "status": "draft",
+      "step_id": "s1_cancel_request",
+      "subject": "Cancel my subscription (account PF-220931)"
+    },
+    "playbook_id": "intl-generic-subscription-cancel",
+    "playbook_version": "0.1.0",
+    "reasons": [
+      {
+        "code": "first_step",
+        "params": {}
+      },
+      {
+        "code": "position",
+        "params": {
+          "n": 1,
+          "total": 4
+        }
+      },
+      {
+        "code": "channel",
+        "params": {
+          "channel": "email",
+          "recipient": "the company"
+        }
+      },
+      {
+        "code": "wait",
+        "params": {
+          "days": 7
+        }
+      },
+      {
+        "code": "playbook",
+        "params": {
+          "level": "generic",
+          "playbook": "intl-generic-subscription-cancel",
+          "version": "0.1.0"
+        }
+      }
+    ],
+    "region": null,
+    "sources": [
+      {
+        "title": "Your country's national consumer protection authority or ombudsman",
+        "url": null
+      }
+    ],
+    "status": "awaiting_approval",
+    "step_name": "cancellation request",
+    "text_direction": "ltr",
+    "title": "Gym still charging after cancelling",
+    "waiting_for": "approve_draft"
+  },
+  "380e7416-3621-47d8-8071-c691016788df": {
+    "amount": "64500.00",
+    "amount_display": "Rs 64,500",
+    "case_type": "refund_refused",
+    "company": "BrightMart Electronics",
+    "country": "PK",
+    "created_at": "2026-10-29T10:36:32.880359",
+    "currency": "PKR",
+    "current_step": "s1_seller_written",
+    "deadlines": [
+      {
+        "days_left": null,
+        "due": null,
+        "id": "court_filing_limit",
+        "late": false,
+        "rule": "30 days from cause of action; court may condone delay with reasons",
+        "warn": false
+      }
+    ],
+    "description": "I bought an LED TV from BrightMart Electronics through ShopNow (order BM-48213) for Rs 64,500. It stopped working after 10 days. I sent it back, and for months they keep saying they will replace it when the company approves the claim.",
+    "evidence": [
+      {
+        "extracted_text": "BrightMart Electronics - Tax invoice\nOrder: BM-48213\nDate: 2026-02-14\nItem: 43-inch LED TV\nTotal paid: PKR 64,500\nSold via ShopNow Marketplace\n",
+        "filename": "brightmart-invoice.txt",
+        "id": 1,
+        "kind": "text",
+        "needs_review": false,
+        "ocr_confidence": null,
+        "sha256": "557c641878a68e2f87c77b0219fede464341597d0f8ad330996558ad6d32d1ec",
+        "uploaded_at": "2026-10-29T10:36:32.891424"
+      }
+    ],
+    "facts": [
+      {
+        "confidence": 0.95,
+        "display": "Ayesha Siddiqui",
+        "key": "buyer_name",
+        "source_evidence_id": 1,
+        "value": "Ayesha Siddiqui"
+      },
+      {
+        "confidence": 0.95,
+        "display": "43-inch LED TV",
+        "key": "product",
+        "source_evidence_id": 1,
+        "value": "43-inch LED TV"
+      },
+      {
+        "confidence": 0.95,
+        "display": "BrightMart Electronics",
+        "key": "seller_name",
+        "source_evidence_id": 1,
+        "value": "BrightMart Electronics"
+      },
+      {
+        "confidence": 0.95,
+        "display": "support@brightmart.example",
+        "key": "seller_contact",
+        "source_evidence_id": 1,
+        "value": "support@brightmart.example"
+      },
+      {
+        "confidence": 0.95,
+        "display": "BM-48213",
+        "key": "order_id",
+        "source_evidence_id": 1,
+        "value": "BM-48213"
+      },
+      {
+        "confidence": 0.95,
+        "display": "14 February 2026",
+        "key": "order_date",
+        "source_evidence_id": 1,
+        "value": "2026-02-14"
+      },
+      {
+        "confidence": 0.95,
+        "display": "Rs 64,500",
+        "key": "amount",
+        "source_evidence_id": 1,
+        "value": "64500"
+      },
+      {
+        "confidence": 0.95,
+        "display": "PKR",
+        "key": "currency",
+        "source_evidence_id": 1,
+        "value": "PKR"
+      },
+      {
+        "confidence": 0.95,
+        "display": "The LED TV stopped working after 10 days: no picture, only sound.",
+        "key": "defect_description",
+        "source_evidence_id": 1,
+        "value": "The LED TV stopped working after 10 days: no picture, only sound."
+      },
+      {
+        "confidence": 0.95,
+        "display": "a replacement LED TV or a full refund",
+        "key": "remedy_wanted",
+        "source_evidence_id": 1,
+        "value": "a replacement LED TV or a full refund"
+      },
+      {
+        "confidence": 0.95,
+        "display": "ShopNow Marketplace",
+        "key": "platform_name",
+        "source_evidence_id": 1,
+        "value": "ShopNow Marketplace"
+      },
+      {
+        "confidence": 0.95,
+        "display": "28 February 2026",
+        "key": "return_shipped_on",
+        "source_evidence_id": 1,
+        "value": "2026-02-28"
+      }
+    ],
+    "generic_playbook": false,
+    "id": "380e7416-3621-47d8-8071-c691016788df",
+    "ladder": [
+      {
+        "channel": "email",
+        "id": "s1_seller_written",
+        "name": "written demand to the seller",
+        "recipient_role": "the seller",
+        "state": "current",
+        "wait_days": 5
+      },
+      {
+        "channel": "web_form",
+        "id": "s2_platform",
+        "name": "escalation to the marketplace",
+        "recipient_role": "the marketplace's customer support",
+        "state": "future",
+        "wait_days": 5
+      },
+      {
+        "channel": "post",
+        "id": "s3_legal_notice",
+        "name": "15-day legal notice",
+        "recipient_role": "the seller",
+        "state": "future",
+        "wait_days": 15
+      },
+      {
+        "channel": "court",
+        "id": "s4_consumer_court",
+        "name": "consumer court complaint",
+        "recipient_role": "the District Consumer Court",
+        "state": "future",
+        "wait_days": null
+      }
+    ],
+    "language": "en",
+    "messages": [
+      {
+        "approved_at": "2026-10-29T10:36:33.313809",
+        "body": "Dear BrightMart Electronics,\n\nOn 2026-02-14 I bought from you under order BM-48213 and paid PKR 64,500.00.\n\nThe problem: The LED TV stopped working after 10 days: no picture, only sound.\n\nI returned the item to you on 2026-02-28.\n\nI ask you to provide the following: a replacement LED TV or a full refund.\n\nPlease do this by 3 November 2026. If I do not hear from you by then, I will escalate the matter to ShopNow Marketplace and send you a formal legal notice.\n\nYours sincerely,\nAyesha Siddiqui\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice.\n",
+        "channel": "email",
+        "created_at": "2026-10-29T10:36:33.011205",
+        "direction": "out",
+        "id": "6c230d7f-9c7e-4d7a-812a-d57488e9687d",
+        "recipient": "support@brightmart.example",
+        "rejection_reason": null,
+        "sent_at": "2026-10-29T10:36:33.320346",
+        "status": "sent",
+        "step_id": "s1_seller_written",
+        "subject": "Order BM-48213: request for a replacement LED TV or a full refund"
+      }
+    ],
+    "next_action_at": "2026-11-03T10:36:33.320346",
+    "pending": {
+      "step": "s1_seller_written",
+      "type": "waiting_reply"
+    },
+    "pending_draft": null,
+    "playbook_id": "pk-ecommerce-refund-refused",
+    "playbook_version": "0.1.0",
+    "reasons": [
+      {
+        "code": "first_step",
+        "params": {}
+      },
+      {
+        "code": "position",
+        "params": {
+          "n": 1,
+          "total": 4
+        }
+      },
+      {
+        "code": "channel",
+        "params": {
+          "channel": "email",
+          "recipient": "the seller"
+        }
+      },
+      {
+        "code": "wait",
+        "params": {
+          "days": 5
+        }
+      },
+      {
+        "code": "playbook",
+        "params": {
+          "level": "region",
+          "playbook": "pk-ecommerce-refund-refused",
+          "version": "0.1.0"
+        }
+      }
+    ],
+    "region": "PK-SD",
+    "sources": [
+      {
+        "title": "CRCP guide: filing a consumer complaint",
+        "url": "https://crcp.org.pk/wp-content/uploads/2020/10/Complaint-Filing-in-Consumer-courts.pdf"
+      },
+      {
+        "title": "Sindh consumer court filing overview",
+        "url": "https://commoner-law.com/pakistan/consumer-rights/filing-a-consumer-court-complaint/sindh"
+      }
+    ],
+    "status": "waiting_reply",
+    "step_name": "written demand to the seller",
+    "text_direction": "ltr",
+    "title": "Broken LED TV — refund refused",
+    "waiting_for": "waiting_reply"
+  },
+  "67decde5-9393-477a-9839-acaac9822a72": {
+    "amount": "18000.00",
+    "amount_display": "₹18,000",
+    "case_type": "scam",
+    "company": null,
+    "country": "IN",
+    "created_at": "2026-10-29T10:36:33.051495",
+    "currency": "INR",
+    "current_step": null,
+    "deadlines": [],
+    "description": "I got an SMS saying a parcel for me was stuck and I had to pay a delivery fee through a link. I paid ₹18,000 by UPI (reference UPI-5521907) and the number stopped answering.",
+    "evidence": [
+      {
+        "extracted_text": "Payment successful\nAmount: INR 18,000\nUPI ref: UPI-5521907\nDate: 2026-10-26\n",
+        "filename": "upi-payment-screenshot.txt",
+        "id": 2,
+        "kind": "text",
+        "needs_review": false,
+        "ocr_confidence": null,
+        "sha256": "f9ab3b4850739f5e55035e2ce4b6c518f55c4bec55068ea11bd981589755d1b8",
+        "uploaded_at": "2026-10-29T10:36:33.054397"
+      }
+    ],
+    "facts": [
+      {
+        "confidence": 1.0,
+        "display": "Rohan Mehta",
+        "key": "buyer_name",
+        "source_evidence_id": 2,
+        "value": "Rohan Mehta"
+      },
+      {
+        "confidence": 1.0,
+        "display": "₹18,000",
+        "key": "amount",
+        "source_evidence_id": 2,
+        "value": "18000"
+      },
+      {
+        "confidence": 1.0,
+        "display": "INR",
+        "key": "currency",
+        "source_evidence_id": 2,
+        "value": "INR"
+      },
+      {
+        "confidence": 1.0,
+        "display": "26 October 2026",
+        "key": "paid_on",
+        "source_evidence_id": 2,
+        "value": "2026-10-26"
+      },
+      {
+        "confidence": 1.0,
+        "display": "UPI transfer",
+        "key": "payment_method",
+        "source_evidence_id": 2,
+        "value": "UPI transfer"
+      },
+      {
+        "confidence": 1.0,
+        "display": "UPI-5521907",
+        "key": "transaction_id",
+        "source_evidence_id": 2,
+        "value": "UPI-5521907"
+      },
+      {
+        "confidence": 1.0,
+        "display": "An SMS claiming to be from a courier asked for a delivery fee via a link.",
+        "key": "scam_description",
+        "source_evidence_id": 2,
+        "value": "An SMS claiming to be from a courier asked for a delivery fee via a link."
+      }
+    ],
+    "generic_playbook": true,
+    "id": "67decde5-9393-477a-9839-acaac9822a72",
+    "ladder": [
+      {
+        "channel": "email",
+        "id": "s1_bank_fraud_report",
+        "name": "fraud report to your bank",
+        "recipient_role": "your bank or card issuer's fraud team",
+        "state": "future",
+        "wait_days": 10
+      },
+      {
+        "channel": "post",
+        "id": "s2_police_report",
+        "name": "police report",
+        "recipient_role": "the police",
+        "state": "future",
+        "wait_days": 30
+      },
+      {
+        "channel": "web_form",
+        "id": "s3_national_report",
+        "name": "report to the national fraud reporting body",
+        "recipient_role": "the national fraud or cybercrime reporting body",
+        "state": "future",
+        "wait_days": null
+      }
+    ],
+    "language": "en",
+    "messages": [],
+    "next_action_at": null,
+    "pending": {
+      "items": [
+        {
+          "detail": "Use the number on the back of your card or on the bank's official website or app, not a number the scammer gave you. Ask them to stop or reverse the payment and to flag it as fraud.",
+          "id": "call_bank",
+          "title": "Call your bank or card issuer now",
+          "urgent": true
+        },
+        {
+          "detail": "Freeze or cancel the card in your banking app, or ask the bank to do it on the call.",
+          "id": "block_card",
+          "title": "Block the card or account that was used",
+          "urgent": true
+        },
+        {
+          "detail": "Change the password of any account you used or shared with the scammer and turn on two-step verification.",
+          "id": "change_passwords",
+          "title": "Change your passwords",
+          "urgent": true
+        },
+        {
+          "detail": "TODO(verify): add the portal's official address and the national cybercrime helpline number from a Government of India site. Report as fast as you can: quick reports give the best chance of stopping the money.",
+          "id": "report_national",
+          "title": "Report it on the National Cyber Crime Reporting Portal",
+          "urgent": true
+        },
+        {
+          "detail": "Screenshots of chats, the scammer's number or profile, receipts and transaction IDs. Upload them here.",
+          "id": "keep_evidence",
+          "title": "Keep every piece of evidence",
+          "urgent": false
+        }
+      ],
+      "type": "urgent_checklist"
+    },
+    "pending_draft": null,
+    "playbook_id": "intl-generic-scam",
+    "playbook_version": "0.1.0",
+    "reasons": [],
+    "region": null,
+    "sources": [
+      {
+        "title": "Your bank's official fraud line (the number on the back of your card)",
+        "url": null
+      }
+    ],
+    "status": "urgent_checklist",
+    "step_name": null,
+    "text_direction": "ltr",
+    "title": "Fake delivery SMS payment",
+    "waiting_for": "urgent_checklist"
+  },
+  "84f36b16-33b7-44d9-86bf-0b7ada3ff1ae": {
+    "amount": "1249.00",
+    "amount_display": "$1,249",
+    "case_type": "refund_refused",
+    "company": "Northline Computers",
+    "country": "US",
+    "created_at": "2026-10-29T10:36:33.124893",
+    "currency": "USD",
+    "current_step": "s1_written_demand",
+    "deadlines": [],
+    "description": "I bought a laptop from Northline Computers (order NL-77120) for $1,249.00. The screen flickers and goes black. They refuse a refund and only offer store credit.",
+    "evidence": [
+      {
+        "extracted_text": "Northline Computers\nOrder NL-77120\nDate: 2026-09-05\nLaptop 14-inch\nTotal: USD 1,249.00\n",
+        "filename": "northline-receipt.txt",
+        "id": 4,
+        "kind": "text",
+        "needs_review": false,
+        "ocr_confidence": null,
+        "sha256": "0a03b0413bae81ba50148894d4552f7a0cef4aaa9c2a1dff8be2cf94def8797b",
+        "uploaded_at": "2026-10-29T10:36:33.127516"
+      }
+    ],
+    "facts": [
+      {
+        "confidence": 0.95,
+        "display": "Jordan Lee",
+        "key": "buyer_name",
+        "source_evidence_id": 4,
+        "value": "Jordan Lee"
+      },
+      {
+        "confidence": 0.95,
+        "display": "14-inch laptop",
+        "key": "product",
+        "source_evidence_id": 4,
+        "value": "14-inch laptop"
+      },
+      {
+        "confidence": 0.95,
+        "display": "Northline Computers",
+        "key": "seller_name",
+        "source_evidence_id": 4,
+        "value": "Northline Computers"
+      },
+      {
+        "confidence": 0.95,
+        "display": "help@northline.example",
+        "key": "seller_contact",
+        "source_evidence_id": 4,
+        "value": "help@northline.example"
+      },
+      {
+        "confidence": 0.95,
+        "display": "NL-77120",
+        "key": "order_id",
+        "source_evidence_id": 4,
+        "value": "NL-77120"
+      },
+      {
+        "confidence": 0.95,
+        "display": "September 5, 2026",
+        "key": "order_date",
+        "source_evidence_id": 4,
+        "value": "2026-09-05"
+      },
+      {
+        "confidence": 0.95,
+        "display": "$1,249",
+        "key": "amount",
+        "source_evidence_id": 4,
+        "value": "1249.00"
+      },
+      {
+        "confidence": 0.95,
+        "display": "USD",
+        "key": "currency",
+        "source_evidence_id": 4,
+        "value": "USD"
+      },
+      {
+        "confidence": 0.95,
+        "display": "The screen flickers and goes black within minutes of use.",
+        "key": "defect_description",
+        "source_evidence_id": 4,
+        "value": "The screen flickers and goes black within minutes of use."
+      },
+      {
+        "confidence": 0.95,
+        "display": "a full refund to my card",
+        "key": "remedy_wanted",
+        "source_evidence_id": 4,
+        "value": "a full refund to my card"
+      }
+    ],
+    "generic_playbook": false,
+    "id": "84f36b16-33b7-44d9-86bf-0b7ada3ff1ae",
+    "ladder": [
+      {
+        "channel": "email",
+        "id": "s1_written_demand",
+        "name": "written demand to the seller",
+        "recipient_role": "the seller",
+        "state": "current",
+        "wait_days": 10
+      },
+      {
+        "channel": "email",
+        "id": "s2_final_demand",
+        "name": "final demand letter",
+        "recipient_role": "the seller",
+        "state": "future",
+        "wait_days": 14
+      },
+      {
+        "channel": "web_form",
+        "id": "s3_attorney_general",
+        "name": "complaint to your state attorney general",
+        "recipient_role": "your state attorney general's consumer protection office",
+        "state": "future",
+        "wait_days": 30
+      },
+      {
+        "channel": "info",
+        "id": "s4_small_claims",
+        "name": "small claims guide",
+        "recipient_role": "you (a filing guide)",
+        "state": "future",
+        "wait_days": null
+      }
+    ],
+    "language": "en",
+    "messages": [
+      {
+        "approved_at": null,
+        "body": "Dear Northline Computers,\n\nOn 2026-09-05 I bought from you under order NL-77120 and paid USD 1,249.00.\n\nThe problem: The screen flickers and goes black within minutes of use.\n\nI ask you to provide the following: a full refund to my card.\n\nPlease do this by November 8, 2026. If I do not hear from you by then, I will send a final notice and take the matter further.\n\nYours sincerely,\nJordan Lee\n\nMy phone number: [[your phone number]]\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice.\n",
+        "channel": "email",
+        "created_at": "2026-10-29T10:36:33.153572",
+        "direction": "out",
+        "id": "2c94526c-4141-4f05-ac75-0cab8109dda0",
+        "recipient": "help@northline.example",
+        "rejection_reason": null,
+        "sent_at": null,
+        "status": "draft",
+        "step_id": "s1_written_demand",
+        "subject": "Refund request for order NL-77120"
+      }
+    ],
+    "next_action_at": null,
+    "pending": {
+      "draft": {
+        "body": "Dear Northline Computers,\n\nOn 2026-09-05 I bought from you under order NL-77120 and paid USD 1,249.00.\n\nThe problem: The screen flickers and goes black within minutes of use.\n\nI ask you to provide the following: a full refund to my card.\n\nPlease do this by November 8, 2026. If I do not hear from you by then, I will send a final notice and take the matter further.\n\nYours sincerely,\nJordan Lee\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice.\n",
+        "channel": "email",
+        "message_id": "2c94526c-4141-4f05-ac75-0cab8109dda0",
+        "recipient": "help@northline.example",
+        "subject": "Refund request for order NL-77120"
+      },
+      "type": "approve_draft"
+    },
+    "pending_draft": {
+      "approved_at": null,
+      "body": "Dear Northline Computers,\n\nOn 2026-09-05 I bought from you under order NL-77120 and paid USD 1,249.00.\n\nThe problem: The screen flickers and goes black within minutes of use.\n\nI ask you to provide the following: a full refund to my card.\n\nPlease do this by November 8, 2026. If I do not hear from you by then, I will send a final notice and take the matter further.\n\nYours sincerely,\nJordan Lee\n\nMy phone number: [[your phone number]]\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice.\n",
+      "channel": "email",
+      "created_at": "2026-10-29T10:36:33.153572",
+      "direction": "out",
+      "id": "2c94526c-4141-4f05-ac75-0cab8109dda0",
+      "recipient": "help@northline.example",
+      "rejection_reason": null,
+      "sent_at": null,
+      "status": "draft",
+      "step_id": "s1_written_demand",
+      "subject": "Refund request for order NL-77120"
+    },
+    "playbook_id": "us-general-refund-refused",
+    "playbook_version": "0.1.0",
+    "reasons": [
+      {
+        "code": "first_step",
+        "params": {}
+      },
+      {
+        "code": "position",
+        "params": {
+          "n": 1,
+          "total": 4
+        }
+      },
+      {
+        "code": "channel",
+        "params": {
+          "channel": "email",
+          "recipient": "the seller"
+        }
+      },
+      {
+        "code": "wait",
+        "params": {
+          "days": 10
+        }
+      },
+      {
+        "code": "playbook",
+        "params": {
+          "level": "country",
+          "playbook": "us-general-refund-refused",
+          "version": "0.1.0"
+        }
+      }
+    ],
+    "region": "US-CA",
+    "sources": [
+      {
+        "title": "Your state attorney general's consumer protection office",
+        "url": null
+      }
+    ],
+    "status": "awaiting_approval",
+    "step_name": "written demand to the seller",
+    "text_direction": "ltr",
+    "title": "Laptop refund refused",
+    "waiting_for": "approve_draft"
+  }
+}

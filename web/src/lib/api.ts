@@ -15,10 +15,14 @@ import type {
 } from "./types";
 
 import { API_URL } from "./api-url";
+import { DEMO_LINK, DEMO_STATIC } from "./demo-mode";
 
 export { API_URL };
 
-export type ApiErrorKind = "offline_api" | "model_offline" | "fact_check" | "rate_limited" | "other";
+export type ApiErrorKind = "offline_api" | "model_offline" | "fact_check" | "rate_limited" | "demo" | "other";
+
+/** Status of a write the static demo refused (the demo dialog explains it). */
+const DEMO_BLOCKED = -2;
 
 export class ApiError extends Error {
   constructor(
@@ -31,6 +35,7 @@ export class ApiError extends Error {
 
   /** 503 from the API means the AI model (or PDF renderer) is not reachable: nothing was sent. */
   get kind(): ApiErrorKind {
+    if (this.status === DEMO_BLOCKED) return "demo";
     if (this.status === 0) return "offline_api";
     if (this.status === 503 && !/pdf|pango|weasy/i.test(this.detail)) return "model_offline";
     if (this.status === 422 && Array.isArray(this.body.issues)) return "fact_check";
@@ -49,7 +54,24 @@ const CSRF_HEADER = { "X-Escalate-Request": "1" };
 /** Fired when the API answers 401 "locked" (APP_PASSCODE is set and there is no session). */
 export const LOCKED_EVENT = "escalate:locked";
 
+type DemoBackend = typeof import("escalate-demo-backend");
+
+/** The static demo answers from bundled sample data and never makes a request. */
+async function demoRequest<T>(demo: DemoBackend, method: string, path: string, body?: unknown): Promise<T> {
+  try {
+    return await demo.demoRequest<T>(method, path, body);
+  } catch (e) {
+    if (e instanceof demo.DemoBlocked) throw new ApiError(DEMO_BLOCKED, e.message);
+    throw new ApiError((e as { status?: number }).status ?? 404, String(e));
+  }
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  // The import sits inside an inline env check (not DEMO_STATIC): other builds drop it, and
+  // with it the demo data, at build time.
+  if (process.env.NEXT_PUBLIC_DEMO_STATIC === "true") {
+    return demoRequest<T>(await import("escalate-demo-backend"), method, path, body);
+  }
   let res: Response;
   const headers: Record<string, string> = method === "GET" ? {} : { ...CSRF_HEADER };
   if (body !== undefined && !(body instanceof FormData)) headers["Content-Type"] = "application/json";
@@ -104,8 +126,8 @@ export const api = {
     request<RunOut>("POST", `/cases/${id}/letter-language`, { language }),
   withdraw: (id: string, reason = "") => request<CaseSummary>("POST", `/cases/${id}/withdraw`, { reason }),
   deleteCase: (id: string) => request<void>("DELETE", `/cases/${id}`),
-  exportUrl: (id: string) => `${API_URL}/cases/${id}/export.pdf`,
-  printableUrl: (messageId: string) => `${API_URL}/messages/${messageId}/printable.pdf`,
+  exportUrl: (id: string) => (DEMO_STATIC ? DEMO_LINK : `${API_URL}/cases/${id}/export.pdf`),
+  printableUrl: (messageId: string) => (DEMO_STATIC ? DEMO_LINK : `${API_URL}/messages/${messageId}/printable.pdf`),
   review: (messageId: string) => request<Review>("GET", `/messages/${messageId}/review`),
   preview: (messageId: string, language: string) =>
     request<Preview>("GET", `/messages/${messageId}/preview?language=${encodeURIComponent(language)}`),

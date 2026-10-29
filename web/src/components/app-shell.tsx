@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useMessages, useTranslations } from "next-intl";
 import { useTransition } from "react";
+import { DemoBanner, DemoChrome } from "@/components/demo";
 import { LockGate } from "@/components/lock-screen";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme";
@@ -58,12 +59,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:start-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-lime focus:px-3 focus:py-2 focus:text-on-lime">
         {t("skip")}
       </a>
+      <DemoChrome />
       <header
         className={cn(
           "sticky top-0 z-40 border-b backdrop-blur",
           landing ? "dark border-night-line bg-night/90 text-text" : "border-line bg-bg/85",
         )}
       >
+        <DemoBanner />
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <Link href="/" className="rounded-lg" aria-label={t("home")}>
             <Logo />

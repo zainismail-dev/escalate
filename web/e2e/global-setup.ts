@@ -1,6 +1,7 @@
-import { API_URL, apiContext } from "./helpers";
+import { API_URL, apiContext, DEMO } from "./helpers";
 
 export default async function globalSetup() {
+  if (DEMO) return; // the static demo has no API (and must not need one)
   const ctx = await apiContext();
   const health = await ctx.get(`${API_URL}/health`);
   if (!health.ok()) throw new Error(`API not reachable at ${API_URL}`);

@@ -13,8 +13,14 @@ const SECURITY_HEADERS = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
 
+// The static demo's sample data is only bundled into the demo build; elsewhere a stub with the
+// same exports takes its place (see src/demo/disabled.ts).
+const DEMO = process.env.NEXT_PUBLIC_DEMO_STATIC === "true";
+const DEMO_BACKEND = DEMO ? "./src/demo/backend.ts" : "./src/demo/disabled.ts";
+
 const config: NextConfig = {
   output: "standalone", // small Docker image: `node server.js`
+  turbopack: { resolveAlias: { "escalate-demo-backend": DEMO_BACKEND } },
   poweredByHeader: false,
   // No telemetry, analytics or third-party requests at runtime: fonts are self-hosted by next/font.
   async headers() {

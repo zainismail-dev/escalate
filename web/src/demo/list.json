@@ -1,0 +1,218 @@
+[
+  {
+    "amount": "18000.00",
+    "amount_display": "₹18,000",
+    "case_type": "scam",
+    "company": null,
+    "country": "IN",
+    "created_at": "2026-10-29T10:36:33.051495",
+    "currency": "INR",
+    "current_step": null,
+    "days_left": null,
+    "deadline_warning": false,
+    "generic_playbook": true,
+    "id": "67decde5-9393-477a-9839-acaac9822a72",
+    "ladder": [
+      {
+        "channel": "email",
+        "id": "s1_bank_fraud_report",
+        "name": "fraud report to your bank",
+        "recipient_role": "your bank or card issuer's fraud team",
+        "state": "future",
+        "wait_days": 10
+      },
+      {
+        "channel": "post",
+        "id": "s2_police_report",
+        "name": "police report",
+        "recipient_role": "the police",
+        "state": "future",
+        "wait_days": 30
+      },
+      {
+        "channel": "web_form",
+        "id": "s3_national_report",
+        "name": "report to the national fraud reporting body",
+        "recipient_role": "the national fraud or cybercrime reporting body",
+        "state": "future",
+        "wait_days": null
+      }
+    ],
+    "language": "en",
+    "next_action_at": null,
+    "playbook_id": "intl-generic-scam",
+    "region": null,
+    "status": "urgent_checklist",
+    "step_name": null,
+    "title": "Fake delivery SMS payment",
+    "waiting_for": "urgent_checklist"
+  },
+  {
+    "amount": "64500.00",
+    "amount_display": "Rs 64,500",
+    "case_type": "refund_refused",
+    "company": "BrightMart Electronics",
+    "country": "PK",
+    "created_at": "2026-10-29T10:36:32.880359",
+    "currency": "PKR",
+    "current_step": "s3_legal_notice",
+    "days_left": 5,
+    "deadline_warning": false,
+    "generic_playbook": false,
+    "id": "380e7416-3621-47d8-8071-c691016788df",
+    "ladder": [
+      {
+        "channel": "email",
+        "id": "s1_seller_written",
+        "name": "written demand to the seller",
+        "recipient_role": "the seller",
+        "state": "done",
+        "wait_days": 5
+      },
+      {
+        "channel": "web_form",
+        "id": "s2_platform",
+        "name": "escalation to the marketplace",
+        "recipient_role": "the marketplace's customer support",
+        "state": "done",
+        "wait_days": 5
+      },
+      {
+        "channel": "post",
+        "id": "s3_legal_notice",
+        "name": "15-day legal notice",
+        "recipient_role": "the seller",
+        "state": "current",
+        "wait_days": 15
+      },
+      {
+        "channel": "court",
+        "id": "s4_consumer_court",
+        "name": "consumer court complaint",
+        "recipient_role": "the District Consumer Court",
+        "state": "future",
+        "wait_days": null
+      }
+    ],
+    "language": "en",
+    "next_action_at": "2026-11-03T10:36:33.320346",
+    "playbook_id": "pk-ecommerce-refund-refused",
+    "region": "PK-SD",
+    "status": "waiting_reply",
+    "step_name": "written demand to the seller",
+    "title": "Broken LED TV — refund refused",
+    "waiting_for": "waiting_reply"
+  },
+  {
+    "amount": "1249.00",
+    "amount_display": "$1,249",
+    "case_type": "refund_refused",
+    "company": "Northline Computers",
+    "country": "US",
+    "created_at": "2026-10-29T10:36:33.124893",
+    "currency": "USD",
+    "current_step": "s1_written_demand",
+    "days_left": null,
+    "deadline_warning": false,
+    "generic_playbook": false,
+    "id": "84f36b16-33b7-44d9-86bf-0b7ada3ff1ae",
+    "ladder": [
+      {
+        "channel": "email",
+        "id": "s1_written_demand",
+        "name": "written demand to the seller",
+        "recipient_role": "the seller",
+        "state": "current",
+        "wait_days": 10
+      },
+      {
+        "channel": "email",
+        "id": "s2_final_demand",
+        "name": "final demand letter",
+        "recipient_role": "the seller",
+        "state": "future",
+        "wait_days": 14
+      },
+      {
+        "channel": "web_form",
+        "id": "s3_attorney_general",
+        "name": "complaint to your state attorney general",
+        "recipient_role": "your state attorney general's consumer protection office",
+        "state": "future",
+        "wait_days": 30
+      },
+      {
+        "channel": "info",
+        "id": "s4_small_claims",
+        "name": "small claims guide",
+        "recipient_role": "you (a filing guide)",
+        "state": "future",
+        "wait_days": null
+      }
+    ],
+    "language": "en",
+    "next_action_at": null,
+    "playbook_id": "us-general-refund-refused",
+    "region": "US-CA",
+    "status": "awaiting_approval",
+    "step_name": "written demand to the seller",
+    "title": "Laptop refund refused",
+    "waiting_for": "approve_draft"
+  },
+  {
+    "amount": "39.99",
+    "amount_display": "£39.99",
+    "case_type": "subscription_cancel",
+    "company": "PulseFit Gyms",
+    "country": "GB",
+    "created_at": "2026-10-29T10:36:33.075520",
+    "currency": "GBP",
+    "current_step": "s1_cancel_request",
+    "days_left": null,
+    "deadline_warning": false,
+    "generic_playbook": true,
+    "id": "24ff5963-0342-4817-896c-09a895163713",
+    "ladder": [
+      {
+        "channel": "email",
+        "id": "s1_cancel_request",
+        "name": "cancellation request",
+        "recipient_role": "the company",
+        "state": "current",
+        "wait_days": 7
+      },
+      {
+        "channel": "email",
+        "id": "s2_final_notice",
+        "name": "final notice listing the charges",
+        "recipient_role": "the company",
+        "state": "future",
+        "wait_days": 14
+      },
+      {
+        "channel": "email",
+        "id": "s3_card_dispute",
+        "name": "card-issuer dispute letter",
+        "recipient_role": "your card issuer or bank",
+        "state": "future",
+        "wait_days": 30
+      },
+      {
+        "channel": "web_form",
+        "id": "s4_authority",
+        "name": "complaint to the consumer authority",
+        "recipient_role": "the national consumer authority or ombudsman",
+        "state": "future",
+        "wait_days": null
+      }
+    ],
+    "language": "en",
+    "next_action_at": null,
+    "playbook_id": "intl-generic-subscription-cancel",
+    "region": null,
+    "status": "awaiting_approval",
+    "step_name": "cancellation request",
+    "title": "Gym still charging after cancelling",
+    "waiting_for": "approve_draft"
+  }
+]

@@ -1,4 +1,9 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, type Page, request } from "@playwright/test";
+
+/** DEMO_E2E=1: the static live demo build (NEXT_PUBLIC_DEMO_STATIC=true). There is no API. */
+export const DEMO = process.env.DEMO_E2E === "1";
 
 export const API_URL = process.env.API_URL || "http://localhost:8000";
 const WEB_URL = process.env.WEB_URL || "http://localhost:3000";
@@ -16,11 +21,16 @@ export interface DemoCase {
 
 /** Demo cases by country (seeded by global setup). */
 export async function demoCases(): Promise<Record<string, DemoCase>> {
+  if (DEMO) return byCountry(JSON.parse(readFileSync(join(process.cwd(), "src/demo/list.json"), "utf8")));
   const ctx = await apiContext();
   const rows: DemoCase[] = await (await ctx.get(`${API_URL}/cases`)).json();
+  await ctx.dispose();
+  return byCountry(rows);
+}
+
+function byCountry(rows: DemoCase[]): Record<string, DemoCase> {
   const out: Record<string, DemoCase> = {};
   for (const r of rows) out[r.country] ??= r; // newest first
-  await ctx.dispose();
   return out;
 }
 

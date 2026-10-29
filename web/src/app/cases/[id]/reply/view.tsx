@@ -2,7 +2,7 @@
 import { ArrowRight, Gavel, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AgentProgress, lastEventId, REPLY_STAGES } from "@/components/agent-progress";
 import { ResolutionConfirm } from "@/components/resolution-confirm";
 import { ErrorState, PageSkeleton } from "@/components/states";
@@ -29,6 +29,13 @@ export function LogReply({ id }: { id: string }) {
   const [running, setRunning] = useState(false);
   const [since, setSince] = useState(0);
   const [override, setOverride] = useState<string>("");
+
+  // The live demo pre-fills the company's sample reply (inline env check: other builds drop it).
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_DEMO_STATIC === "true") {
+      void import("escalate-demo-backend").then((m) => setText((v) => v || m.SAMPLE_REPLY));
+    }
+  }, []);
 
   const c = caseQ.data;
   if (caseQ.loading && !c) return <PageSkeleton />;

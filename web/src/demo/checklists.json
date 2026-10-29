@@ -1,0 +1,228 @@
+{
+  "GB": {
+    "country": "GB",
+    "items": [
+      {
+        "detail": "Use the number on the back of your card or on the bank's official website or app, not a number the scammer gave you. Ask them to stop or reverse the payment and to flag it as fraud.",
+        "id": "call_bank",
+        "title": "Call your bank or card issuer now",
+        "urgent": true
+      },
+      {
+        "detail": "Freeze or cancel the card in your banking app, or ask the bank to do it on the call.",
+        "id": "block_card",
+        "title": "Block the card or account that was used",
+        "urgent": true
+      },
+      {
+        "detail": "Change the password of any account you used or shared with the scammer and turn on two-step verification.",
+        "id": "change_passwords",
+        "title": "Change your passwords",
+        "urgent": true
+      },
+      {
+        "detail": "Action Fraud is the national reporting centre for fraud in England, Wales and Northern Ireland; in Scotland, report to Police Scotland. TODO(verify): add the official website and number.",
+        "id": "report_national",
+        "title": "Report it to Action Fraud (or Police Scotland in Scotland)",
+        "urgent": true
+      },
+      {
+        "detail": "Screenshots of chats, the scammer's number or profile, receipts and transaction IDs. Upload them here.",
+        "id": "keep_evidence",
+        "title": "Keep every piece of evidence",
+        "urgent": false
+      }
+    ],
+    "sources": [
+      {
+        "title": "Action Fraud — TODO: add URL"
+      },
+      {
+        "title": "Police Scotland — TODO: add URL"
+      }
+    ],
+    "warnings": [
+      "Escalate will never ask for your passwords, PINs or one-time codes (OTPs). Never share them with anyone, including callers who say they are from your bank.",
+      "Beware of 'recovery' scammers: people who contact you offering to get your money back for a fee are almost always running a second scam."
+    ]
+  },
+  "IN": {
+    "country": "IN",
+    "items": [
+      {
+        "detail": "Use the number on the back of your card or on the bank's official website or app, not a number the scammer gave you. Ask them to stop or reverse the payment and to flag it as fraud.",
+        "id": "call_bank",
+        "title": "Call your bank or card issuer now",
+        "urgent": true
+      },
+      {
+        "detail": "Freeze or cancel the card in your banking app, or ask the bank to do it on the call.",
+        "id": "block_card",
+        "title": "Block the card or account that was used",
+        "urgent": true
+      },
+      {
+        "detail": "Change the password of any account you used or shared with the scammer and turn on two-step verification.",
+        "id": "change_passwords",
+        "title": "Change your passwords",
+        "urgent": true
+      },
+      {
+        "detail": "TODO(verify): add the portal's official address and the national cybercrime helpline number from a Government of India site. Report as fast as you can: quick reports give the best chance of stopping the money.",
+        "id": "report_national",
+        "title": "Report it on the National Cyber Crime Reporting Portal",
+        "urgent": true
+      },
+      {
+        "detail": "Screenshots of chats, the scammer's number or profile, receipts and transaction IDs. Upload them here.",
+        "id": "keep_evidence",
+        "title": "Keep every piece of evidence",
+        "urgent": false
+      }
+    ],
+    "sources": [
+      {
+        "title": "National Cyber Crime Reporting Portal (Government of India) — TODO: add URL"
+      }
+    ],
+    "warnings": [
+      "Escalate will never ask for your passwords, PINs or one-time codes (OTPs). Never share them with anyone, including callers who say they are from your bank.",
+      "Beware of 'recovery' scammers: people who contact you offering to get your money back for a fee are almost always running a second scam."
+    ]
+  },
+  "PK": {
+    "country": "PK",
+    "items": [
+      {
+        "detail": "Use the number on the back of your card or on the bank's official website or app, not a number the scammer gave you. Ask them to stop or reverse the payment and to flag it as fraud.",
+        "id": "call_bank",
+        "title": "Call your bank or card issuer now",
+        "urgent": true
+      },
+      {
+        "detail": "Freeze or cancel the card in your banking app, or ask the bank to do it on the call.",
+        "id": "block_card",
+        "title": "Block the card or account that was used",
+        "urgent": true
+      },
+      {
+        "detail": "Change the password of any account you used or shared with the scammer and turn on two-step verification.",
+        "id": "change_passwords",
+        "title": "Change your passwords",
+        "urgent": true
+      },
+      {
+        "detail": "TODO(verify): name the current national cybercrime reporting agency and its official complaint channel. Until then, find it on the Government of Pakistan's official website.",
+        "id": "report_national",
+        "title": "Report it to the national cybercrime agency",
+        "urgent": true
+      },
+      {
+        "detail": "Screenshots of chats, the scammer's number or profile, receipts and transaction IDs. Upload them here.",
+        "id": "keep_evidence",
+        "title": "Keep every piece of evidence",
+        "urgent": false
+      }
+    ],
+    "sources": [
+      {
+        "title": "TODO: official source for the national cybercrime agency"
+      }
+    ],
+    "warnings": [
+      "Escalate will never ask for your passwords, PINs or one-time codes (OTPs). Never share them with anyone, including callers who say they are from your bank.",
+      "Beware of 'recovery' scammers: people who contact you offering to get your money back for a fee are almost always running a second scam."
+    ]
+  },
+  "US": {
+    "country": "US",
+    "items": [
+      {
+        "detail": "Use the number on the back of your card or on the bank's official website or app, not a number the scammer gave you. Ask them to stop or reverse the payment and to flag it as fraud.",
+        "id": "call_bank",
+        "title": "Call your bank or card issuer now",
+        "urgent": true
+      },
+      {
+        "detail": "Freeze or cancel the card in your banking app, or ask the bank to do it on the call.",
+        "id": "block_card",
+        "title": "Block the card or account that was used",
+        "urgent": true
+      },
+      {
+        "detail": "Change the password of any account you used or shared with the scammer and turn on two-step verification.",
+        "id": "change_passwords",
+        "title": "Change your passwords",
+        "urgent": true
+      },
+      {
+        "detail": "The Federal Trade Commission collects fraud reports; the FBI's Internet Crime Complaint Center (IC3) handles internet fraud. TODO(verify): add the official .gov addresses.",
+        "id": "report_national",
+        "title": "Report it to the FTC, and to the FBI's IC3 for online fraud",
+        "urgent": true
+      },
+      {
+        "detail": "Screenshots of chats, the scammer's number or profile, receipts and transaction IDs. Upload them here.",
+        "id": "keep_evidence",
+        "title": "Keep every piece of evidence",
+        "urgent": false
+      }
+    ],
+    "sources": [
+      {
+        "title": "Federal Trade Commission (FTC) — TODO: add URL"
+      },
+      {
+        "title": "FBI Internet Crime Complaint Center (IC3) — TODO: add URL"
+      }
+    ],
+    "warnings": [
+      "Escalate will never ask for your passwords, PINs or one-time codes (OTPs). Never share them with anyone, including callers who say they are from your bank.",
+      "Beware of 'recovery' scammers: people who contact you offering to get your money back for a fee are almost always running a second scam."
+    ]
+  },
+  "_generic": {
+    "country": "INTL",
+    "items": [
+      {
+        "detail": "Use the number on the back of your card or on the bank's official website, not a number the scammer gave you. Ask them to stop or reverse the payment and to flag it as fraud.",
+        "id": "call_bank",
+        "title": "Call your bank or card issuer now",
+        "urgent": true
+      },
+      {
+        "detail": "Freeze or cancel the card in your banking app, or ask the bank to do it on the call.",
+        "id": "block_card",
+        "title": "Block the card or account that was used",
+        "urgent": true
+      },
+      {
+        "detail": "Change the password of any account you used or shared with the scammer (email, banking, shopping, social media), and turn on two-step verification.",
+        "id": "change_passwords",
+        "title": "Change your passwords",
+        "urgent": true
+      },
+      {
+        "detail": "Find the official reporting body on your government's website. A report number helps your bank dispute.",
+        "id": "report_national",
+        "title": "Report it to your national fraud or cybercrime reporting body",
+        "urgent": true
+      },
+      {
+        "detail": "Screenshots of chats, the scammer's phone number or profile, payment receipts and transaction IDs. Upload them here.",
+        "id": "keep_evidence",
+        "title": "Keep every piece of evidence",
+        "urgent": false
+      }
+    ],
+    "sources": [
+      {
+        "title": "Your bank's official fraud line (the number on the back of your card)"
+      }
+    ],
+    "warnings": [
+      "Escalate will never ask for your passwords, PINs or one-time codes (OTPs). Never share them with anyone, including callers who say they are from your bank.",
+      "Beware of 'recovery' scammers: people who contact you offering to get your money back for a fee are almost always running a second scam."
+    ]
+  }
+}

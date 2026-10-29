@@ -937,5 +937,19 @@
     "wrong": "That passcode is not right.",
     "tooMany": "Too many wrong passcodes. Wait 15 minutes and try again.",
     "failed": "Could not unlock. Is the Escalate API running?"
+  },
+  "demo": {
+    "banner": "Live demo · sample data · nothing is sent",
+    "dialogTitle": "This is a live demo",
+    "dialogBody": "This is a live demo with sample data. Nothing is saved or sent. To run your own case, install Escalate on your computer: it is free and open source.",
+    "nothingSent": "Nothing was saved or sent",
+    "getIt": "Get Escalate on GitHub",
+    "keepLooking": "Keep exploring",
+    "close": "Close",
+    "endTitle": "Demo ends here",
+    "endBody": "In your own copy, Escalate now reads your evidence, asks for anything missing and drafts your first letter for you to approve. This demo has no AI model, so it stops here. Nothing you typed was saved or sent.",
+    "seeCases": "See the sample cases",
+    "sampleFilled": "Sample details are filled in. Change anything you like: nothing is saved.",
+    "useSample": "Use the sample receipt"
   }
 }

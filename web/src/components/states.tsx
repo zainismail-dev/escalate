@@ -69,6 +69,7 @@ export function EmptyState({
 export function ErrorState({ error, onRetry, className }: { error: ApiError; onRetry?: () => void; className?: string }) {
   const t = useTranslations("errors");
   const kind = error.kind;
+  if (kind === "demo") return null; // the demo dialog already says why
   const Icon = kind === "model_offline" || kind === "offline_api" ? CloudOff : AlertTriangle;
   const title = t(`${kind}.title`);
   return (

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AgentProgress, lastEventId } from "@/components/agent-progress";
 import { CaseChip, PackBadge } from "@/components/case-bits";
 import { FactChip, useFactLabel } from "@/components/fact-chip";
+import { DemoEnd } from "@/components/demo";
 import { CountryPicker, LanguagePicker } from "@/components/pickers";
 import { QuestionsForm } from "@/components/questions-form";
 import { ErrorState, PageSkeleton } from "@/components/states";
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FieldHint, Input, Label, Textarea } from "@/components/ui/input";
 import { api, ApiError } from "@/lib/api";
+import { DEMO_STATIC, SAMPLE_CASE } from "@/lib/demo-mode";
 import { displayFact } from "@/lib/facts";
 import type { CaseDetail, Country, Evidence } from "@/lib/types";
 import { useAction, useApi } from "@/lib/use-api";
@@ -43,6 +45,7 @@ function Stepper({ current }: { current: Step }) {
 
 export function Wizard() {
   const t = useTranslations("wizard");
+  const td = useTranslations("demo");
   const ui = useLocale();
   const router = useRouter();
   const params = useSearchParams();
@@ -52,11 +55,12 @@ export function Wizard() {
   const settings = useApi(() => api.settings(), []);
 
   const [step, setStep] = useState<Step>("where");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState(DEMO_STATIC ? SAMPLE_CASE.country : "");
   const [region, setRegion] = useState("");
   const [language, setLanguage] = useState("");
-  const [description, setDescription] = useState("");
-  const [company, setCompany] = useState("");
+  const [description, setDescription] = useState(DEMO_STATIC ? SAMPLE_CASE.description : "");
+  const [company, setCompany] = useState(DEMO_STATIC ? SAMPLE_CASE.company : "");
+  const [demoEnded, setDemoEnded] = useState(false);
   const [c, setCase] = useState<CaseDetail | null>(null);
   const [files, setFiles] = useState<Evidence[]>([]);
   const [running, setRunning] = useState(false);
@@ -141,14 +145,16 @@ export function Wizard() {
   }
 
   const start = () =>
-    runAgent(async () => {
-      try {
-        return await api.start(c!.id);
-      } catch (e) {
-        if (e instanceof ApiError && e.status === 409) return api.retry(c!.id);
-        throw e;
-      }
-    });
+    DEMO_STATIC
+      ? setDemoEnded(true) // no agent or model in the static demo
+      : runAgent(async () => {
+          try {
+            return await api.start(c!.id);
+          } catch (e) {
+            if (e instanceof ApiError && e.status === 409) return api.retry(c!.id);
+            throw e;
+          }
+        });
 
   const facts = useMemo(() => {
     if (!c) return [];
@@ -165,13 +171,20 @@ export function Wizard() {
         <p className="label-mono text-muted">{t("eyebrow")}</p>
         <h1 className="mt-1 font-display text-3xl">{t(`titles.${step}`)}</h1>
         <p className="mt-1 text-text-2">{t(`intros.${step}`)}</p>
+        {DEMO_STATIC && !demoEnded && (
+          <p className="mt-2 text-sm font-semibold text-text-2" data-testid="demo-sample">
+            {td("sampleFilled")}
+          </p>
+        )}
       </div>
       <Stepper current={step} />
       {c && <CaseChip country={c.country} region={c.region} currency={c.currency} language={c.language} />}
 
       {action.error && !running && <ErrorState error={action.error} onRetry={step === "evidence" ? start : undefined} />}
 
-      {step === "where" && (
+      {demoEnded && <DemoEnd />}
+
+      {step === "where" && !demoEnded && (
         <Card>
           <CardContent className="space-y-6">
             <CountryPicker countries={countries.data ?? []} value={country} onChange={setCountry} />
@@ -210,7 +223,7 @@ export function Wizard() {
         </Card>
       )}
 
-      {step === "what" && (
+      {step === "what" && !demoEnded && (
         <Card>
           <CardContent className="space-y-5">
             <div className="space-y-1.5">
@@ -250,7 +263,7 @@ export function Wizard() {
         </Card>
       )}
 
-      {step === "evidence" && c && (
+      {step === "evidence" && c && !demoEnded && (
         <div className="space-y-4">
           <Card>
             <CardContent className="space-y-4">
@@ -270,6 +283,20 @@ export function Wizard() {
                   onChange={(e) => upload(e.target.files)}
                 />
               </label>
+              {DEMO_STATIC && files.length === 0 && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  data-testid="demo-sample-evidence"
+                  onClick={() => {
+                    const dt = new DataTransfer();
+                    dt.items.add(new File([""], SAMPLE_CASE.evidence, { type: "image/png" }));
+                    void upload(dt.files);
+                  }}
+                >
+                  {td("useSample")}
+                </Button>
+              )}
               {files.length > 0 && (
                 <ul className="space-y-2" aria-label={t("uploaded")}>
                   {files.map((f) => (

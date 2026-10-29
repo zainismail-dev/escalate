@@ -1,0 +1,530 @@
+{
+  "2c94526c-4141-4f05-ac75-0cab8109dda0": {
+    "blanks": [
+      "your phone number"
+    ],
+    "body_segments": [
+      {
+        "key": null,
+        "kind": "text",
+        "text": "Dear "
+      },
+      {
+        "key": "seller_name",
+        "kind": "fact",
+        "text": "Northline Computers"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": ",\n\nOn "
+      },
+      {
+        "key": "order_date",
+        "kind": "fact",
+        "text": "2026-09-05"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": " I bought from you under order "
+      },
+      {
+        "key": "order_id",
+        "kind": "fact",
+        "text": "NL-77120"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": " and paid "
+      },
+      {
+        "key": "amount",
+        "kind": "fact",
+        "text": "USD 1,249.00"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": ".\n\nThe problem: "
+      },
+      {
+        "key": "defect_description",
+        "kind": "fact",
+        "text": "The screen flickers and goes black within minutes of use."
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": "\n\nI ask you to provide the following: "
+      },
+      {
+        "key": "remedy_wanted",
+        "kind": "fact",
+        "text": "a full refund to my card"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": ".\n\nPlease do this by November 8, 2026. If I do not hear from you by then, I will send a final notice and take the matter further.\n\nYours sincerely,\n"
+      },
+      {
+        "key": "buyer_name",
+        "kind": "fact",
+        "text": "Jordan Lee"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": "\n\nMy phone number: "
+      },
+      {
+        "key": null,
+        "kind": "blank",
+        "text": "[[your phone number]]"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": "\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice.\n"
+      }
+    ],
+    "can_approve": false,
+    "case_id": "84f36b16-33b7-44d9-86bf-0b7ada3ff1ae",
+    "checks": [
+      {
+        "detail": [],
+        "id": "facts",
+        "ok": true
+      },
+      {
+        "detail": [
+          "your phone number"
+        ],
+        "id": "blanks",
+        "ok": false
+      },
+      {
+        "detail": [],
+        "id": "tone",
+        "ok": true
+      },
+      {
+        "detail": [],
+        "id": "disclaimer",
+        "ok": true
+      },
+      {
+        "detail": [],
+        "id": "no_secrets",
+        "ok": true
+      }
+    ],
+    "facts": [
+      {
+        "confidence": 0.95,
+        "display": [
+          "Jordan Lee"
+        ],
+        "key": "buyer_name",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": true,
+        "value": "Jordan Lee"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "14-inch laptop"
+        ],
+        "key": "product",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": false,
+        "value": "14-inch laptop"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "Northline Computers"
+        ],
+        "key": "seller_name",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": true,
+        "value": "Northline Computers"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "help@northline.example"
+        ],
+        "key": "seller_contact",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": false,
+        "value": "help@northline.example"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "NL-77120"
+        ],
+        "key": "order_id",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": true,
+        "value": "NL-77120"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "2026-09-05",
+          "September 5, 2026"
+        ],
+        "key": "order_date",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": true,
+        "value": "2026-09-05"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "1249.00",
+          "USD 1,249.00",
+          "$1,249"
+        ],
+        "key": "amount",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": true,
+        "value": "1249.00"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "USD"
+        ],
+        "key": "currency",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": false,
+        "value": "USD"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "The screen flickers and goes black within minutes of use."
+        ],
+        "key": "defect_description",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": true,
+        "value": "The screen flickers and goes black within minutes of use."
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "a full refund to my card"
+        ],
+        "key": "remedy_wanted",
+        "source_evidence_id": 4,
+        "source_filename": "northline-receipt.txt",
+        "used": true,
+        "value": "a full refund to my card"
+      }
+    ],
+    "language": "en",
+    "locale": "en-US",
+    "message": {
+      "approved_at": null,
+      "body": "Dear Northline Computers,\n\nOn 2026-09-05 I bought from you under order NL-77120 and paid USD 1,249.00.\n\nThe problem: The screen flickers and goes black within minutes of use.\n\nI ask you to provide the following: a full refund to my card.\n\nPlease do this by November 8, 2026. If I do not hear from you by then, I will send a final notice and take the matter further.\n\nYours sincerely,\nJordan Lee\n\nMy phone number: [[your phone number]]\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice.\n",
+      "channel": "email",
+      "created_at": "2026-10-29T10:36:33.153572",
+      "direction": "out",
+      "id": "2c94526c-4141-4f05-ac75-0cab8109dda0",
+      "recipient": "help@northline.example",
+      "rejection_reason": null,
+      "sent_at": null,
+      "status": "draft",
+      "step_id": "s1_written_demand",
+      "subject": "Refund request for order NL-77120"
+    },
+    "problems": [],
+    "recipient_check": {
+      "changed": false,
+      "previous": null,
+      "recipient": "help@northline.example",
+      "source": "evidence",
+      "source_filename": "northline-receipt.txt"
+    },
+    "step_name": "written demand to the seller",
+    "subject_segments": [
+      {
+        "key": null,
+        "kind": "text",
+        "text": "Refund request for order "
+      },
+      {
+        "key": "order_id",
+        "kind": "fact",
+        "text": "NL-77120"
+      }
+    ],
+    "template_languages": [
+      "en"
+    ],
+    "text_direction": "ltr"
+  },
+  "d39c4902-997c-42c9-82b3-c28bf74ea96a": {
+    "blanks": [],
+    "body_segments": [
+      {
+        "key": null,
+        "kind": "text",
+        "text": "Dear "
+      },
+      {
+        "key": "company_name",
+        "kind": "fact",
+        "text": "PulseFit Gyms"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": ",\n\nPlease cancel my subscription ("
+      },
+      {
+        "key": "plan_name",
+        "kind": "fact",
+        "text": "monthly membership"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": ") on account "
+      },
+      {
+        "key": "account_id",
+        "kind": "fact",
+        "text": "PF-220931"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": " with immediate effect.\n\nI first asked you to cancel on "
+      },
+      {
+        "key": "cancel_requested_on",
+        "kind": "fact",
+        "text": "2026-08-31"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": ".\n\nI ask you to: "
+      },
+      {
+        "key": "remedy_wanted",
+        "kind": "fact",
+        "text": "confirm the cancellation and refund every charge after 31 August"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": ".\n\nPlease confirm in writing by 5 November 2026 that the subscription is cancelled and that no further payments will be taken.\n\nYours sincerely,\n"
+      },
+      {
+        "key": "buyer_name",
+        "kind": "fact",
+        "text": "Sam Taylor"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": "\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice. Check the rules in your country.\n"
+      }
+    ],
+    "can_approve": true,
+    "case_id": "24ff5963-0342-4817-896c-09a895163713",
+    "checks": [
+      {
+        "detail": [],
+        "id": "facts",
+        "ok": true
+      },
+      {
+        "detail": [],
+        "id": "blanks",
+        "ok": true
+      },
+      {
+        "detail": [],
+        "id": "tone",
+        "ok": true
+      },
+      {
+        "detail": [],
+        "id": "disclaimer",
+        "ok": true
+      },
+      {
+        "detail": [],
+        "id": "no_secrets",
+        "ok": true
+      }
+    ],
+    "facts": [
+      {
+        "confidence": 0.95,
+        "display": [
+          "Sam Taylor"
+        ],
+        "key": "buyer_name",
+        "source_evidence_id": 3,
+        "source_filename": "pulsefit-cancellation-email.txt",
+        "used": true,
+        "value": "Sam Taylor"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "PulseFit Gyms"
+        ],
+        "key": "company_name",
+        "source_evidence_id": 3,
+        "source_filename": "pulsefit-cancellation-email.txt",
+        "used": true,
+        "value": "PulseFit Gyms"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "members@pulsefit.example"
+        ],
+        "key": "company_contact",
+        "source_evidence_id": 3,
+        "source_filename": "pulsefit-cancellation-email.txt",
+        "used": false,
+        "value": "members@pulsefit.example"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "PF-220931"
+        ],
+        "key": "account_id",
+        "source_evidence_id": 3,
+        "source_filename": "pulsefit-cancellation-email.txt",
+        "used": true,
+        "value": "PF-220931"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "2026-08-31",
+          "31 August 2026"
+        ],
+        "key": "cancel_requested_on",
+        "source_evidence_id": 3,
+        "source_filename": "pulsefit-cancellation-email.txt",
+        "used": true,
+        "value": "2026-08-31"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "confirm the cancellation and refund every charge after 31 August"
+        ],
+        "key": "remedy_wanted",
+        "source_evidence_id": 3,
+        "source_filename": "pulsefit-cancellation-email.txt",
+        "used": true,
+        "value": "confirm the cancellation and refund every charge after 31 August"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "monthly membership"
+        ],
+        "key": "plan_name",
+        "source_evidence_id": 3,
+        "source_filename": "pulsefit-cancellation-email.txt",
+        "used": true,
+        "value": "monthly membership"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "39.99",
+          "GBP 39.99",
+          "£39.99"
+        ],
+        "key": "amount",
+        "source_evidence_id": 3,
+        "source_filename": "pulsefit-cancellation-email.txt",
+        "used": false,
+        "value": "39.99"
+      },
+      {
+        "confidence": 0.95,
+        "display": [
+          "GBP"
+        ],
+        "key": "currency",
+        "source_evidence_id": 3,
+        "source_filename": "pulsefit-cancellation-email.txt",
+        "used": false,
+        "value": "GBP"
+      }
+    ],
+    "language": "en",
+    "locale": "en-GB",
+    "message": {
+      "approved_at": null,
+      "body": "Dear PulseFit Gyms,\n\nPlease cancel my subscription (monthly membership) on account PF-220931 with immediate effect.\n\nI first asked you to cancel on 2026-08-31.\n\nI ask you to: confirm the cancellation and refund every charge after 31 August.\n\nPlease confirm in writing by 5 November 2026 that the subscription is cancelled and that no further payments will be taken.\n\nYours sincerely,\nSam Taylor\n\n---\nPrepared with Escalate, a free self-help tool. This is not legal advice. Check the rules in your country.\n",
+      "channel": "email",
+      "created_at": "2026-10-29T10:36:33.107665",
+      "direction": "out",
+      "id": "d39c4902-997c-42c9-82b3-c28bf74ea96a",
+      "recipient": "members@pulsefit.example",
+      "rejection_reason": null,
+      "sent_at": null,
+      "status": "draft",
+      "step_id": "s1_cancel_request",
+      "subject": "Cancel my subscription (account PF-220931)"
+    },
+    "problems": [],
+    "recipient_check": {
+      "changed": false,
+      "previous": null,
+      "recipient": "members@pulsefit.example",
+      "source": "evidence",
+      "source_filename": "pulsefit-cancellation-email.txt"
+    },
+    "step_name": "cancellation request",
+    "subject_segments": [
+      {
+        "key": null,
+        "kind": "text",
+        "text": "Cancel my subscription (account "
+      },
+      {
+        "key": "account_id",
+        "kind": "fact",
+        "text": "PF-220931"
+      },
+      {
+        "key": null,
+        "kind": "text",
+        "text": ")"
+      }
+    ],
+    "template_languages": [
+      "en"
+    ],
+    "text_direction": "ltr"
+  }
+}

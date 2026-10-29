@@ -1,0 +1,390 @@
+{
+  "24ff5963-0342-4817-896c-09a895163713": [
+    {
+      "created_at": "2026-10-29T10:36:33.076731",
+      "id": 16,
+      "payload": {
+        "country": "GB",
+        "region": null
+      },
+      "type": "case_created"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.077373",
+      "id": 17,
+      "payload": {},
+      "type": "demo_case"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.078941",
+      "id": 18,
+      "payload": {
+        "evidence_id": 3,
+        "filename": "pulsefit-cancellation-email.txt",
+        "kind": "text",
+        "needs_review": false,
+        "sha256": "731ea1ea5a802b75e9b5c63ab71827142e043e851caa5554c11484ae3080c5b7"
+      },
+      "type": "evidence_added"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.081125",
+      "id": 19,
+      "payload": {},
+      "type": "case_started"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.087280",
+      "id": 20,
+      "payload": {
+        "case_type": "subscription_cancel",
+        "country": "GB",
+        "model_case_type": "subscription_cancel",
+        "reason": "demo case",
+        "region": null,
+        "text_language": "en",
+        "urgent": false
+      },
+      "type": "classified"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.090296",
+      "id": 21,
+      "payload": {
+        "playbook": "intl-generic-subscription-cancel",
+        "version": "0.1.0"
+      },
+      "type": "playbook_selected"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.093993",
+      "id": 22,
+      "payload": {
+        "missing": [],
+        "saved": [
+          "account_id",
+          "amount",
+          "buyer_name",
+          "cancel_requested_on",
+          "company_contact",
+          "company_name",
+          "currency",
+          "plan_name",
+          "remedy_wanted"
+        ]
+      },
+      "type": "facts_extracted"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.108969",
+      "id": 23,
+      "payload": {
+        "message_id": 2,
+        "step": "s1_cancel_request"
+      },
+      "type": "draft_created"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.120074",
+      "id": 24,
+      "payload": {
+        "issues": [],
+        "message_id": 2,
+        "ok": true
+      },
+      "type": "fact_checked"
+    }
+  ],
+  "380e7416-3621-47d8-8071-c691016788df": [
+    {
+      "created_at": "2026-10-29T10:36:32.884992",
+      "id": 1,
+      "payload": {
+        "country": "PK",
+        "region": "PK-SD"
+      },
+      "type": "case_created"
+    },
+    {
+      "created_at": "2026-10-29T10:36:32.886083",
+      "id": 2,
+      "payload": {},
+      "type": "demo_case"
+    },
+    {
+      "created_at": "2026-10-29T10:36:32.892765",
+      "id": 3,
+      "payload": {
+        "evidence_id": 1,
+        "filename": "brightmart-invoice.txt",
+        "kind": "text",
+        "needs_review": false,
+        "sha256": "557c641878a68e2f87c77b0219fede464341597d0f8ad330996558ad6d32d1ec"
+      },
+      "type": "evidence_added"
+    },
+    {
+      "created_at": "2026-10-29T10:36:32.898187",
+      "id": 4,
+      "payload": {},
+      "type": "case_started"
+    },
+    {
+      "created_at": "2026-10-29T10:36:32.909426",
+      "id": 5,
+      "payload": {
+        "case_type": "refund_refused",
+        "country": "PK",
+        "model_case_type": "refund_refused",
+        "reason": "demo case",
+        "region": "PK-SD",
+        "text_language": "en",
+        "urgent": false
+      },
+      "type": "classified"
+    },
+    {
+      "created_at": "2026-10-29T10:36:32.960230",
+      "id": 6,
+      "payload": {
+        "playbook": "pk-ecommerce-refund-refused",
+        "version": "0.1.0"
+      },
+      "type": "playbook_selected"
+    },
+    {
+      "created_at": "2026-10-29T10:36:32.967420",
+      "id": 7,
+      "payload": {
+        "missing": [],
+        "saved": [
+          "amount",
+          "buyer_name",
+          "currency",
+          "defect_description",
+          "order_date",
+          "order_id",
+          "platform_name",
+          "product",
+          "remedy_wanted",
+          "return_shipped_on",
+          "seller_contact",
+          "seller_name"
+        ]
+      },
+      "type": "facts_extracted"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.030962",
+      "id": 8,
+      "payload": {
+        "message_id": 1,
+        "step": "s1_seller_written"
+      },
+      "type": "draft_created"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.046286",
+      "id": 9,
+      "payload": {
+        "issues": [],
+        "message_id": 1,
+        "ok": true
+      },
+      "type": "fact_checked"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.315681",
+      "id": 35,
+      "payload": {
+        "message_id": 1,
+        "recipient": "support@brightmart.example",
+        "step": "s1_seller_written"
+      },
+      "type": "message_approved"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.323072",
+      "id": 36,
+      "payload": {
+        "channel": "email",
+        "how": "email",
+        "message_id": 1,
+        "step": "s1_seller_written"
+      },
+      "type": "message_sent"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.329454",
+      "id": 37,
+      "payload": {
+        "step": "s1_seller_written",
+        "until": "2026-11-03T10:36:33.320346"
+      },
+      "type": "waiting_reply"
+    }
+  ],
+  "67decde5-9393-477a-9839-acaac9822a72": [
+    {
+      "created_at": "2026-10-29T10:36:33.052791",
+      "id": 10,
+      "payload": {
+        "country": "IN",
+        "region": null
+      },
+      "type": "case_created"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.053496",
+      "id": 11,
+      "payload": {},
+      "type": "demo_case"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.055107",
+      "id": 12,
+      "payload": {
+        "evidence_id": 2,
+        "filename": "upi-payment-screenshot.txt",
+        "kind": "text",
+        "needs_review": false,
+        "sha256": "f9ab3b4850739f5e55035e2ce4b6c518f55c4bec55068ea11bd981589755d1b8"
+      },
+      "type": "evidence_added"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.058609",
+      "id": 13,
+      "payload": {},
+      "type": "case_started"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.063606",
+      "id": 14,
+      "payload": {
+        "case_type": "scam",
+        "country": "IN",
+        "model_case_type": "scam",
+        "reason": "demo case",
+        "region": null,
+        "text_language": "en",
+        "urgent": true
+      },
+      "type": "classified"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.064822",
+      "id": 15,
+      "payload": {
+        "playbook": "intl-generic-scam",
+        "version": "0.1.0"
+      },
+      "type": "playbook_selected"
+    }
+  ],
+  "84f36b16-33b7-44d9-86bf-0b7ada3ff1ae": [
+    {
+      "created_at": "2026-10-29T10:36:33.126093",
+      "id": 25,
+      "payload": {
+        "country": "US",
+        "region": "US-CA"
+      },
+      "type": "case_created"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.126678",
+      "id": 26,
+      "payload": {},
+      "type": "demo_case"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.128195",
+      "id": 27,
+      "payload": {
+        "evidence_id": 4,
+        "filename": "northline-receipt.txt",
+        "kind": "text",
+        "needs_review": false,
+        "sha256": "0a03b0413bae81ba50148894d4552f7a0cef4aaa9c2a1dff8be2cf94def8797b"
+      },
+      "type": "evidence_added"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.130396",
+      "id": 28,
+      "payload": {},
+      "type": "case_started"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.135535",
+      "id": 29,
+      "payload": {
+        "case_type": "refund_refused",
+        "country": "US",
+        "model_case_type": "refund_refused",
+        "reason": "demo case",
+        "region": "US-CA",
+        "text_language": "en",
+        "urgent": false
+      },
+      "type": "classified"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.136619",
+      "id": 30,
+      "payload": {
+        "playbook": "us-general-refund-refused",
+        "version": "0.1.0"
+      },
+      "type": "playbook_selected"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.139669",
+      "id": 31,
+      "payload": {
+        "missing": [],
+        "saved": [
+          "amount",
+          "buyer_name",
+          "currency",
+          "defect_description",
+          "order_date",
+          "order_id",
+          "product",
+          "remedy_wanted",
+          "seller_contact",
+          "seller_name"
+        ]
+      },
+      "type": "facts_extracted"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.154764",
+      "id": 32,
+      "payload": {
+        "message_id": 3,
+        "step": "s1_written_demand"
+      },
+      "type": "draft_created"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.165403",
+      "id": 33,
+      "payload": {
+        "issues": [],
+        "message_id": 3,
+        "ok": true
+      },
+      "type": "fact_checked"
+    },
+    {
+      "created_at": "2026-10-29T10:36:33.173738",
+      "id": 34,
+      "payload": {
+        "message_id": 3
+      },
+      "type": "draft_edited"
+    }
+  ]
+}

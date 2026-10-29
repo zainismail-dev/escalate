@@ -22,6 +22,8 @@ export default defineConfig({
     { name: "rtl", testMatch: /rtl\.spec\.ts/, use: { ...devices["Desktop Chrome"], locale: "ar" } },
     { name: "dark", testMatch: /dark\.spec\.ts/, use: { ...devices["Desktop Chrome"], colorScheme: "dark" } },
     { name: "mobile", testMatch: /mobile\.spec\.ts/, use: { ...devices["Pixel 7"] } },
+    // DEMO_E2E=1 against a NEXT_PUBLIC_DEMO_STATIC=true build, with no API running.
+    { name: "demo", testMatch: /demo\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
     { name: "screenshots", testMatch: /screenshots\.spec\.ts/, use: { ...devices["Desktop Chrome"], viewport: { width: 1360, height: 900 } } },
   ],
 });

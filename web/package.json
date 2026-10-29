@@ -7,6 +7,9 @@
   "scripts": {
     "prebuild": "node scripts/gen-locales.mjs",
     "build": "next build",
+    "build:demo": "NEXT_PUBLIC_DEMO_STATIC=true next build",
+    "prebuild:demo": "node scripts/gen-locales.mjs",
+    "scan:bundle": "node scripts/scan-bundle.mjs",
     "predev": "node scripts/gen-locales.mjs",
     "dev": "next dev --port 3000",
     "prelint": "node scripts/gen-locales.mjs",
