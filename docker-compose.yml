@@ -1,8 +1,10 @@
+# Ports are published on 127.0.0.1 only: Escalate has NO login. `make up ALLOW_LAN=true`
+# publishes them on every network interface (BIND_ADDR=0.0.0.0) and prints a warning.
 services:
   ollama:                       # free local LLM; remove if you use a cloud key
     image: ollama/ollama
     volumes: ["./data/ollama:/root/.ollama"]
-    ports: ["11434:11434"]
+    ports: ["${BIND_ADDR:-127.0.0.1}:11434:11434"]
   api:
     build: .
     command: uvicorn escalate.api.main:app --host 0.0.0.0 --port 8000
@@ -13,9 +15,11 @@ services:
       - CHECKPOINT_DB=/app/data/checkpoints.db
       - EVIDENCE_DIR=/app/data/evidence
       - ESCALATE_SETTINGS_FILE=/app/data/settings.json
-      - WEB_ORIGIN=http://localhost:3000
+      - WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:3000}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api}   # "api": the Streamlit container
+      - ALLOW_LAN=${ALLOW_LAN:-false}
     volumes: ["./data:/app/data", "./secrets:/app/secrets"]
-    ports: ["8000:8000"]
+    ports: ["${BIND_ADDR:-127.0.0.1}:8000:8000"]
     depends_on: [ollama]
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
@@ -26,7 +30,7 @@ services:
       context: ./web
       args:
         NEXT_PUBLIC_API_URL: http://localhost:8000   # what your browser uses to reach the API
-    ports: ["3000:3000"]
+    ports: ["${BIND_ADDR:-127.0.0.1}:3000:3000"]
     depends_on:
       api:
         condition: service_healthy
@@ -36,7 +40,7 @@ services:
     environment:
       - API_URL=http://api:8000
       - PUBLIC_API_URL=http://localhost:8000
-    ports: ["8501:8501"]
+    ports: ["${BIND_ADDR:-127.0.0.1}:8501:8501"]
     depends_on:
       api:
         condition: service_healthy

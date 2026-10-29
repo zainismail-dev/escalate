@@ -12,8 +12,19 @@ setup:            ## create .env (FERNET_KEY, model), build images, pull the mod
 pull:             ## pull (another) model: make pull MODEL=name
 	docker compose exec ollama ollama pull "$(MODEL)"
 
-up:               ## start everything
+ALLOW_LAN ?= false
+
+up:               ## start everything (localhost only; `make up ALLOW_LAN=true` to open it to your network)
+ifeq ($(ALLOW_LAN),true)
+	@echo "################################################################################"
+	@echo "#  WARNING: ALLOW_LAN=true. Escalate has NO LOGIN. Anyone on your network can   #"
+	@echo "#  read your cases and evidence, change settings and SEND LETTERS as you.        #"
+	@echo "#  Also set ALLOWED_HOSTS and WEB_ORIGIN to this machine's LAN address.          #"
+	@echo "################################################################################"
+	BIND_ADDR=0.0.0.0 ALLOW_LAN=true docker compose up -d
+else
 	docker compose up -d
+endif
 	@echo "Web app:      http://localhost:3000"
 	@echo "API:          http://localhost:8000/docs"
 	@echo "Streamlit UI: http://localhost:8501 (dev)"

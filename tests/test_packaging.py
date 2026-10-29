@@ -23,10 +23,23 @@ def test_compose_has_ollama_api_web_ui() -> None:
     assert "API_URL=http://api:8000" in ui_env
     assert "PUBLIC_API_URL=http://localhost:8000" in ui_env
     web = services["web"]
-    assert web["ports"] == ["3000:3000"]
+    assert web["ports"] == ["${BIND_ADDR:-127.0.0.1}:3000:3000"]
     assert web["build"]["args"]["NEXT_PUBLIC_API_URL"] == "http://localhost:8000"
     assert web["depends_on"]["api"]["condition"] == "service_healthy"
-    assert "WEB_ORIGIN=http://localhost:3000" in api_env  # CORS allows the web app only
+    assert "WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:3000}" in api_env  # CORS: the web app only
+    assert "ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api}" in api_env
+
+
+def test_compose_publishes_ports_on_localhost_only() -> None:
+    """Review #4: every port was published on all interfaces, so anyone on the LAN had full
+    unauthenticated access. LAN exposure is now opt-in (make up ALLOW_LAN=true)."""
+    compose = yaml.safe_load((REPO / "docker-compose.yml").read_text())
+    for name, svc in compose["services"].items():
+        for port in svc.get("ports", []):
+            assert port.startswith("${BIND_ADDR:-127.0.0.1}:"), (name, port)
+    make = (REPO / "Makefile").read_text()
+    assert "ifeq ($(ALLOW_LAN),true)" in make and "NO LOGIN" in make
+    assert "BIND_ADDR=0.0.0.0 ALLOW_LAN=true docker compose up -d" in make
 
 
 def test_dockerfile_matches_spec() -> None:

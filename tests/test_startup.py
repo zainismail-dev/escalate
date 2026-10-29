@@ -71,3 +71,13 @@ def test_startup_warns_about_empty_fernet_key(monkeypatch: pytest.MonkeyPatch) -
         assert any("FERNET_KEY is empty" in w for w in main.startup_warnings())
     finally:
         get_settings.cache_clear()
+
+
+def test_startup_warns_loudly_in_lan_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ALLOW_LAN", "true")
+    monkeypatch.setenv("FERNET_KEY", Fernet.generate_key().decode())
+    get_settings.cache_clear()
+    try:
+        assert any("NO login" in w for w in main.startup_warnings())
+    finally:
+        get_settings.cache_clear()
