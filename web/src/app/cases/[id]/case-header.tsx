@@ -98,7 +98,7 @@ export function CaseHeader({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="label-mono text-muted">
-            #{c.id} · {t(c.case_type ?? "unknown")}
+            #{c.id.slice(0, 8)} · {t(c.case_type ?? "unknown")}
           </p>
           {heading ? (
             <h1 className="mt-1 font-display text-3xl leading-tight">{heading}</h1>

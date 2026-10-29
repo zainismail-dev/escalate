@@ -85,7 +85,7 @@ function CaseCard({ c }: { c: CaseSummary }) {
           {urgent && <AlertTriangle className="me-1 inline size-3.5 align-[-2px]" aria-hidden />}
           {nextStep(c)}
         </span>
-        <span className="label-mono text-muted">#{c.id}</span>
+        <span className="label-mono text-muted">#{c.id.slice(0, 8)}</span>
       </div>
       <div className="min-w-0">
         <h3 className="font-display text-xl leading-tight">

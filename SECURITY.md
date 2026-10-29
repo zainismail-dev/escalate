@@ -27,10 +27,26 @@ anything that lets Escalate be used to harass someone.
 | Demo mode | `DEMO_MODE=true`: email is never really sent (approval is still required), uploads are capped at 5 MB, and cases are deleted after 24 hours. | `tests/test_security.py` |
 | Cloud privacy warning | When `LLM_BASE_URL` is not local, the UI warns before you send real personal data. | `tests/test_llm.py`, `tests/test_ui.py` |
 
+## Network and request hardening (after the independent review)
+
+| Attack from the review | Defence | Regression test |
+| --- | --- | --- |
+| Cross-site form / `fetch(no-cors)` approves a letter, deletes all cases, uploads evidence, starts/retries cases, changes settings (CSRF) | Every POST/PUT/PATCH/DELETE needs an allowed `Origin` (`WEB_ORIGIN`, `UI_ORIGIN`) **and** `X-Escalate-Request: 1`. Approve and delete-all also need a JSON body `{"confirm": true}`. | `tests/test_attacks.py` (CSRF section) |
+| DNS rebinding (attacker domain resolving to 127.0.0.1) | `TrustedHostMiddleware`, `ALLOWED_HOSTS` (default `localhost,127.0.0.1`) | `test_unknown_host_header_is_refused` |
+| Docker ports open to the whole network | Ports bind to 127.0.0.1; `make up ALLOW_LAN=true` opens them with a loud no-login warning | `tests/test_packaging.py` |
+| SMTP without certificate checks (password readable by a network attacker) | `ssl.create_default_context()` for SMTP_SSL and STARTTLS | `tests/test_smtp_tls.py` (self-signed server refused) |
+| SSRF through `LLM_BASE_URL` / `SMTP_HOST`, stored key sent to a new host | Link-local and cloud-metadata addresses always refused (also via DNS / IPv4-mapped IPv6); private/loopback only for `LOCAL_ENDPOINT_HOSTS`; checked on save and before connecting; changing a host clears its stored secret | `tests/test_attacks.py` (SSRF section) |
+| Prompt injection: planted recipient in evidence, crafted "resolved" reply | The user must confirm the exact recipient to approve (with a "recipient changed" warning); evidence never overwrites facts the user typed; a "resolved" verdict waits for the user's confirmation | `tests/test_attacks.py` (prompt-injection section) |
+| `/health` leaked configuration; guessable ids; plain-text secrets | `/health` is `{"ok": true}`; cases and messages use UUID public ids in the API; saved secrets are Fernet-encrypted | `tests/test_attacks.py` |
+
 ## Known limits (v0.1)
 
 - **Single user, no login.** Run Escalate on your own machine or behind your own access
-  control. Do not expose the API to the internet.
+  control. Do not expose the API to the internet. The CSRF, Host and port protections above
+  defend against other *websites* and other *machines*, not against other programs running as
+  you on the same computer.
+- Endpoint checks resolve DNS when settings are saved and again before connecting; a hostname
+  that changes its DNS answer between that check and the connection is not fully covered.
 - The rate limiter is in memory (one API process).
 - Masking is pattern-based. It will miss unusual ID formats; please report the ones it misses.
 - Case text and facts in the SQLite database are masked but not encrypted; protect the

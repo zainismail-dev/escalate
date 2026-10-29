@@ -381,3 +381,18 @@ Defaults chosen during the autonomous build, with the reason for each.
 - `web/e2e/console-guard.spec.ts` loads every page in light and dark and fails on any console
   error or warning, uncaught error or hydration error. CI runs it against the production build
   *and* `next dev` (React's detailed warnings only exist in development).
+
+## Security hardening after the independent review
+- CSRF: allowed Origin **and** a custom header on every state-changing request (forms can't
+  set custom headers; setting one forces a CORS preflight). Non-browser callers (Streamlit UI,
+  `make demo-data`, Playwright) send both explicitly. Approve and delete-all also need a JSON
+  confirmation body.
+- The approval itself now names the recipient the user checked (`approve_message(...,
+  recipient=...)`), so the check holds in the core, not only in the web UI.
+- "Resolved" verdicts pause in a `confirm_resolution` graph step. The user's own verdict
+  override to "resolved" replays as if confirmed (they are the one choosing it).
+- Public ids: UUID columns next to the integer keys (no key migration); the API converts at
+  the boundary with `CasePk`/`MessagePk` dependencies. Evidence ids stay integers: they are not
+  addressable by URL and confirm-delivery checks the evidence belongs to the case.
+- Secrets in `data/settings.json` are Fernet-encrypted with `FERNET_KEY`, like evidence; values
+  written before this change are still read and get encrypted on the next save.
