@@ -54,3 +54,32 @@ def test_request_bodies_are_never_logged() -> None:
     src = "\n".join(p.read_text() for p in Path(api.__file__).parent.rglob("*.py"))
     for needle in ("request.body()", "await request.json()", "log.info(body", "log.debug(body"):
         assert needle not in src
+
+
+def test_uvicorn_access_log_still_formats_and_is_masked() -> None:
+    """Second review N5: the filter set record.args=None, which broke uvicorn's access log
+    formatter (it unpacks the args): every request logged a formatting error instead."""
+    from uvicorn.logging import AccessFormatter
+
+    record = logging.LogRecord(
+        "uvicorn.access",
+        logging.INFO,
+        __file__,
+        1,
+        '%s - "%s %s HTTP/%s" %d',
+        ("127.0.0.1:5000", "GET", f"/cases?q={CARD}", "1.1", 200),
+        None,
+    )
+    assert PiiFilter().filter(record)
+    out = AccessFormatter(
+        '%(client_addr)s - "%(request_line)s" %(status_code)s', use_colors=False
+    ).format(record)
+    assert out == '127.0.0.1:5000 - "GET /cases?q=•••• 1111 HTTP/1.1" 200 OK'
+    assert CARD not in out
+
+
+def test_dict_args_are_masked() -> None:
+    record = logging.LogRecord("x", logging.INFO, __file__, 1, "card %(c)s", None, None)
+    record.args = {"c": CARD}
+    PiiFilter().filter(record)
+    assert CARD not in record.getMessage() and "1111" in record.getMessage()

@@ -70,15 +70,22 @@ def mask_obj(value: object) -> object:
     return value
 
 
+def _mask_arg(value: object) -> object:
+    return mask_pii(value) if isinstance(value, str) else value
+
+
 class PiiFilter(logging.Filter):
     """Logging filter: masks the formatted message of every record."""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        try:
-            msg = record.getMessage()
-        except Exception:  # a broken format string is not our problem to fix here
-            return True
-        record.msg, record.args = mask_pii(msg), None
+        # Mask the template and each argument, keeping their shape: formatters such as uvicorn's
+        # access log unpack record.args, so it can't be replaced by the formatted string.
+        if isinstance(record.msg, str):
+            record.msg = mask_pii(record.msg)
+        if isinstance(record.args, tuple):
+            record.args = tuple(_mask_arg(a) for a in record.args)
+        elif isinstance(record.args, dict):
+            record.args = {k: _mask_arg(v) for k, v in record.args.items()}
         if record.exc_info and not record.exc_text:
             # Exception messages can quote user text; the formatter uses exc_text when it is set.
             record.exc_text = mask_pii(logging.Formatter().formatException(record.exc_info))
