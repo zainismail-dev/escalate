@@ -7,6 +7,7 @@ user's filename is kept for display only.
 import hashlib
 import re
 import secrets
+import shutil
 import unicodedata
 from pathlib import Path
 
@@ -114,6 +115,15 @@ def save_upload(
 def load_plain(evidence: Evidence, settings: Settings | None = None) -> bytes:
     s = settings or get_settings()
     return _fernet(s).decrypt(Path(evidence.file_path).read_bytes())
+
+
+def delete_all_files(settings: Settings | None = None) -> None:
+    """Delete-all: every case folder under EVIDENCE_DIR, including ones left by a crash."""
+    root = Path((settings or get_settings()).evidence_dir)
+    if root.is_dir():
+        for folder in root.iterdir():
+            if folder.is_dir() and folder.name.isdigit():
+                shutil.rmtree(folder)
 
 
 def delete_files(case_id: int, settings: Settings | None = None) -> None:

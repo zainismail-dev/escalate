@@ -23,14 +23,26 @@ def make_engine(url: str) -> Engine:
             kwargs["poolclass"] = StaticPool
     engine = create_engine(url, **kwargs)
     if url.startswith("sqlite"):
-        event.listen(engine, "connect", _sqlite_fk_on)
+        event.listen(engine, "connect", _sqlite_pragmas)
     return engine
 
 
-def _sqlite_fk_on(dbapi_conn: Any, _record: Any) -> None:
+def _sqlite_pragmas(dbapi_conn: Any, _record: Any) -> None:
     cur = dbapi_conn.cursor()
     cur.execute("PRAGMA foreign_keys=ON")
+    cur.execute("PRAGMA secure_delete=ON")  # deleted rows are overwritten, not just unlinked
     cur.close()
+
+
+def scrub() -> None:
+    """After a bulk delete: rebuild the SQLite file (VACUUM) and empty the WAL, so deleted case
+    text is not left in free pages or the write-ahead log."""
+    engine = get_engine()
+    if engine.dialect.name != "sqlite":
+        return
+    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+        conn.exec_driver_sql("VACUUM")
+        conn.exec_driver_sql("PRAGMA wal_checkpoint(TRUNCATE)")
 
 
 def configure(url: str | None = None) -> Engine:

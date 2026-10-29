@@ -368,4 +368,5 @@ def compile_graph(checkpoint_path: Path | str) -> CompiledStateGraph[CaseState]:
     if path != ":memory:":
         Path(path).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path, check_same_thread=False)
+    conn.execute("PRAGMA secure_delete=ON")  # forgotten checkpoints are overwritten
     return build_graph().compile(checkpointer=SqliteSaver(conn))

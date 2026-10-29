@@ -6,6 +6,7 @@ committed transaction, then resumes the graph. Approval itself is only ever done
 node checks the DB row.
 """
 
+import sqlite3
 import threading
 from dataclasses import dataclass
 from datetime import datetime
@@ -251,6 +252,21 @@ def delete_case(case_id: int) -> None:
         if case is None:
             raise RunnerError(f"case {case_id} not found")
         s.delete(case)  # facts, evidence, messages and events cascade
+
+
+def scrub_checkpoints() -> None:
+    """After delete-all: no checkpoint may survive, and the file keeps no trace of them."""
+    with _lock:
+        saver = graph().checkpointer
+        conn = getattr(saver, "conn", None)
+        if not isinstance(conn, sqlite3.Connection):
+            return
+        with saver.lock:  # type: ignore[union-attr]
+            conn.execute("DELETE FROM checkpoints")
+            conn.execute("DELETE FROM writes")
+            conn.commit()
+            conn.execute("VACUUM")
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
 
 
 def delete_thread(case_id: int) -> None:

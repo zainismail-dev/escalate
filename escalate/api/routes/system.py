@@ -17,7 +17,9 @@ from escalate.api.deps import get_session, public_case_id
 from escalate.api.schemas import ConfirmIn, DemoOut, HealthOut, SettingsIn, SettingsOut
 from escalate.config import SECRET_FIELDS, encrypt_secret, get_settings, settings_file
 from escalate.db.models import Case
+from escalate.db.session import scrub as db_scrub
 from escalate.db.session import session_scope
+from escalate.evidence.store import delete_all_files
 from escalate.i18n.countries import CountryOut, coverage, default_letter_language
 from escalate.llm import get_llm, set_llm
 from escalate.llm.client import LLMNotConfigured
@@ -158,6 +160,10 @@ def delete_all(body: ConfirmIn, session: Session = Depends(get_session)) -> Resp
     session.close()
     for cid in ids:
         runner.delete_case(cid)
+    # Leave nothing recoverable: checkpoints, orphaned evidence, free pages and WAL contents.
+    runner.scrub_checkpoints()
+    delete_all_files()
+    db_scrub()
     return Response(status_code=204)
 
 
