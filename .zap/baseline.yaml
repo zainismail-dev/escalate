@@ -1,0 +1,38 @@
+# OWASP ZAP baseline (passive: spider + passive scan, no attacks) for the web app and the API.
+# Local: make zap (docs/SECURITY_AUDIT.md). CI: the `zap` job. Targets come from the environment.
+env:
+  contexts:
+    - name: web
+      urls: ["${WEB_URL}"]
+    - name: api
+      urls: ["${API_URL}"]
+  parameters:
+    failOnError: true
+    progressToStdout: true
+jobs:
+  - type: openapi
+    parameters:
+      apiUrl: "${API_URL}/openapi.json"
+      targetUrl: "${API_URL}"
+      context: api
+  - type: spider
+    parameters:
+      context: web
+      maxDuration: 2
+  - type: spider
+    parameters:
+      context: api
+      maxDuration: 1
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: "${ZAP_OUT}"
+      reportFile: zap-report.json
+  - type: report
+    parameters:
+      template: traditional-md
+      reportDir: "${ZAP_OUT}"
+      reportFile: zap-report.md

@@ -1,0 +1,26 @@
+# Install once: `make hooks` (uses `uvx pre-commit install`). Runs on every `git commit`.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks  # blocks commits that contain secrets (API keys, passwords, tokens)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=2048"]
+      - id: detect-private-key
+      - id: check-merge-conflict
+  - repo: local
+    hooks:
+      - id: no-local-data
+        name: no databases, .env or evidence files
+        entry: "never commit local data: .env, *.db, data/, secrets/, settings.json"
+        language: fail
+        files: '(^|/)(\.env|.*\.db|.*\.db-(wal|shm|journal)|settings\.json)$|^(data|secrets)/'
+        exclude: '^\.env\.example$'
+      - id: ruff
+        name: ruff
+        entry: uv run ruff check --force-exclude
+        language: system
+        types: [python]

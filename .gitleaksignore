@@ -1,0 +1,4 @@
+# Verified false positives (docs/SECURITY_AUDIT.md, A1): an empty `SMTP_APP_PASSWORD=` line in a
+# template; the generic rule matched the next line's key name. No value was ever committed.
+7babe7d80e87c832daf482a9d1fc6747f672ac53:.env.example:generic-api-key:19
+6dc7fe6b022828b3421a4c49691619c277727b24:docs/BUILD_PLAN.md:generic-api-key:161
