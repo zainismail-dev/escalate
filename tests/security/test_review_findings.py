@@ -141,8 +141,8 @@ def test_allowed_hosts_are_configurable(monkeypatch: pytest.MonkeyPatch) -> None
     get_settings.cache_clear()
     try:
         with TestClient(create_app(startup=False), base_url="http://escalate.example.org") as c:
-            assert c.get("/openapi.json").status_code == 200
-            assert c.get("/openapi.json", headers={"Host": "localhost"}).status_code == 400
+            assert c.get("/health").status_code == 200
+            assert c.get("/health", headers={"Host": "localhost"}).status_code == 400
     finally:
         get_settings.cache_clear()
 

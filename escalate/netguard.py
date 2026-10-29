@@ -43,6 +43,11 @@ def _resolve(host: str) -> list[IP]:
     return [ipaddress.ip_address(str(info[4][0]).split("%")[0]) for info in infos]
 
 
+def resolves(host: str) -> bool:
+    """Whether the host has an address right now (a typo, or a VPN-only name)."""
+    return bool(_resolve(host.strip().lower().strip("[]")))
+
+
 def check_host(host: str, what: str) -> None:
     name = host.strip().lower().strip("[]")
     if not name:

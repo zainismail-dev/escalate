@@ -246,6 +246,7 @@ export interface Settings {
   demo_mode: boolean;
   version: string;
   cleared_secrets?: string[];
+  warnings?: string[];
 }
 
 export interface TimelineEvent {

@@ -349,6 +349,7 @@ class SettingsOut(BaseModel):
     demo_mode: bool
     version: str
     cleared_secrets: list[str] = Field(default_factory=list)  # host changed: enter it again
+    warnings: list[str] = Field(default_factory=list)  # saved, but worth a look
 
 
 class SettingsIn(BaseModel):

@@ -102,7 +102,9 @@ def test_an_argon2_hash_works_as_the_passcode(monkeypatch: pytest.MonkeyPatch, d
 def test_the_passcode_is_never_returned(locked: TestClient) -> None:
     locked.post("/auth/login", json={"passcode": PASSCODE})
     assert PASSCODE not in locked.get("/settings").text
-    assert PASSCODE not in locked.get("/openapi.json").text
+    import json
+
+    assert PASSCODE not in json.dumps(create_app(startup=False).openapi())
 
 
 def test_parallel_guesses_cannot_exceed_the_limit(monkeypatch: pytest.MonkeyPatch) -> None:

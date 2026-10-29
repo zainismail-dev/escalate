@@ -185,7 +185,7 @@ def test_api_responses_carry_security_headers(api: TestClient) -> None:
         assert r.headers["content-security-policy"] == "default-src 'none'; frame-ancestors 'none'"
         assert r.headers["cache-control"] == "no-store"
     assert api.get("/docs").status_code == 404  # off by default (CDN scripts)
-    assert api.get("/openapi.json").status_code == 200
+    assert api.get("/openapi.json").status_code == 404  # the route map too
 
 
 def test_api_docs_are_opt_in(monkeypatch: pytest.MonkeyPatch, db: Session) -> None:
@@ -193,6 +193,7 @@ def test_api_docs_are_opt_in(monkeypatch: pytest.MonkeyPatch, db: Session) -> No
     get_settings.cache_clear()
     with TestClient(create_app(startup=False), base_url=APP_BASE_URL) as c:
         r = c.get("/docs")
+        assert c.get("/openapi.json").status_code == 200
     get_settings.cache_clear()
     assert r.status_code == 200
     assert "content-security-policy" not in r.headers  # Swagger UI loads from a CDN

@@ -102,14 +102,15 @@ def create_app(startup: bool = True) -> FastAPI:
             runner.set_scheduler(None)
             sched.shutdown(wait=False)
 
-    # Swagger UI / ReDoc pages load scripts from a CDN: development only (API_DOCS=true, which
-    # `make api` sets). The OpenAPI JSON itself is always available.
+    # Swagger UI / ReDoc pages load scripts from a CDN, and the schema maps every route:
+    # development only (API_DOCS=true, which `make api` sets).
     docs = get_settings().api_docs
     app = FastAPI(
         title="Escalate",
         version=__version__,
         lifespan=lifespan,
         docs_url="/docs" if docs else None,
+        openapi_url="/openapi.json" if docs else None,
         redoc_url="/redoc" if docs else None,
     )
     # Middleware runs outermost-last: Host check, then CORS (answers preflights), then CSRF,

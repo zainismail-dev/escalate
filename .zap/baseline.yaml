@@ -5,7 +5,7 @@ env:
     - name: web
       urls: ["${WEB_URL}"]
     - name: api
-      urls: ["${API_URL}/openapi.json"]  # the API has no page at / (and /docs is dev-only)
+      urls: ["${API_URL}/health"]  # the API has no page at /; /docs and /openapi.json are dev-only
       includePaths: ["${API_URL}.*"]
   parameters:
     failOnError: true
@@ -13,7 +13,7 @@ env:
 jobs:
   - type: openapi
     parameters:
-      apiUrl: "${API_URL}/openapi.json"
+      apiFile: "${ZAP_OUT}/openapi.json"  # exported from the app (not served by default)
       targetUrl: "${API_URL}"
       context: api
   - type: spider

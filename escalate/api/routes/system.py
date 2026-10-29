@@ -24,7 +24,7 @@ from escalate.i18n.countries import CountryOut, coverage, default_letter_languag
 from escalate.llm import get_llm, set_llm
 from escalate.llm.client import LLMNotConfigured
 from escalate.llm.privacy import is_cloud
-from escalate.netguard import UnsafeEndpoint, check_host, check_url, url_host
+from escalate.netguard import UnsafeEndpoint, check_host, check_url, resolves, url_host
 
 router = APIRouter(tags=["system"])
 
@@ -111,6 +111,14 @@ def save_settings(body: SettingsIn) -> SettingsOut:
             check_host(update["smtp_host"], "SMTP_HOST")
     except UnsafeEndpoint as exc:
         raise HTTPException(422, str(exc)) from exc
+    warnings = [
+        f"{what} {host} does not resolve right now; check the spelling (saved anyway)"
+        for what, host in (
+            ("LLM_BASE_URL host", url_host(update.get("llm_base_url") or "")),
+            ("SMTP_HOST", update.get("smtp_host") or ""),
+        )
+        if host and not resolves(host)
+    ]
     path = settings_file()
     try:
         saved: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
@@ -149,6 +157,7 @@ def save_settings(body: SettingsIn) -> SettingsOut:
     set_llm(None)  # the next call builds a client from the new settings
     out = settings_out()
     out.cleared_secrets = cleared
+    out.warnings = warnings
     return out
 
 

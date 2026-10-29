@@ -32,12 +32,19 @@ const MAIL_PROVIDERS = [
   { id: "icloud", host: "smtp.mail.me.com", port: 587 },
 ] as const;
 
-function Saved({ show }: { show: boolean }) {
+function Saved({ show, warnings = [] }: { show: boolean; warnings?: string[] }) {
   const t = useTranslations("common");
   return show ? (
-    <span role="status" className="inline-flex items-center gap-1 text-xs font-semibold text-success">
-      <CheckCircle2 className="size-3.5" aria-hidden />
-      {t("saved")}
+    <span role="status" className="inline-flex flex-col gap-1 text-xs font-semibold">
+      <span className="inline-flex items-center gap-1 text-success">
+        <CheckCircle2 className="size-3.5" aria-hidden />
+        {t("saved")}
+      </span>
+      {warnings.map((w) => (
+        <span key={w} className="text-warning" data-testid="settings-warning">
+          {w}
+        </span>
+      ))}
     </span>
   ) : null;
 }
@@ -50,6 +57,7 @@ function ModelSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
   const [fast, setFast] = useState(s.model_fast);
   const [key, setKey] = useState("");
   const [saved, setSaved] = useState(false);
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [test, setTest] = useState<{ ok: boolean; reply?: string; error?: string } | null>(null);
   const [keyCleared, setKeyCleared] = useState(false);
   const act = useAction();
@@ -64,6 +72,7 @@ function ModelSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
       setKey("");
       setSaved(true);
       setKeyCleared(!!out.cleared_secrets?.includes("llm_api_key"));
+      setWarnings(out.warnings ?? []);
     }
   }
 
@@ -158,7 +167,7 @@ function ModelSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
             {act.busy ? <Loader2 className="animate-spin" aria-hidden /> : null}
             {t("test")}
           </Button>
-          <Saved show={saved} />
+          <Saved show={saved} warnings={warnings} />
         </div>
       </CardContent>
     </Card>
@@ -174,6 +183,7 @@ function EmailSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
   const [password, setPassword] = useState("");
   const [passwordCleared, setPasswordCleared] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [warnings, setWarnings] = useState<string[]>([]);
   const act = useAction();
   const provider = MAIL_PROVIDERS.find((p) => p.host === host)?.id ?? "other";
 
@@ -186,6 +196,7 @@ function EmailSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
       setPassword("");
       setSaved(true);
       setPasswordCleared(!!out.cleared_secrets?.includes("smtp_app_password"));
+      setWarnings(out.warnings ?? []);
     }
   }
 
@@ -260,7 +271,7 @@ function EmailSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
           <Button variant="ink" onClick={save} disabled={act.busy || !port}>
             {tc("save")}
           </Button>
-          <Saved show={saved} />
+          <Saved show={saved} warnings={warnings} />
         </div>
       </CardContent>
     </Card>

@@ -95,7 +95,7 @@ class Settings(BaseSettings):
     # Optional app lock (escalate/api/applock.py): a passcode, plain or an argon2 hash. Unset =
     # no lock. Not user accounts: v0.1 is single-user (SECURITY.md, "Why there's no login").
     app_passcode: str = ""
-    api_docs: bool = False  # /docs and /redoc (CDN scripts): development only
+    api_docs: bool = False  # /docs, /redoc and /openapi.json: development only
     app_session_hours: int = 12
     demo_mode: bool = False
 

@@ -213,6 +213,7 @@ jobs:
           curl -fsSLo zap.zip https://github.com/zaproxy/zaproxy/releases/download/v${ZAP_VERSION}/ZAP_${ZAP_VERSION}_Crossplatform.zip
           echo "${ZAP_SHA256}  zap.zip" | sha256sum -c -
           unzip -q zap.zip && mkdir -p zap-out
+          uv run python -m escalate.api.schema > zap-out/openapi.json  # /openapi.json is dev-only
           # Exit code 2 = the plan finished with warnings; findings are judged by gate.py.
           JAVA_HOME=$JAVA_HOME_17_X64 ZAP_OUT=$PWD/zap-out ZAP_${ZAP_VERSION}/zap.sh -cmd -dir $RUNNER_TEMP/zaphome -silent -autorun $PWD/.zap/baseline.yaml || [ $? -eq 2 ]
           uv run python .zap/gate.py zap-out/zap-report.json

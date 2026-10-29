@@ -101,7 +101,8 @@ security:         ## the CI security checks, locally (needs gitleaks on PATH)
 
 ZAP ?= zap.sh
 zap:              ## OWASP ZAP baseline against WEB_URL + API_URL (throwaway DEMO_MODE instances!)
-	mkdir -p zap-out && WEB_URL=$(WEB_URL) API_URL=$(API_URL) ZAP_OUT=$(CURDIR)/zap-out $(ZAP) -cmd -autorun $(CURDIR)/.zap/baseline.yaml
+	mkdir -p zap-out && uv run python -m escalate.api.schema > zap-out/openapi.json
+	WEB_URL=$(WEB_URL) API_URL=$(API_URL) ZAP_OUT=$(CURDIR)/zap-out $(ZAP) -cmd -autorun $(CURDIR)/.zap/baseline.yaml
 	uv run python .zap/gate.py zap-out/zap-report.json
 
 dev-ui-legacy:    ## UNSUPPORTED: the retired Streamlit dev UI on 127.0.0.1:8501 (use the web app)
