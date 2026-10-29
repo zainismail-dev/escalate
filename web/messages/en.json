@@ -620,6 +620,7 @@
       "keySaved": "•••••• saved (type to replace)",
       "keyNone": "Not needed for a local model",
       "keyHint": "Stored on this computer only. Never shown again.",
+      "keyCleared": "The endpoint changed, so the saved API key was removed (a key is only sent to the host it was entered for). Enter it again if this endpoint needs one.",
       "cloudWarning": "This is a cloud model: your case text leaves this computer, and free tiers may use it for training. Avoid real personal data or use a local model.",
       "test": "Test the model",
       "testOk": "Model answered: {reply}",
@@ -644,6 +645,7 @@
       "password": "App password",
       "passwordSaved": "•••••• saved (type to replace)",
       "passwordNone": "Create one in your email account's security settings",
+      "passwordCleared": "The SMTP server changed, so the saved app password was removed. Enter it again for this server.",
       "passwordHint": "An app password, not your normal password. Escalate never asks for bank PINs or one-time codes."
     },
     "region": {

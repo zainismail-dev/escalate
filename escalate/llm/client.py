@@ -7,6 +7,7 @@ from typing import Literal, Protocol
 import openai
 
 from escalate.config import Settings, get_settings
+from escalate.netguard import check_url
 
 Slot = Literal["smart", "fast"]
 
@@ -31,6 +32,8 @@ class LLMClient:
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self.settings = settings or get_settings()
+        if client is None:  # never connect to metadata / unlisted private addresses
+            check_url(self.settings.llm_base_url, "LLM_BASE_URL")
         self._client = client or openai.OpenAI(
             base_url=self.settings.llm_base_url,
             api_key=self.settings.llm_api_key or "none",

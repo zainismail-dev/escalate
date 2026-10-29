@@ -14,6 +14,7 @@ from escalate.channels.base import Attachment, SendResult
 from escalate.channels.gate import require_approval
 from escalate.config import Settings, get_settings
 from escalate.db.models import Message
+from escalate.netguard import check_host
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 SmtpFactory = Callable[[str, int], smtplib.SMTP]
@@ -73,6 +74,7 @@ class SmtpChannel:
         if not user or not password:
             raise EmailConfigError("set SMTP_USER and SMTP_APP_PASSWORD in .env to send email")
         mime = build_mime(msg, user, attachments)
+        check_host(self.host, "SMTP_HOST")  # never metadata / unlisted private addresses
         with self.smtp_factory(self.host, self.port) as smtp:
             smtp.login(user, password)
             smtp.send_message(mime)

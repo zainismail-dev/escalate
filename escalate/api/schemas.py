@@ -316,6 +316,7 @@ class SettingsOut(BaseModel):
     enabled_letter_languages: list[str]
     demo_mode: bool
     version: str
+    cleared_secrets: list[str] = Field(default_factory=list)  # host changed: enter it again
 
 
 class SettingsIn(BaseModel):

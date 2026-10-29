@@ -19,6 +19,7 @@ from escalate.db.models import Case
 from escalate.i18n.countries import CountryOut, coverage, default_letter_language
 from escalate.llm import get_llm, set_llm
 from escalate.llm.privacy import is_cloud
+from escalate.netguard import UnsafeEndpoint, check_host, check_url, url_host
 
 router = APIRouter(tags=["system"])
 
@@ -93,22 +94,50 @@ def read_settings() -> SettingsOut:
 def save_settings(body: SettingsIn) -> SettingsOut:
     """Save to the settings file (it wins over `.env`). Omitted fields are unchanged; an empty
     string clears a value."""
+    update = body.model_dump(exclude_unset=True)
+    current = get_settings()
+    try:
+        if update.get("llm_base_url"):
+            check_url(update["llm_base_url"], "LLM_BASE_URL")
+        if update.get("smtp_host"):
+            check_host(update["smtp_host"], "SMTP_HOST")
+    except UnsafeEndpoint as exc:
+        raise HTTPException(422, str(exc)) from exc
     path = settings_file()
     try:
         saved: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         saved = {}
-    for key, value in body.model_dump(exclude_unset=True).items():
+    for key, value in update.items():
         if value in (None, ""):
             saved.pop(key, None)
         else:
             saved[key] = value.upper() if key == "default_country" else value
+    # A secret belongs to its host: moving the host drops the stored secret (stored as "" so a
+    # key from .env can't take its place) until the user enters it again for the new host.
+    cleared: list[str] = []
+    new_llm = update.get("llm_base_url")
+    if (
+        new_llm
+        and url_host(new_llm) != url_host(current.llm_base_url)
+        and not update.get("llm_api_key")
+    ):
+        saved["llm_api_key"], cleared = "", [*cleared, "llm_api_key"]
+    new_smtp = update.get("smtp_host")
+    if (
+        new_smtp
+        and new_smtp.lower() != current.smtp_host.lower()
+        and not update.get("smtp_app_password")
+    ):
+        saved["smtp_app_password"], cleared = "", [*cleared, "smtp_app_password"]
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(saved, indent=2), encoding="utf-8")
     path.chmod(0o600)  # may hold an API key or app password
     get_settings.cache_clear()
     set_llm(None)  # the next call builds a client from the new settings
-    return settings_out()
+    out = settings_out()
+    out.cleared_secrets = cleared
+    return out
 
 
 @router.post("/privacy/delete-all", status_code=204)

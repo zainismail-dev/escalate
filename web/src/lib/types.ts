@@ -231,6 +231,7 @@ export interface Settings {
   enabled_letter_languages: string[];
   demo_mode: boolean;
   version: string;
+  cleared_secrets?: string[];
 }
 
 export interface TimelineEvent {

@@ -67,6 +67,9 @@ class Settings(BaseSettings):
     # Host headers the API answers (DNS-rebinding protection). Hosted mode: add your domain.
     allowed_hosts: str = "localhost,127.0.0.1"
     allow_lan: bool = False  # Docker publishes ports on the LAN only when true: NO login!
+    # Private/loopback addresses LLM_BASE_URL or SMTP_HOST may use (a local model or relay).
+    # Link-local and cloud-metadata addresses are always refused (escalate/netguard.py).
+    local_endpoint_hosts: str = "localhost,127.0.0.1,::1,ollama,host.docker.internal"
     allow_demo_seed: bool = True
     demo_mode: bool = False
 

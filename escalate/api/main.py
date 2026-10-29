@@ -28,6 +28,7 @@ from escalate.db.session import get_engine
 from escalate.evidence.store import EvidenceKeyMissing
 from escalate.export.pdf import PdfUnavailable
 from escalate.llm.client import LLMNotConfigured
+from escalate.netguard import UnsafeEndpoint
 from escalate.pii import install_log_filter
 from escalate.playbooks.loader import PlaybookError
 from escalate.safety import HarassmentPattern, NoEvidence, RateLimited
@@ -127,6 +128,7 @@ def create_app(startup: bool = True) -> FastAPI:
         (PdfUnavailable, 503, None),
         (NotImplementedError, 501, None),
         (LLMNotConfigured, 503, None),
+        (UnsafeEndpoint, 400, None),
         (openai.APIConnectionError, 503, lambda e: {"hint": "is the LLM server running?"}),
     ]
     for exc_type, code, extra in errors:

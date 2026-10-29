@@ -51,6 +51,7 @@ function ModelSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
   const [key, setKey] = useState("");
   const [saved, setSaved] = useState(false);
   const [test, setTest] = useState<{ ok: boolean; reply?: string; error?: string } | null>(null);
+  const [keyCleared, setKeyCleared] = useState(false);
   const act = useAction();
   const source = MODEL_SOURCES.find((m) => url.startsWith(m.url) || (m.id === "ollama" && url.includes(":11434")))?.id ?? "custom";
 
@@ -62,6 +63,7 @@ function ModelSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
       onSaved(out);
       setKey("");
       setSaved(true);
+      setKeyCleared(!!out.cleared_secrets?.includes("llm_api_key"));
     }
   }
 
@@ -128,6 +130,11 @@ function ModelSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
           />
           <FieldHint>{t("keyHint")}</FieldHint>
         </div>
+        {keyCleared && (
+          <p role="status" className="rounded-xl bg-warning-bg p-3 text-sm text-warning" data-testid="key-cleared">
+            {t("keyCleared")}
+          </p>
+        )}
         {s.is_cloud && <p className="rounded-xl bg-warning-bg p-3 text-sm text-warning" data-testid="cloud-warning">{t("cloudWarning")}</p>}
         {act.error && <ErrorState error={act.error} />}
         {test && (
@@ -165,6 +172,7 @@ function EmailSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
   const [port, setPort] = useState(String(s.smtp_port));
   const [user, setUser] = useState(s.smtp_user);
   const [password, setPassword] = useState("");
+  const [passwordCleared, setPasswordCleared] = useState(false);
   const [saved, setSaved] = useState(false);
   const act = useAction();
   const provider = MAIL_PROVIDERS.find((p) => p.host === host)?.id ?? "other";
@@ -177,6 +185,7 @@ function EmailSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
       onSaved(out);
       setPassword("");
       setSaved(true);
+      setPasswordCleared(!!out.cleared_secrets?.includes("smtp_app_password"));
     }
   }
 
@@ -241,6 +250,11 @@ function EmailSection({ s, onSaved }: { s: Settings; onSaved: (s: Settings) => v
           />
           <FieldHint id="smtp-password-hint">{t("passwordHint")}</FieldHint>
         </div>
+        {passwordCleared && (
+          <p role="status" className="rounded-xl bg-warning-bg p-3 text-sm text-warning">
+            {t("passwordCleared")}
+          </p>
+        )}
         {act.error && <ErrorState error={act.error} />}
         <div className="flex items-center gap-2">
           <Button variant="ink" onClick={save} disabled={act.busy || !port}>
