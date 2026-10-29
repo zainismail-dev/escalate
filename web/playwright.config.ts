@@ -13,7 +13,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
+  // CI: "github" turns each failure into a check annotation (readable without log access).
+  reporter: process.env.CI ? [["list"], ["github"], ["html", { open: "never" }]] : "list",
   // PW_CHANNEL=chrome uses an installed Google Chrome instead of Playwright's Chromium.
   use: { baseURL: WEB_URL, trace: "retain-on-failure", channel: process.env.PW_CHANNEL || undefined },
   projects: [
