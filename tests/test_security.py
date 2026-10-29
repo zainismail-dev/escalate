@@ -29,7 +29,7 @@ from escalate.playbooks.loader import get_playbook
 from escalate.safety import HarassmentPattern, new_case_limiter
 from escalate.scheduler import jobs
 from tests.agent_env import AgentEnv, agent_env  # noqa: F401
-from tests.factories import LED_FACTS, LED_TEXT, led_case
+from tests.factories import APP_BASE_URL, APP_HEADERS, LED_FACTS, LED_TEXT, led_case
 from tests.fakes.fake_smtp import FakeSMTP
 
 ROOT = Path(__file__).resolve().parents[1] / "escalate"
@@ -195,7 +195,7 @@ def api(
     monkeypatch.setenv("MAX_NEW_CASES_PER_HOUR", "3")
     get_settings.cache_clear()
     new_case_limiter.reset()
-    with TestClient(create_app(startup=False)) as c:
+    with TestClient(create_app(startup=False), base_url=APP_BASE_URL, headers=APP_HEADERS) as c:
         yield c
     get_settings.cache_clear()
 

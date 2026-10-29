@@ -58,12 +58,10 @@ def edit(message_id: int, body: MessageEdit, session: Session = Depends(get_sess
 
 
 @router.post("/{message_id}/approve", response_model=RunOut)
-def approve(
-    message_id: int, body: ApproveIn | None = None, session: Session = Depends(get_session)
-) -> RunOut:
+def approve(message_id: int, body: ApproveIn, session: Session = Depends(get_session)) -> RunOut:
+    """Body must include {"confirm": true}: approving sends the letter."""
     case_id = _pending_case(session, message_id, "approve_draft")
-    b = body or ApproveIn()
-    return run_out(runner.resume_with_decision(case_id, "approve", b.body, b.subject))
+    return run_out(runner.resume_with_decision(case_id, "approve", body.body, body.subject))
 
 
 @router.post("/{message_id}/reject", response_model=RunOut)

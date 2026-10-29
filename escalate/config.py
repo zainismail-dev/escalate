@@ -63,6 +63,10 @@ class Settings(BaseSettings):
     # add them here to re-enable, e.g. ENABLED_LETTER_LANGUAGES='["en","ur"]'.
     enabled_letter_languages: list[str] = ["en"]
     web_origin: str = "http://localhost:3000"  # the only origin CORS allows (the web app)
+    ui_origin: str = "http://localhost:8501"  # the Streamlit dev UI (sends this Origin itself)
+    # Host headers the API answers (DNS-rebinding protection). Hosted mode: add your domain.
+    allowed_hosts: str = "localhost,127.0.0.1"
+    allow_lan: bool = False  # Docker publishes ports on the LAN only when true: NO login!
     allow_demo_seed: bool = True
     demo_mode: bool = False
 

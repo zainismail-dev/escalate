@@ -18,8 +18,14 @@ class ApiError(Exception):
         self.detail = detail
 
 
+# The API refuses state changes without an allowed Origin and this header (anti-CSRF). The UI
+# calls the API from its own server, so it states its origin itself.
+UI_ORIGIN = os.environ.get("UI_ORIGIN", "http://localhost:8501").rstrip("/")
+APP_HEADERS = {"Origin": UI_ORIGIN, "X-Escalate-Request": "1"}
+
+
 def _client() -> httpx.Client:
-    return httpx.Client(base_url=API_URL, timeout=600)
+    return httpx.Client(base_url=API_URL, timeout=600, headers=APP_HEADERS)
 
 
 def _check(r: httpx.Response) -> Any:

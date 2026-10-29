@@ -41,12 +41,17 @@ export class ApiError extends Error {
   }
 }
 
+/** Every state-changing request carries this header; the API refuses those without it (CSRF). */
+const CSRF_HEADER = { "X-Escalate-Request": "1" };
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   let res: Response;
+  const headers: Record<string, string> = method === "GET" ? {} : { ...CSRF_HEADER };
+  if (body !== undefined && !(body instanceof FormData)) headers["Content-Type"] = "application/json";
   try {
     res = await fetch(`${API_URL}${path}`, {
       method,
-      headers: body instanceof FormData || body === undefined ? undefined : { "Content-Type": "application/json" },
+      headers,
       body: body instanceof FormData ? body : body === undefined ? undefined : JSON.stringify(body),
       cache: "no-store",
     });
@@ -97,7 +102,7 @@ export const api = {
   editMessage: (messageId: number, body: string, subject?: string | null) =>
     request<{ message: Message; warnings: string[] }>("PUT", `/messages/${messageId}`, { body, subject }),
   /** The only way the web app approves a message. The API sets approved_at; then it is sent. */
-  approve: (messageId: number) => request<RunOut>("POST", `/messages/${messageId}/approve`, {}),
+  approve: (messageId: number) => request<RunOut>("POST", `/messages/${messageId}/approve`, { confirm: true }),
   reject: (messageId: number, reason: string) => request<RunOut>("POST", `/messages/${messageId}/reject`, { reason }),
   confirmDelivery: (messageId: number, evidenceId?: number) =>
     request<RunOut>("POST", `/messages/${messageId}/confirm-delivery`, { evidence_id: evidenceId ?? null }),
@@ -106,6 +111,6 @@ export const api = {
   settings: () => request<Settings>("GET", "/settings"),
   saveSettings: (body: Partial<Record<string, string | number>>) => request<Settings>("PUT", "/settings", body),
   testModel: () => request<{ ok: boolean; reply?: string; error?: string }>("POST", "/settings/llm-test"),
-  deleteAll: () => request<void>("POST", "/privacy/delete-all"),
+  deleteAll: () => request<void>("POST", "/privacy/delete-all", { confirm: true }),
   seedDemo: () => request<{ case_ids: number[] }>("POST", "/demo/seed"),
 };

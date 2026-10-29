@@ -41,7 +41,7 @@ api:              ## the API with auto-reload on http://localhost:8000 (watches 
 	uv run uvicorn escalate.api.main:app --reload --reload-dir escalate
 
 demo-data:        ## seed 4 fictional demo cases (PK, IN, GB, US) into the running API
-	curl -fsS -X POST $(API_URL)/demo/seed && echo
+	curl -fsS -X POST -H "Origin: $(WEB_URL)" -H "X-Escalate-Request: 1" $(API_URL)/demo/seed && echo
 
 web-install:
 	cd web && npm ci

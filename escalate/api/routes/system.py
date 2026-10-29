@@ -13,7 +13,7 @@ from escalate import __version__
 from escalate.agent import runner
 from escalate.agent.checklist import Checklist, load_checklist
 from escalate.api.deps import get_session
-from escalate.api.schemas import DemoOut, HealthOut, SettingsIn, SettingsOut
+from escalate.api.schemas import ConfirmIn, DemoOut, HealthOut, SettingsIn, SettingsOut
 from escalate.config import get_settings, settings_file
 from escalate.db.models import Case
 from escalate.i18n.countries import CountryOut, coverage, default_letter_language
@@ -112,8 +112,9 @@ def save_settings(body: SettingsIn) -> SettingsOut:
 
 
 @router.post("/privacy/delete-all", status_code=204)
-def delete_all(session: Session = Depends(get_session)) -> Response:
-    """Delete every case: evidence files, drafts, timeline and scheduled reminders."""
+def delete_all(body: ConfirmIn, session: Session = Depends(get_session)) -> Response:
+    """Delete every case: evidence files, drafts, timeline and scheduled reminders.
+    Body must be {"confirm": true}."""
     ids = list(session.scalars(select(Case.id)))
     session.close()
     for cid in ids:

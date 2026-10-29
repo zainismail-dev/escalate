@@ -173,7 +173,13 @@ class MessageEdit(BaseModel):
     subject: str | None = None
 
 
-class ApproveIn(BaseModel):
+class ConfirmIn(BaseModel):
+    """Destructive actions need an explicit JSON confirmation (not just an empty POST)."""
+
+    confirm: Literal[True]
+
+
+class ApproveIn(ConfirmIn):
     body: str | None = None
     subject: str | None = None
 

@@ -46,3 +46,9 @@ def led_case(db: Session, with_facts: bool = True, **kw: object) -> Case:
     db.flush()
     db.refresh(case)
     return case
+
+
+# What the web app sends: an allowed Origin and the anti-CSRF header, to a trusted Host.
+APP_ORIGIN = "http://localhost:3000"
+APP_HEADERS = {"Origin": APP_ORIGIN, "X-Escalate-Request": "1"}
+APP_BASE_URL = "http://localhost"

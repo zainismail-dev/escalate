@@ -12,12 +12,14 @@ from typing import Any
 import openai
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
 from escalate import __version__
 from escalate.agent import runner
 from escalate.agent.approval import ApprovalError, UnsupportedFacts
 from escalate.api.routes import cases, messages, system
+from escalate.api.security import CSRF_HEADER, CsrfGuard, split_list
 from escalate.channels import NotApproved, ProofRequired
 from escalate.channels.email_smtp import EmailConfigError
 from escalate.config import env_file_problems, get_settings
@@ -67,8 +69,14 @@ def startup_warnings() -> list[str]:
     """Config problems to show in the console at startup (they would otherwise surface later as
     500s). Startup never contacts the network or the LLM."""
     warnings = env_file_problems()
-    if not get_settings().fernet_key:
+    s = get_settings()
+    if not s.fernet_key:
         warnings.append("FERNET_KEY is empty: evidence uploads and demo data will fail until set")
+    if s.allow_lan:
+        warnings.append(
+            "ALLOW_LAN=true: the API is reachable from your network and has NO login. Anyone on "
+            "the network can read your cases and send letters. Turn it off when you are done."
+        )
     return warnings
 
 
@@ -90,14 +98,16 @@ def create_app(startup: bool = True) -> FastAPI:
             sched.shutdown(wait=False)
 
     app = FastAPI(title="Escalate", version=__version__, lifespan=lifespan)
-    # The web app (web/) calls the API from the browser; only its origin is allowed.
-    origins = [o.strip() for o in get_settings().web_origin.split(",") if o.strip()]
+    # Middleware runs outermost-last: Host check, then CORS (answers preflights), then CSRF.
+    settings = get_settings()
+    app.add_middleware(CsrfGuard)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=split_list(settings.web_origin),  # the web app calls the API from the browser
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-        allow_headers=["Content-Type"],
+        allow_headers=["Content-Type", CSRF_HEADER],
     )
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=split_list(settings.allowed_hosts))
     app.include_router(cases.router)
     app.include_router(messages.router)
     app.include_router(system.router)

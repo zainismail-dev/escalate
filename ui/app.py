@@ -257,7 +257,9 @@ def page_review() -> None:
     try:
         if b1.button(t("review.approve"), type="primary"):
             edited = body != draft["body"] or subject != (draft.get("subject") or "")
-            payload = {"body": body, "subject": subject} if edited else {}
+            payload: dict[str, object] = {"confirm": True}  # the API needs explicit confirmation
+            if edited:
+                payload.update(body=body, subject=subject)
             api.post(f"/messages/{mid}/approve", json=payload)
             st.success(t("review.approved"))
             go("dashboard")

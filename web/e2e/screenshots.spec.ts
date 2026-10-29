@@ -1,6 +1,6 @@
 import path from "node:path";
-import { expect, type Page, request, test } from "@playwright/test";
-import { API_URL, demoCases, draftId, settled } from "./helpers";
+import { expect, type Page, test } from "@playwright/test";
+import { API_URL, apiContext, demoCases, draftId, settled } from "./helpers";
 
 /**
  * Screenshots of every page for the README: `make screenshots` (needs E2E_RESET=1 and demo
@@ -83,7 +83,7 @@ test("review draft", async ({ page }) => {
 test("draft blocked by fact check", async ({ page }) => {
   const { GB } = await demoCases();
   const id = await draftId(GB.id);
-  const ctx = await request.newContext();
+  const ctx = await apiContext();
   const msg = await (await ctx.get(`${API_URL}/messages/${id}/review`)).json();
   // An amount that is not in the evidence (the evidence says 39.99).
   const body = msg.message.body.replace("\n\n", "\n\nYou have charged me 49.99 every month since then.\n\n");
@@ -107,8 +107,8 @@ test("urgent scam checklist", async ({ page }) => {
 test("log a reply", async ({ page }) => {
   const { GB } = await demoCases();
   // Approve the demo letter (DEMO_MODE: nothing leaves the machine) so the case waits for a reply.
-  const ctx = await request.newContext();
-  const ok = await ctx.post(`${API_URL}/messages/${await draftId(GB.id)}/approve`, { data: {} });
+  const ctx = await apiContext();
+  const ok = await ctx.post(`${API_URL}/messages/${await draftId(GB.id)}/approve`, { data: { confirm: true } });
   expect(ok.ok()).toBeTruthy();
   await ctx.dispose();
   await page.goto(`/cases/${GB.id}/reply`);

@@ -11,7 +11,7 @@ from escalate.api.main import create_app
 from escalate.config import get_settings
 from escalate.safety import new_case_limiter
 from tests.agent_env import AgentEnv, agent_env  # noqa: F401
-from tests.factories import LED_TEXT
+from tests.factories import APP_BASE_URL, APP_HEADERS, LED_TEXT
 from tests.fakes.fake_smtp import FakeSMTP
 
 FIX = Path(__file__).parent / "fixtures"
@@ -29,7 +29,7 @@ def client(
     monkeypatch.setenv("LLM_BASE_URL", "https://api.example-cloud.com/v1")
     get_settings.cache_clear()
     new_case_limiter.reset()
-    with TestClient(create_app(startup=False)) as c:
+    with TestClient(create_app(startup=False), base_url=APP_BASE_URL, headers=APP_HEADERS) as c:
         yield c
     get_settings.cache_clear()
 
@@ -90,18 +90,18 @@ def test_full_flow_over_http(client: TestClient) -> None:
         # edit: warnings for an invented amount, then approval is refused
         e = client.put(f"/messages/{mid}", json={"body": draft["body"] + "\nPay 77,777."})
         assert e.json()["warnings"] == ["number 77777 is not in the case facts"]
-        bad = client.post(f"/messages/{mid}/approve", json={})
+        bad = client.post(f"/messages/{mid}/approve", json={"confirm": True})
         assert bad.status_code == 422
         assert bad.json()["issues"] == ["number 77777 is not in the case facts"]
         assert FakeSMTP.all_sent() == []
 
         # fix the edit, approve -> sent
         client.put(f"/messages/{mid}", json={"body": draft["body"]})
-        ok = client.post(f"/messages/{mid}/approve", json={})
+        ok = client.post(f"/messages/{mid}/approve", json={"confirm": True})
         assert ok.status_code == 200, ok.text
         assert ok.json()["waiting_for"] == "waiting_reply"
         assert len(FakeSMTP.all_sent()) == 1
-        assert client.post(f"/messages/{mid}/approve", json={}).status_code == 409
+        assert client.post(f"/messages/{mid}/approve", json={"confirm": True}).status_code == 409
 
         listed = client.get("/cases").json()
         assert listed[0]["status"] == "waiting_reply"
