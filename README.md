@@ -1,5 +1,8 @@
 # Escalate
 
+[![Live demo](https://img.shields.io/badge/live%20demo-try%20it-d7f36b?style=flat-square)](https://escalate-demo.vercel.app)
+[![CI](https://github.com/zainismail-dev/escalate/actions/workflows/ci.yml/badge.svg)](https://github.com/zainismail-dev/escalate/actions/workflows/ci.yml)
+
 **The AI agent that fights for your refund, so you don't give up.**
 
 Escalate takes your complaint and your evidence (a refund refused, a subscription that won't
@@ -14,6 +17,10 @@ computer, with a free local AI model.
 > 🎬 Demo GIF coming soon (`docs/demo.gif`).
 
 > ⚖️ Escalate is a self-help tool, **not legal advice**. Check the rules in your country.
+
+**Try it first:** the [live demo](https://escalate-demo.vercel.app) runs in your browser with
+sample cases. Nothing is saved or sent, and no data leaves the page
+([how it works](docs/DEPLOY_DEMO.md)).
 
 ## Why it exists
 

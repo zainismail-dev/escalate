@@ -78,3 +78,20 @@ that was not available. Each item names the task it came from.
   contrast check (e.g. axe) in both themes. Colours were chosen for 4.5:1 but not machine-verified.
 - [ ] **Verify the SMTP presets** in Settings (Gmail, Outlook.com, Yahoo, iCloud hosts and ports)
   against each provider's current help page before relying on them.
+
+## Security and live demo (Part 1–3)
+
+- [ ] **Deploy the live demo on Vercel** (needs your Vercel account): follow
+  [DEPLOY_DEMO.md](DEPLOY_DEMO.md), then replace `https://escalate-demo.vercel.app` in the
+  README badge and link with the real URL.
+- [ ] **Install the pre-commit hooks** on your machine: `make hooks` (gitleaks blocks commits
+  that contain secrets).
+- [ ] **GitHub settings** (repository → Settings): enable *Dependabot alerts* and *security
+  updates*, *Secret scanning* and *Push protection* (Code security), and *Private vulnerability
+  reporting*. Protect `main` (require the CI checks: test, security, web, web-e2e, demo, zap,
+  docker).
+- [ ] **Restart the API once** (`make api`) so the new middleware (rate limits, headers, app
+  lock) is active; your existing `escalate.db` is migrated automatically.
+- [ ] **Nothing to rotate:** the full-history secret scan found no committed secrets (the two
+  hits are an empty `SMTP_APP_PASSWORD=` template line). Your local `.env`, `escalate.db` and
+  `data/` were never committed.
