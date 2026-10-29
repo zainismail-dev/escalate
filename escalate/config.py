@@ -68,6 +68,7 @@ class Settings(BaseSettings):
     evidence_dir: Path = Path("./data/evidence")
     fernet_key: str = ""
     ocr_langs: str = "eng"
+    ocr_timeout_s: int = 60  # OCR / PDF text extraction per upload; then "needs review"
 
     email_mode: Literal["smtp", "gmail_api"] = "smtp"
     smtp_host: str = "smtp.gmail.com"  # any provider: port 465 = SSL, other ports = STARTTLS

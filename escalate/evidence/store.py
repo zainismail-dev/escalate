@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from escalate.config import Settings, get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Evidence
-from escalate.evidence.ocr import extract_text
+from escalate.evidence.ocr import ExtractResult, extract_text
 from escalate.pii import mask_pii
 
 KINDS = {
@@ -73,6 +73,7 @@ def save_upload(
     data: bytes,
     settings: Settings | None = None,
     extract: bool = True,
+    result: ExtractResult | None = None,
 ) -> Evidence:
     """Encrypt and store an upload, extract its text, and log `evidence_added`."""
     s = settings or get_settings()
@@ -92,7 +93,7 @@ def save_upload(
     session.flush()
 
     if extract:
-        result = extract_text(ev, s, data=data)
+        result = result or extract_text(ev, s, data=data)
         ev.extracted_text = mask_pii(result.text)
         ev.ocr_confidence = result.confidence
         ev.needs_review = result.needs_review

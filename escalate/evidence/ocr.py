@@ -39,9 +39,14 @@ def extract_text(
         from escalate.evidence.store import load_plain
 
         data = load_plain(evidence, s)
-    match evidence.kind:
+    return extract_bytes(evidence.kind, data, s.ocr_langs, s.ocr_timeout_s)
+
+
+def extract_bytes(kind: str, data: bytes, langs: str, timeout: int = 0) -> ExtractResult:
+    """Text from an upload's bytes. Slow (OCR, PDF parsing): call it off the event loop."""
+    match kind:
         case "image":
-            return _image(data, s.ocr_langs)
+            return _image(data, langs, timeout)
         case "pdf":
             return _pdf(data)
         case "email":
@@ -52,11 +57,14 @@ def extract_text(
             return ExtractResult("", needs_review=True)
 
 
-def _image(data: bytes, langs: str) -> ExtractResult:
+def _image(data: bytes, langs: str, timeout: int = 0) -> ExtractResult:
     try:
         img = Image.open(io.BytesIO(data))
-        d = pytesseract.image_to_data(img, lang=langs, output_type=pytesseract.Output.DICT)
+        d = pytesseract.image_to_data(
+            img, lang=langs, output_type=pytesseract.Output.DICT, timeout=timeout
+        )
     except (
+        RuntimeError,  # pytesseract's timeout
         pytesseract.TesseractNotFoundError,
         pytesseract.TesseractError,
         OSError,

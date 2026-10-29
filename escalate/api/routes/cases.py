@@ -1,5 +1,8 @@
 """Case endpoints."""
 
+from functools import partial
+
+import anyio
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import Response
 from sqlalchemy import select
@@ -33,10 +36,12 @@ from escalate.api.schemas import (
     VerdictIn,
     WithdrawIn,
 )
-from escalate.config import get_settings
+from escalate.config import Settings, get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Event, Message, utcnow
 from escalate.db.session import session_scope
+from escalate.evidence import ocr
+from escalate.evidence.ocr import ExtractResult
 from escalate.evidence.sniff import UploadRejected, check_upload
 from escalate.evidence.store import safe_filename, save_upload
 from escalate.i18n.countries import currency_for, default_letter_language, is_rtl
@@ -204,13 +209,32 @@ async def upload_evidence(
     if not data:
         raise HTTPException(422, "empty file")
     name = safe_filename(file.filename or "upload")
+    # Parsing, OCR and encryption are slow: never on the event loop (the API stays responsive).
     try:
-        check_upload(name, data)
+        kind = await anyio.to_thread.run_sync(check_upload, name, data)
     except UploadRejected as exc:
         raise HTTPException(415, str(exc)) from exc
-    ev = save_upload(session, case_id, name, data)
+    result = await extract_off_loop(kind, data, settings)
+    ev = await anyio.to_thread.run_sync(
+        partial(save_upload, session, case_id, name, data, result=result)
+    )
     session.commit()
     return EvidenceOut.model_validate(ev)
+
+
+async def extract_off_loop(kind: str, data: bytes, settings: Settings) -> ExtractResult:
+    """Text extraction in a worker thread, abandoned after OCR_TIMEOUT_S (Tesseract also gets
+    the timeout, so the thread ends too). A timed-out file is kept and marked for review."""
+    with anyio.move_on_after(settings.ocr_timeout_s):
+        return await anyio.to_thread.run_sync(
+            ocr.extract_bytes,
+            kind,
+            data,
+            settings.ocr_langs,
+            settings.ocr_timeout_s,
+            abandon_on_cancel=True,
+        )
+    return ExtractResult("", needs_review=True)
 
 
 @router.post("/{case_id}/start", response_model=RunOut)

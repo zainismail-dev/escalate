@@ -93,12 +93,15 @@ def test_low_ocr_confidence_needs_review(
 
     seen: dict[str, Any] = {}
 
-    def fake_image_to_data(img: Any, lang: str, output_type: Any) -> dict[str, Any]:
-        seen["lang"] = lang
+    def fake_image_to_data(
+        img: Any, lang: str, output_type: Any, timeout: int = 0
+    ) -> dict[str, Any]:
+        seen["lang"], seen["timeout"] = lang, timeout
         return _fake_data(confs)
 
     monkeypatch.setattr(pytesseract, "image_to_data", fake_image_to_data)
-    result = ocr._image((FIX / "receipt.png").read_bytes(), "eng+urd")
+    result = ocr._image((FIX / "receipt.png").read_bytes(), "eng+urd", timeout=60)
+    assert seen["timeout"] == 60  # Tesseract is stopped after OCR_TIMEOUT_S
     assert result.needs_review is review
     assert result.confidence == sum(confs) / len(confs)
     assert seen["lang"] == "eng+urd"
