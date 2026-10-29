@@ -5,6 +5,7 @@ Port 465 uses SSL; any other port (usually 587) uses STARTTLS. The default is Gm
 
 import re
 import smtplib
+import ssl
 from collections.abc import Callable
 from email.message import EmailMessage
 from email.utils import make_msgid
@@ -37,11 +38,17 @@ def build_mime(msg: Message, sender: str, attachments: list[Attachment]) -> Emai
     return mime
 
 
+def tls_context() -> ssl.SSLContext:
+    """Verify the server's certificate and hostname. (smtplib's own default does neither, so a
+    network attacker could otherwise read the app password.)"""
+    return ssl.create_default_context()
+
+
 def _ssl_factory(host: str, port: int) -> smtplib.SMTP:
     if port == 465:
-        return smtplib.SMTP_SSL(host, port, timeout=30)
+        return smtplib.SMTP_SSL(host, port, timeout=30, context=tls_context())
     smtp = smtplib.SMTP(host, port, timeout=30)
-    smtp.starttls()
+    smtp.starttls(context=tls_context())
     return smtp
 
 
