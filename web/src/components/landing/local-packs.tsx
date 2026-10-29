@@ -1,15 +1,28 @@
 "use client";
+import { DEMO_COUNTRIES } from "escalate-demo-backend";
 import { useLocale, useTranslations } from "next-intl";
 import { api } from "@/lib/api";
 import { countryName, flag } from "@/lib/format";
+import type { Country } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 
-/** Which countries have a local pack today, read from the API (never hard-coded). */
+/** Which countries have a local pack today, read from the API (never hard-coded). The static
+ * demo reads its bundled country list directly: nothing to wait for. */
 export function LocalPacks() {
   const t = useTranslations("landing.global");
   const ui = useLocale();
-  const { data } = useApi(() => api.countries(), []);
-  if (!data) return <p className="text-sm text-muted">{t("packsLoading")}</p>;
+  const bundled: Country[] | null = DEMO_COUNTRIES.length ? DEMO_COUNTRIES : null;
+  const q = useApi(() => (bundled ? Promise.resolve(bundled) : api.countries()), []);
+  const data = bundled ?? q.data;
+  if (!data) {
+    // An error must not leave "Checking…" on screen forever.
+    if (q.error) return <p className="text-sm text-muted">{t("packsUnavailable")}</p>;
+    return (
+      <p className="text-sm text-muted" data-loading>
+        {t("packsLoading")}
+      </p>
+    );
+  }
   const local = data.filter((c) => c.local_pack);
   return (
     <div>

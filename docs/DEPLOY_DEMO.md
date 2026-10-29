@@ -31,8 +31,10 @@ Every push to `main` redeploys; pull requests get preview URLs.
   `content-security-policy` (with `connect-src 'self'`), `strict-transport-security`,
   `x-frame-options: DENY`, `x-content-type-options: nosniff`, `referrer-policy` and
   `permissions-policy`.
-- Put the URL in the README: replace `https://escalate-demo.vercel.app` (badge and link) with
-  your real URL.
+- The live demo is <https://escalate-chi.vercel.app> (README badge and link). On a fork, change
+  it there and in `.github/workflows/demo-preview.yml`.
+- `make demo-preview` checks the link preview (Open Graph title, description, image) on the
+  deployed URL; the `demo-preview` workflow runs it after each production deployment and daily.
 - Share preview: the Open Graph image is `web/src/app/opengraph-image.png` (the *My cases*
   screen). Check it with any link-preview tool.
 

@@ -503,7 +503,8 @@
       "packsLoading": "Checking which countries have local packs…",
       "packsCount": "{all} countries supported; {local} with a local pack so far.",
       "everyoneElse": "Everyone else: generic route",
-      "packsNote": "Local packs are written by contributors and must cite official sources."
+      "packsNote": "Local packs are written by contributors and must cite official sources.",
+      "packsUnavailable": "Local packs exist for some countries; every other country uses the international playbook."
     },
     "safety": {
       "eyebrow": "Safety",
@@ -950,6 +951,7 @@
     "endBody": "In your own copy, Escalate now reads your evidence, asks for anything missing and drafts your first letter for you to approve. This demo has no AI model, so it stops here. Nothing you typed was saved or sent.",
     "seeCases": "See the sample cases",
     "sampleFilled": "Sample details are filled in. Change anything you like: nothing is saved.",
-    "useSample": "Use the sample receipt"
+    "useSample": "Use the sample receipt",
+    "viewCode": "View code on GitHub"
   }
 }

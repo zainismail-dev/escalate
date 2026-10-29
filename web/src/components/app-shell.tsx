@@ -7,6 +7,7 @@ import { useTransition } from "react";
 import { DemoBanner, DemoChrome } from "@/components/demo";
 import { LockGate } from "@/components/lock-screen";
 import { Logo } from "@/components/logo";
+import { RepoLink } from "@/components/repo-link";
 import { ThemeToggle } from "@/components/theme";
 import { NativeSelect } from "@/components/ui/input";
 import { ENABLED_LOCALES, LOCALE_COOKIE } from "@/i18n/config";
@@ -87,6 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="ms-auto flex items-center gap-1">
+            <RepoLink compact className="rounded-lg px-2 py-2 text-xs text-text-2 hover:bg-raised hover:text-text" />
             {ENABLED_LOCALES.length > 1 && <UiLanguageSelect />}
             <ThemeToggle />
           </div>
@@ -103,6 +105,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main id="main" className={cn("flex-1", !landing && "mx-auto w-full max-w-6xl px-4 pb-28 pt-6 md:pb-12")}>
         <LockGate>{children}</LockGate>
       </main>
+      {!landing && (
+        <footer className="border-t border-line">
+          <div className="mx-auto max-w-6xl px-4 py-5 pb-24 text-xs text-muted md:pb-5">
+            <RepoLink />
+          </div>
+        </footer>
+      )}
       <nav aria-label={t("main")} className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur md:hidden" data-testid="bottom-tabs">
         <ul className="mx-auto grid max-w-md grid-cols-4">
           <li>

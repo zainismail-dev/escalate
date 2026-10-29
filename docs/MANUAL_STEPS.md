@@ -81,9 +81,7 @@ that was not available. Each item names the task it came from.
 
 ## Security and live demo (Part 1–3)
 
-- [ ] **Deploy the live demo on Vercel** (needs your Vercel account): follow
-  [DEPLOY_DEMO.md](DEPLOY_DEMO.md), then replace `https://escalate-demo.vercel.app` in the
-  README badge and link with the real URL.
+- [x] **Deploy the live demo on Vercel**: live at <https://escalate-chi.vercel.app>.
 - [ ] **Install the pre-commit hooks** on your machine: `make hooks` (gitleaks blocks commits
   that contain secrets).
 - [ ] **GitHub settings** (repository → Settings): enable *Dependabot alerts* and *security

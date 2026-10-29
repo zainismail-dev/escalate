@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { RepoLink } from "@/components/repo-link";
 import { DEMO_LINK, DEMO_STATIC, DEMO_WRITE_EVENT, REPO_URL } from "@/lib/demo-mode";
 
 /** The live demo's "nothing is saved or sent" dialog. Renders nothing elsewhere. */
@@ -21,6 +22,8 @@ export function DemoBanner() {
     <div className="border-b border-lime/40 bg-lime px-4 py-1.5 text-center text-xs font-semibold text-on-lime" role="note" data-testid="demo-banner">
       <FlaskConical className="me-1.5 inline size-3.5 align-[-2px]" aria-hidden />
       {t("banner")}
+      <span aria-hidden> · </span>
+      <RepoLink className="inline-flex [&_svg]:size-3.5" />
     </div>
   );
 }

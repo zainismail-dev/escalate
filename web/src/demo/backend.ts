@@ -5,7 +5,7 @@
  * Two flows stay walkable: the new case wizard (in memory only) and judging a sample reply.
  */
 import { DEMO_WRITE_EVENT } from "@/lib/demo-mode";
-import type { CaseDetail, CaseSummary, Evidence, ReplyOut } from "@/lib/types";
+import type { CaseDetail, CaseSummary, Country, Evidence, ReplyOut } from "@/lib/types";
 import cases from "./cases.json";
 import checklists from "./checklists.json";
 import countries from "./countries.json";
@@ -18,6 +18,8 @@ import timelines from "./timelines.json";
 export class DemoBlocked extends Error {}
 
 export const SAMPLE_REPLY = reply.text;
+/** Read synchronously by pages that must never wait in the demo (the landing page). */
+export const DEMO_COUNTRIES = countries as Country[];
 
 const byId = <T,>(record: Record<string, unknown>, id: string): T | undefined =>
   Object.prototype.hasOwnProperty.call(record, id) ? (record[id] as T) : undefined;

@@ -1,0 +1,25 @@
+name: demo-preview
+# Checks the deployed live demo's link preview (Open Graph title, description, image) after
+# each successful Vercel production deployment, daily, and on demand.
+on:
+  deployment_status:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DEMO_URL: https://escalate-chi.vercel.app
+
+jobs:
+  link-preview:
+    if: github.event_name != 'deployment_status' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 22 }
+      - run: node web/scripts/check-link-preview.mjs "$DEMO_URL"

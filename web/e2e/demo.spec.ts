@@ -43,6 +43,31 @@ test("no request ever leaves the app, on any page", async ({ page }) => {
   expect(offsite).toEqual([]);
 });
 
+test("no demo page is left in a loading state", async ({ page }) => {
+  const { PK, IN, GB, US } = await demoCases();
+  const paths = ["/", "/cases", "/cases/new", "/settings", `/cases/${PK.id}`, `/cases/${PK.id}/reply`,
+    `/cases/${US.id}/review`, `/cases/${GB.id}`, `/cases/${IN.id}/urgent`];
+  for (const path of paths) {
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+    // Whatever was loading must have finished: no skeletons, spinners' text or loading markers.
+    await expect(page.locator("[data-loading], [data-testid=skeleton], [aria-busy=true]"), path).toHaveCount(0, { timeout: 5_000 });
+    await expect(page.getByText(/Loading…|Checking which countries|Working on it…/), path).toHaveCount(0);
+  }
+  await page.goto("/");
+  await expect(page.getByText(/250 countries supported; 4 with a local pack/)).toBeVisible();
+});
+
+test("View code on GitHub: header, footer and banner", async ({ page }) => {
+  for (const path of ["/", "/cases"]) {
+    await page.goto(path);
+    const links = page.getByTestId("repo-link");
+    await expect(links).toHaveCount(3); // banner, header, footer
+    for (const href of await links.evaluateAll((els) => els.map((e) => e.getAttribute("href"))))
+      expect(href).toBe("https://github.com/zainismail-dev/escalate");
+  }
+});
+
 test("my cases shows the four sample cases", async ({ page }) => {
   await page.goto("/cases");
   await settled(page);

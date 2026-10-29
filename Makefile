@@ -2,7 +2,7 @@
 MODEL ?= llama3.1:8b
 
 .PHONY: setup up down logs test lint evals pull api demo-data web-install web-dev web-lint web-build web-e2e screenshots \
-	demo-fixtures demo-build demo-e2e hooks security zap
+	demo-fixtures demo-build demo-e2e demo-preview hooks security zap
 
 setup:            ## create .env (FERNET_KEY, model), build images, pull the model
 	./scripts/setup_env.sh "$(MODEL)"
@@ -81,6 +81,10 @@ demo-build:       ## the static live demo (no API): what Vercel builds; then sca
 
 demo-e2e:         ## Playwright against a running demo build (WEB_URL); no API needed
 	cd web && DEMO_E2E=1 WEB_URL=$(WEB_URL) npx playwright test --project=demo --project=guard
+
+DEMO_URL ?= https://escalate-chi.vercel.app
+demo-preview:     ## Open Graph title, description and image resolve on the deployed demo
+	node web/scripts/check-link-preview.mjs $(DEMO_URL)
 
 hooks:            ## install the pre-commit hooks (gitleaks, no .env/*.db, ruff)
 	uvx pre-commit install

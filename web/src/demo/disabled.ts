@@ -2,6 +2,7 @@
  * self-hosted bundles carry no sample data. Never called: request() only uses it in the demo. */
 export class DemoBlocked extends Error {}
 export const SAMPLE_REPLY = "";
+export const DEMO_COUNTRIES: never[] = [];
 export async function demoRequest<T>(): Promise<T> {
   throw new Error("not the static demo build");
 }

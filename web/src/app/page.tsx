@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { CaseChipStatic } from "@/components/landing/static-chip";
 import { LocalPacks } from "@/components/landing/local-packs";
 import { EscalationLadder } from "@/components/ladder";
+import { RepoLink } from "@/components/repo-link";
 import { Button } from "@/components/ui/button";
 import { WhyPanel } from "@/components/why-panel";
 import { formatDate, formatMoney } from "@/lib/format";
@@ -196,7 +197,10 @@ export default function Landing() {
           </Button>
         </div>
         <footer className="border-t border-night-line">
-          <div className="mx-auto max-w-6xl px-4 py-6 pb-24 text-xs text-muted md:pb-6">{t("footer")}</div>
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 pb-24 text-xs text-muted md:pb-6">
+            <span>{t("footer")}</span>
+            <RepoLink className="text-text-2" />
+          </div>
         </footer>
       </section>
     </>
