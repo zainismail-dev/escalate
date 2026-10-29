@@ -194,6 +194,9 @@ export interface RecipientCheck {
   source_filename: string | null;
   previous: string | null;
   changed: boolean;
+  lookalike: boolean;
+  ascii_form: string | null;
+  scripts: string[];
 }
 
 export interface Preview {

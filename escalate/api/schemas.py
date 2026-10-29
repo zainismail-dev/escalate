@@ -212,6 +212,10 @@ class RecipientCheckOut(BaseModel):
     source_filename: str | None = None
     previous: str | None = None  # the address an earlier approved letter for this role went to
     changed: bool = False
+    # Non-ASCII characters (a possible look-alike): warn, and show the punycode form.
+    lookalike: bool = False
+    ascii_form: str | None = None
+    scripts: list[str] = Field(default_factory=list)
 
 
 class RejectIn(BaseModel):

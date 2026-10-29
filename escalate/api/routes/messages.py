@@ -37,6 +37,7 @@ from escalate.i18n.countries import is_rtl, letter_language, primary_language
 from escalate.i18n.formatting import locale_for
 from escalate.playbooks.loader import get_playbook
 from escalate.playbooks.models import template_languages
+from escalate.recipients import check_lookalike
 from escalate.templates_engine import MissingFacts, MissingPlaceholder, disclaimer, render_step
 
 router = APIRouter(prefix="/messages", tags=["messages"])
@@ -132,12 +133,16 @@ def recipient_check(msg: Message) -> RecipientCheckOut:
     ]
     previous = earlier[-1] if earlier else None
     changed = bool(previous and msg.recipient and not same_recipient(previous, msg.recipient))
+    look = check_lookalike(msg.recipient)
     return RecipientCheckOut(
         recipient=msg.recipient,
         source=source,
         source_filename=filename,
         previous=previous,
         changed=changed,
+        lookalike=look.warn,
+        ascii_form=look.ascii_form,
+        scripts=look.scripts,
     )
 
 

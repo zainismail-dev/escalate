@@ -779,7 +779,10 @@
       "confirm": "I checked this is the right recipient",
       "hint": "Letters can contain your name, address and order details.",
       "change": "Change the recipient",
-      "save": "Save"
+      "save": "Save",
+      "nonAscii": "This address contains non-English letters. It may imitate another address.",
+      "mixedScripts": "This address mixes alphabets ({scripts}): a common trick to imitate a real address.",
+      "asciiForm": "What mail servers see:"
     }
   },
   "reply": {

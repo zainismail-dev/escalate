@@ -80,6 +80,19 @@ export function RecipientConfirm({
       )}
       {error && <p role="alert" className="mt-1 text-xs text-danger">{error}</p>}
       <p className="mt-1 text-xs text-muted">{source}</p>
+      {check.lookalike && (
+        <div role="alert" className="mt-2 rounded-lg border border-warning bg-warning-bg p-2 text-xs text-text" data-testid="recipient-lookalike">
+          <p className="flex gap-1.5 font-semibold text-warning">
+            <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
+            {check.scripts.length > 1 ? t("mixedScripts", { scripts: check.scripts.join(", ") }) : t("nonAscii")}
+          </p>
+          {check.ascii_form && (
+            <p className="mt-1">
+              {t("asciiForm")} <code className="break-all font-mono font-semibold" data-testid="recipient-punycode">{check.ascii_form}</code>
+            </p>
+          )}
+        </div>
+      )}
       {check.changed && (
         <p role="alert" className="mt-2 flex gap-1.5 text-xs font-semibold text-warning" data-testid="recipient-changed">
           <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
