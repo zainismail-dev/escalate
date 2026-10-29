@@ -68,7 +68,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
-  health: () => request<{ ok: boolean; version: string; is_cloud: boolean; demo_mode: boolean }>("GET", "/health"),
+  health: () => request<{ ok: boolean }>("GET", "/health"),
   countries: () => request<Country[]>("GET", "/countries"),
   listCases: (params: { status?: string; country?: string; q?: string } = {}) => {
     const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v) as [string, string][]);

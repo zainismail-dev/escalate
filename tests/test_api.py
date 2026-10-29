@@ -56,8 +56,9 @@ def _create(client: TestClient, **kw: object) -> dict:
 
 
 def test_health_reports_cloud(client: TestClient) -> None:
-    r = client.get("/health").json()
-    assert r["ok"] and r["is_cloud"] is True
+    # /health is liveness only (review #8: it exposed LLM_BASE_URL); config is on /settings.
+    assert client.get("/health").json() == {"ok": True}
+    assert client.get("/settings").json()["is_cloud"] is True
 
 
 def test_create_validates_iso_codes(client: TestClient) -> None:

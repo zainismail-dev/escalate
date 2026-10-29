@@ -14,7 +14,7 @@ from escalate.agent import runner
 from escalate.agent.checklist import Checklist, load_checklist
 from escalate.api.deps import get_session
 from escalate.api.schemas import ConfirmIn, DemoOut, HealthOut, SettingsIn, SettingsOut
-from escalate.config import get_settings, settings_file
+from escalate.config import SECRET_FIELDS, encrypt_secret, get_settings, settings_file
 from escalate.db.models import Case
 from escalate.i18n.countries import CountryOut, coverage, default_letter_language
 from escalate.llm import get_llm, set_llm
@@ -26,15 +26,7 @@ router = APIRouter(tags=["system"])
 
 @router.get("/health", response_model=HealthOut)
 def health() -> HealthOut:
-    s = get_settings()
-    return HealthOut(
-        ok=True,
-        version=__version__,
-        is_cloud=is_cloud(s),
-        llm_base_url=s.llm_base_url,
-        demo_mode=s.demo_mode,
-        email_mode=s.email_mode,
-    )
+    return HealthOut(ok=True)
 
 
 @router.get("/checklist", response_model=Checklist)
@@ -108,9 +100,13 @@ def save_settings(body: SettingsIn) -> SettingsOut:
         saved: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         saved = {}
+    if any(update.get(k) for k in SECRET_FIELDS) and not current.fernet_key:
+        raise HTTPException(400, "set FERNET_KEY before saving an API key or app password")
     for key, value in update.items():
         if value in (None, ""):
             saved.pop(key, None)
+        elif key in SECRET_FIELDS:  # never stored in plain text
+            saved[key] = encrypt_secret(value, current.fernet_key)
         else:
             saved[key] = value.upper() if key == "default_country" else value
     # A secret belongs to its host: moving the host drops the stored secret (stored as "" so a

@@ -6,13 +6,31 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import field_validator
+from cryptography.fernet import Fernet, InvalidToken
+from pydantic import field_validator, model_validator
 from pydantic.fields import FieldInfo
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
+
+# Secrets saved from the web Settings page are Fernet-encrypted with FERNET_KEY.
+SECRET_FIELDS = ("llm_api_key", "smtp_app_password")
+ENC_PREFIX = "fernet:"
+
+
+def encrypt_secret(value: str, key: str) -> str:
+    return ENC_PREFIX + Fernet(key.encode()).encrypt(value.encode()).decode()
+
+
+def decrypt_secret(value: str, key: str) -> str:
+    """ "" when it can't be decrypted (no key, or another key): the user enters it again."""
+    try:
+        return Fernet(key.encode()).decrypt(value.removeprefix(ENC_PREFIX).encode()).decode()
+    except (InvalidToken, ValueError):
+        return ""
+
 
 # Values saved from the web Settings page. They win over the environment and `.env`, so the
 # page works the same in Docker (where compose sets env vars) and locally.
@@ -99,6 +117,14 @@ class Settings(BaseSettings):
         # Tests pass explicit values (init) and must not see a developer's saved settings.
         saved = _SavedSettings(settings_cls)
         return init_settings, saved, env_settings, dotenv_settings, file_secret_settings
+
+    @model_validator(mode="after")
+    def _decrypt_saved_secrets(self) -> "Settings":
+        for name in SECRET_FIELDS:
+            value = getattr(self, name)
+            if isinstance(value, str) and value.startswith(ENC_PREFIX):
+                setattr(self, name, decrypt_secret(value, self.fernet_key))
+        return self
 
     @property
     def upload_limit_mb(self) -> int:

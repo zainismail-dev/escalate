@@ -3,6 +3,7 @@ report and checks it now fails. (Report: CSRF, DNS rebinding, SSRF, SMTP TLS, pr
 injection, information leaks.)"""
 
 from collections.abc import Iterator
+from pathlib import Path
 from typing import ClassVar
 
 import pytest
@@ -457,3 +458,38 @@ def test_user_confirmed_resolution_closes_the_case(
         done = client.post(f"/cases/{cid}/resolution", json={"resolved": True})
     assert done.json()["waiting_for"] is None
     assert client.get(f"/cases/{cid}").json()["status"] == "resolved"
+
+
+# --- 8. Low: health, secrets at rest ----------------------------------------------------
+
+
+def test_health_exposes_nothing(raw: TestClient) -> None:
+    """Report #8: /health returned LLM_BASE_URL (which can embed credentials) and config."""
+    assert raw.get("/health").json() == {"ok": True}
+
+
+def test_saved_secrets_are_encrypted_at_rest(
+    client: TestClient,  # noqa: F811
+    settings_file: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import json
+
+    from cryptography.fernet import Fernet
+
+    from escalate.config import Settings, get_settings
+
+    body = {"llm_api_key": "sk-plain-secret", "smtp_app_password": "app-pw-secret"}
+    assert client.put("/settings", json=body).status_code == 200
+    text = settings_file.read_text()
+    assert "sk-plain-secret" not in text and "app-pw-secret" not in text
+    saved = json.loads(text)
+    assert saved["llm_api_key"].startswith("fernet:")
+    assert get_settings().llm_api_key == "sk-plain-secret"  # decrypted on load
+    # Another key can't read them: they come back empty (the user enters them again).
+    monkeypatch.setenv("FERNET_KEY", Fernet.generate_key().decode())
+    assert Settings().smtp_app_password == ""  # type: ignore[call-arg]
+    # No FERNET_KEY: refuse to store a secret at all.
+    monkeypatch.setenv("FERNET_KEY", "")
+    get_settings.cache_clear()
+    assert client.put("/settings", json={"llm_api_key": "sk-x"}).status_code == 400

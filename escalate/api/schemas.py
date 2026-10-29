@@ -237,12 +237,9 @@ class EditOut(BaseModel):
 
 
 class HealthOut(BaseModel):
+    """Liveness only: no URLs, versions or configuration (they are on /settings)."""
+
     ok: bool
-    version: str
-    is_cloud: bool
-    llm_base_url: str
-    demo_mode: bool
-    email_mode: str
 
 
 class CaseUpdate(BaseModel):

@@ -39,7 +39,7 @@ CASE = {
 
 
 def fake_get(path: str, **params: Any) -> Any:
-    if path == "/health":
+    if path == "/settings":
         return {
             "ok": True,
             "is_cloud": True,

@@ -40,13 +40,13 @@ def show_error(exc: api.ApiError) -> None:
 
 def privacy_banner() -> None:
     try:
-        health = api.get("/health")
+        cfg = api.get("/settings")
     except Exception:
         st.error(t("app.api_down", url=api.API_URL))
         st.stop()
-    if health.get("is_cloud"):
-        st.warning(t("app.cloud_warning", url=health["llm_base_url"]))
-    if health.get("demo_mode"):
+    if cfg.get("is_cloud"):
+        st.warning(t("app.cloud_warning", url=cfg["llm_base_url"]))
+    if cfg.get("demo_mode"):
         st.info(t("app.demo_mode"))
 
 
@@ -361,9 +361,9 @@ def page_cases() -> None:
 
 def page_settings() -> None:
     st.header(t("settings.header"))
-    health = api.get("/health")
+    cfg = api.get("/settings")
     st.subheader(t("settings.llm"))
-    st.write(t("settings.llm_endpoint", url=health["llm_base_url"]))
+    st.write(t("settings.llm_endpoint", url=cfg["llm_base_url"]))
     if st.button(t("settings.llm_test")):
         res = api.post("/settings/llm-test")
         if res["ok"]:
@@ -371,14 +371,14 @@ def page_settings() -> None:
         else:
             st.error(t("settings.llm_fail", error=res["error"]))
     st.subheader(t("settings.email"))
-    st.write(t("settings.email_mode", mode=health["email_mode"]))
+    st.write(t("settings.email_mode", mode=cfg["email_mode"]))
     st.caption(t("settings.email_help"))
     st.subheader(t("settings.languages"))
     st.session_state["draft_lang"] = st.text_input(
         t("settings.draft_language"), value=st.session_state.get("draft_lang", "en"), max_chars=2
     )
     st.caption(t("settings.ui_language_help"))
-    st.caption(t("settings.version", version=health["version"]))
+    st.caption(t("settings.version", version=cfg["version"]))
 
 
 PAGES = {
