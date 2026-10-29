@@ -928,5 +928,14 @@
       "confirmBody": "Every case, evidence file, draft and timeline is deleted from this computer. This can't be undone.",
       "version": "Escalate v{version}"
     }
+  },
+  "lock": {
+    "title": "Escalate is locked",
+    "body": "Enter the passcode set in APP_PASSCODE on this computer.",
+    "label": "Passcode",
+    "unlock": "Unlock",
+    "wrong": "That passcode is not right.",
+    "tooMany": "Too many wrong passcodes. Wait 15 minutes and try again.",
+    "failed": "Could not unlock. Is the Escalate API running?"
   }
 }

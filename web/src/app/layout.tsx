@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 import Script from "next/script";
 import { AppShell } from "@/components/app-shell";
 import { dirFor } from "@/i18n/config";
@@ -26,11 +27,12 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
+  const nonce = (await headers()).get("x-nonce") ?? undefined; // set by src/proxy.ts (CSP)
   return (
     // suppressHydrationWarning: THEME_INIT sets the html class before React hydrates.
     <html lang={locale} dir={dirFor(locale)} className={fontVariables} suppressHydrationWarning>
       <body>
-        <Script id="theme-init" strategy="beforeInteractive">
+        <Script id="theme-init" strategy="beforeInteractive" nonce={nonce}>
           {THEME_INIT}
         </Script>
         <NextIntlClientProvider>

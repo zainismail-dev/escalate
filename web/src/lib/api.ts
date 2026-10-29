@@ -14,7 +14,9 @@ import type {
   TimelineEvent,
 } from "./types";
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+import { API_URL } from "./api-url";
+
+export { API_URL };
 
 export type ApiErrorKind = "offline_api" | "model_offline" | "fact_check" | "rate_limited" | "other";
 
@@ -44,6 +46,9 @@ export class ApiError extends Error {
 /** Every state-changing request carries this header; the API refuses those without it (CSRF). */
 const CSRF_HEADER = { "X-Escalate-Request": "1" };
 
+/** Fired when the API answers 401 "locked" (APP_PASSCODE is set and there is no session). */
+export const LOCKED_EVENT = "escalate:locked";
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   let res: Response;
   const headers: Record<string, string> = method === "GET" ? {} : { ...CSRF_HEADER };
@@ -54,12 +59,14 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       headers,
       body: body instanceof FormData ? body : body === undefined ? undefined : JSON.stringify(body),
       cache: "no-store",
+      credentials: "include", // the optional app lock's httpOnly session cookie
     });
   } catch {
     throw new ApiError(0, `Cannot reach the Escalate API at ${API_URL}`);
   }
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && data.locked && typeof window !== "undefined") window.dispatchEvent(new Event(LOCKED_EVENT));
   if (!res.ok) {
     const detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail ?? data);
     throw new ApiError(res.status, detail, data);
@@ -69,6 +76,9 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 export const api = {
   health: () => request<{ ok: boolean }>("GET", "/health"),
+  lockStatus: () => request<{ enabled: boolean; unlocked: boolean }>("GET", "/auth/status"),
+  unlock: (passcode: string) => request<void>("POST", "/auth/login", { passcode }),
+  lock: () => request<void>("POST", "/auth/logout", {}),
   countries: () => request<Country[]>("GET", "/countries"),
   listCases: (params: { status?: string; country?: string; q?: string } = {}) => {
     const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v) as [string, string][]);

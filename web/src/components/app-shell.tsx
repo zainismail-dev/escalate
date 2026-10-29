@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useMessages, useTranslations } from "next-intl";
 import { useTransition } from "react";
+import { LockGate } from "@/components/lock-screen";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme";
 import { NativeSelect } from "@/components/ui/input";
@@ -48,7 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const messages = useMessages() as { meta?: { translated?: boolean } };
   const landing = path === "/";
   const tabs = [
-    { href: "/cases", label: t("cases"), icon: Briefcase, active: path === "/cases" || /^\/cases\/\d/.test(path) },
+    { href: "/cases", label: t("cases"), icon: Briefcase, active: path === "/cases" || /^\/cases\/(?!new)[^/]+/.test(path) },
     { href: "/cases/new", label: t("newCase"), icon: Plus, active: path.startsWith("/cases/new") },
     { href: "/settings", label: t("settings"), icon: Cog, active: path.startsWith("/settings") },
   ];
@@ -97,7 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
       <main id="main" className={cn("flex-1", !landing && "mx-auto w-full max-w-6xl px-4 pb-28 pt-6 md:pb-12")}>
-        {children}
+        <LockGate>{children}</LockGate>
       </main>
       <nav aria-label={t("main")} className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur md:hidden" data-testid="bottom-tabs">
         <ul className="mx-auto grid max-w-md grid-cols-4">
