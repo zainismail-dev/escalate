@@ -3,6 +3,7 @@
 import json
 from typing import Any
 
+import openai
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from pydantic import BaseModel
@@ -19,6 +20,7 @@ from escalate.db.models import Case
 from escalate.db.session import session_scope
 from escalate.i18n.countries import CountryOut, coverage, default_letter_language
 from escalate.llm import get_llm, set_llm
+from escalate.llm.client import LLMNotConfigured
 from escalate.llm.privacy import is_cloud
 from escalate.netguard import UnsafeEndpoint, check_host, check_url, url_host
 
@@ -45,9 +47,20 @@ class LlmTestOut(BaseModel):
 def llm_test() -> LlmTestOut:
     try:
         reply = get_llm().complete("Reply with the single word: pong", slot="fast")
-    except Exception as exc:  # show any connection/config problem to the user
-        return LlmTestOut(ok=False, error=f"{type(exc).__name__}: {exc}")
+    except Exception as exc:
+        return LlmTestOut(ok=False, error=llm_test_error(exc))
     return LlmTestOut(ok=True, reply=reply.strip()[:200])
+
+
+def llm_test_error(exc: Exception) -> str:
+    """What went wrong, without the endpoint's response body (it could be an internal page)."""
+    if isinstance(exc, openai.APIStatusError):
+        return f"the endpoint answered HTTP {exc.status_code}"
+    if isinstance(exc, openai.APIConnectionError):
+        return "connection failed"
+    if isinstance(exc, (LLMNotConfigured, UnsafeEndpoint)):
+        return str(exc)  # our own message, about the settings
+    return "the model test failed"
 
 
 @router.get("/countries", response_model=list[CountryOut])

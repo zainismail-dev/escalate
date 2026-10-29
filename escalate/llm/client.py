@@ -39,6 +39,9 @@ class LLMClient:
             api_key=self.settings.llm_api_key or "none",
             max_retries=0,  # we handle 429 ourselves
             timeout=300,
+            # Never follow redirects: a 307 from an allowed endpoint could send the request (and
+            # the API key) to an internal address that check_url would have refused.
+            http_client=openai.DefaultHttpx2Client(follow_redirects=False, timeout=300),
         )
         self.max_rate_retries = max_rate_retries
         self.base_delay = base_delay
