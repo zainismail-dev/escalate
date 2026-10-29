@@ -21,8 +21,7 @@ that was not available. Each item names the task it came from.
 - [ ] **Install Pango locally (or use Docker)** so WeasyPrint PDF tests run on your machine; they
   skipped on the build machine and run in CI.
 - [ ] **2.6 — Run the LED case by hand in the browser and record a rough screen capture.**
-  Start the API (`uv run uvicorn escalate.api.main:app --reload`) and the UI
-  (`uv run streamlit run ui/app.py`) with a local model configured. The build only booted both
+  Start the API (`make api`) and the web app (`make web-dev`) with a local model configured. The build only booted both
   servers headless and checked `/health`; no model was available to draft letters.
 - [ ] **3.1 / 4.2 — Lawyer or consumer-rights review of the Pakistan templates** (`templates/pk/en`
   and `templates/pk/ur`): seller demand, platform escalation, 15-day legal notice, consumer
@@ -44,7 +43,7 @@ that was not available. Each item names the task it came from.
   table in `evals/report.md`, and fix misses (prompt wording, few-shot examples, code checks)
   without lowering targets. The build applied model-independent fixes only.
 - [ ] **4.3 — Fresh-install test with Docker.** Docker was not available on the build machine.
-  On a machine with Docker: fresh clone, `make setup && make up`, open http://localhost:3000 (web app; Streamlit dev UI on :8501)
+  On a machine with Docker: fresh clone, `make setup && make up`, open http://localhost:3000 (the web app)
   and open a case. (CI builds the image and smoke-tests OCR and PDF rendering inside it.)
   `make setup` pulls `llama3.1:8b` by default; pass `MODEL=<name>` to choose another.
 - [ ] **4.4 — Record the demo GIF** (30–45 s: broken-LED photo → draft → approve → timeline jumps

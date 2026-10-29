@@ -19,8 +19,7 @@ repos:
         language: fail
         files: '(^|/)(\.env|.*\.db|.*\.db-(wal|shm|journal)|settings\.json)$|^(data|secrets)/'
         exclude: '^\.env\.example$'
-      - id: ruff
-        name: ruff
-        entry: uv run ruff check --force-exclude
-        language: system
-        types: [python]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3  # same as uv.lock
+    hooks:
+      - id: ruff-check

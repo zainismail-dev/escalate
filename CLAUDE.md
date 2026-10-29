@@ -46,7 +46,8 @@ escalate/
   db/         models.py, session.py
   api/        main.py, routes/*.py
   i18n/       formatting.py (Babel)
-ui/           Streamlit app (talks to the API only)
+web/          Next.js web app (talks to the API only)
+ui/           retired Streamlit dev UI (unsupported; `make dev-ui-legacy`)
 playbooks/    <cc>/<sector>/<case_type>[.<company>].yaml ; intl/generic/*
 templates/    <cc>/<lang>/*.md.j2 ; _shared/
 locales/      UI strings, <lang>.json
@@ -58,7 +59,7 @@ tests/
 ## Commands
 - Install: `uv sync`
 - Run API: `uv run uvicorn escalate.api.main:app --reload`
-- Run UI: `uv run streamlit run ui/app.py`
+- Run the web app: `make web-dev` (the Streamlit UI in `ui/` is retired: `make dev-ui-legacy`, unsupported)
 - Tests: `uv run pytest -q`
 - Lint/type: `uv run ruff check . && uv run ruff format --check . && uv run mypy escalate`
 - Validate playbooks: `uv run python -m escalate.playbooks.validate playbooks/`

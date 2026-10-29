@@ -2,7 +2,7 @@
 MODEL ?= llama3.1:8b
 
 .PHONY: setup up down logs test lint evals pull api demo-data web-install web-dev web-lint web-build web-e2e screenshots \
-	demo-fixtures demo-build demo-e2e demo-preview hooks security zap
+	demo-fixtures demo-build demo-e2e demo-preview hooks security zap dev-ui-legacy
 
 setup:            ## create .env (FERNET_KEY, model), build images, pull the model
 	./scripts/setup_env.sh "$(MODEL)"
@@ -28,13 +28,12 @@ else
 endif
 	@echo "Web app:      http://localhost:3000"
 	@echo "API:          http://localhost:8000 (interactive docs: make api, or API_DOCS=true)"
-	@echo "Streamlit UI: http://localhost:8501 (dev)"
 
 down:
 	docker compose down
 
 logs:
-	docker compose logs -f api web ui
+	docker compose logs -f api web
 
 test:             ## unit tests (offline: fake LLM, fake SMTP)
 	uv run pytest -q
@@ -104,3 +103,12 @@ ZAP ?= zap.sh
 zap:              ## OWASP ZAP baseline against WEB_URL + API_URL (throwaway DEMO_MODE instances!)
 	mkdir -p zap-out && WEB_URL=$(WEB_URL) API_URL=$(API_URL) ZAP_OUT=$(CURDIR)/zap-out $(ZAP) -cmd -autorun $(CURDIR)/.zap/baseline.yaml
 	uv run python .zap/gate.py zap-out/zap-report.json
+
+dev-ui-legacy:    ## UNSUPPORTED: the retired Streamlit dev UI on 127.0.0.1:8501 (use the web app)
+	@echo "################################################################################"
+	@echo "#  WARNING: the Streamlit UI is retired and UNSUPPORTED. Use the web app:        #"
+	@echo "#  make api + make web-dev. Start the API with UI_ORIGIN=http://localhost:8501   #"
+	@echo "#  for this UI to make changes. Settings: .streamlit/config.toml (localhost only, #"
+	@echo "#  XSRF protection on)."
+	@echo "################################################################################"
+	uv run streamlit run ui/app.py

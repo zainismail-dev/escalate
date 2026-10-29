@@ -53,9 +53,8 @@ Without `make`: `cp .env.example .env`, set `FERNET_KEY` and `MODEL_SMART`, then
 ```bash
 uv sync
 cp .env.example .env        # set FERNET_KEY, MODEL_SMART, MODEL_FAST
-uv run uvicorn escalate.api.main:app --reload     # API on :8000
+make api                                          # API on :8000
 make web-install && make web-dev                  # web app on http://localhost:3000
-uv run streamlit run ui/app.py                    # optional: the Streamlit dev UI on :8501
 ```
 
 You also need Node.js 20.9+ for the web app, and Tesseract (OCR) and Pango (PDF export) on your
@@ -64,7 +63,8 @@ system.
 
 ## Screenshots
 
-The web app (`web/`, Next.js) is the main interface; the Streamlit UI stays as a developer UI.
+The web app (`web/`, Next.js) is the interface. (The old Streamlit dev UI is retired:
+unsupported, opt-in only with `make dev-ui-legacy`.)
 All screenshots use the fictional demo cases. Full set: [docs/screenshots/](docs/screenshots/).
 
 | | |
@@ -113,8 +113,7 @@ flowchart LR
 - **Templates** (`templates/<country>/<language>/`) hold the letters. The model only polishes
   tone and language; the structure and every fact come from the template and your case.
 - **One process** runs the API and the scheduler (reminders survive restarts). The web app
-  (`web/`) and the Streamlit dev UI (`ui/`) only talk to the API, so a future mobile or chat
-  front end can reuse it.
+  (`web/`) only talks to the API, so a future mobile or chat front end can reuse it.
 - **Global by design:** every ISO country is listed; money and dates use each case's locale.
   Countries without a local pack get a generic route, labelled as such. v0.1 is English-only
   (app and letters); more languages are coming (see docs/DECISIONS.md).
@@ -174,5 +173,5 @@ make evals   # golden-set evals against your model
 
 ## Acknowledgements
 
-Built with LangGraph, FastAPI, Next.js, Tailwind CSS, shadcn/ui, next-intl, Streamlit, SQLAlchemy, APScheduler, Tesseract, WeasyPrint,
+Built with LangGraph, FastAPI, Next.js, Tailwind CSS, shadcn/ui, next-intl, SQLAlchemy, APScheduler, Tesseract, WeasyPrint,
 Babel and Ollama. Pakistan's consumer-court route follows the CRCP guide cited in its playbook.

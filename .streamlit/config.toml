@@ -1,0 +1,12 @@
+# The retired Streamlit dev UI (`make dev-ui-legacy`, unsupported). Locked to this machine:
+# a DNS-rebinding page can't reach it (allowedHosts), and forms need Streamlit's XSRF token.
+[server]
+address = "127.0.0.1"
+port = 8501
+headless = true
+allowedHosts = ["localhost", "127.0.0.1"]
+enableXsrfProtection = true
+enableCORS = true
+
+[browser]
+gatherUsageStats = false

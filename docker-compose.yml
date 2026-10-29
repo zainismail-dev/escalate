@@ -16,7 +16,7 @@ services:
       - EVIDENCE_DIR=/app/data/evidence
       - ESCALATE_SETTINGS_FILE=/app/data/settings.json
       - WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:3000}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api}   # "api": the Streamlit container
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
       - ALLOW_LAN=${ALLOW_LAN:-false}
     volumes: ["./data:/app/data", "./secrets:/app/secrets"]
     ports: ["${BIND_ADDR:-127.0.0.1}:8000:8000"]
@@ -31,16 +31,6 @@ services:
       args:
         NEXT_PUBLIC_API_URL: http://localhost:8000   # what your browser uses to reach the API
     ports: ["${BIND_ADDR:-127.0.0.1}:3000:3000"]
-    depends_on:
-      api:
-        condition: service_healthy
-  ui:                           # Streamlit dev UI: http://localhost:8501
-    build: .
-    command: streamlit run ui/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
-    environment:
-      - API_URL=http://api:8000
-      - PUBLIC_API_URL=http://localhost:8000
-    ports: ["${BIND_ADDR:-127.0.0.1}:8501:8501"]
     depends_on:
       api:
         condition: service_healthy
