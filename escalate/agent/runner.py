@@ -261,6 +261,7 @@ def scrub_checkpoints() -> None:
         conn = getattr(saver, "conn", None)
         if not isinstance(conn, sqlite3.Connection):
             return
+        saver.setup()  # type: ignore[union-attr]  # tables are created lazily: maybe none yet
         with saver.lock:  # type: ignore[union-attr]
             conn.execute("DELETE FROM checkpoints")
             conn.execute("DELETE FROM writes")

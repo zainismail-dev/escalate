@@ -50,3 +50,21 @@ def test_delete_all_leaves_no_case_text_on_disk(
     leaked = [m.decode() for m in MARKERS if m in after]
     assert leaked == [], f"case text still on disk after delete-all: {leaked}"
     assert not any((data / "evidence").rglob("*.bin"))
+
+
+def test_delete_all_works_on_a_fresh_install(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """No case has ever run, so LangGraph has not created its tables yet (CI caught a 500)."""
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path / 'escalate.db'}")
+    monkeypatch.setenv("CHECKPOINT_DB", str(tmp_path / "checkpoints.db"))
+    monkeypatch.setenv("EVIDENCE_DIR", str(tmp_path / "evidence"))
+    get_settings.cache_clear()
+    db_session.configure()
+    try:
+        with TestClient(create_app(), base_url=APP_BASE_URL, headers=APP_HEADERS) as c:
+            assert c.post("/privacy/delete-all", json={"confirm": True}).status_code == 204
+    finally:
+        db_session.configure("sqlite://")
+        runner.configure(tmp_path / "unused-cp.db")
+        get_settings.cache_clear()
