@@ -9,7 +9,8 @@ import io
 from pathlib import Path
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import FileSystemLoader, select_autoescape
+from jinja2.sandbox import SandboxedEnvironment
 from sqlalchemy.orm import Session
 
 from escalate.agent.titles import display_title
@@ -22,7 +23,7 @@ from escalate.templates_engine import disclaimer
 THUMB_PX = 360
 
 
-_env = Environment(
+_env = SandboxedEnvironment(
     loader=FileSystemLoader(str(Path(__file__).parent)),
     autoescape=select_autoescape(["html", "html.j2"], default=True),
 )

@@ -89,6 +89,10 @@ class Settings(BaseSettings):
     # Link-local and cloud-metadata addresses are always refused (escalate/netguard.py).
     local_endpoint_hosts: str = "localhost,127.0.0.1,::1,ollama,host.docker.internal"
     allow_demo_seed: bool = True
+    # Optional app lock (escalate/api/applock.py): a passcode, plain or an argon2 hash. Unset =
+    # no lock. Not user accounts: v0.1 is single-user (SECURITY.md, "Why there's no login").
+    app_passcode: str = ""
+    app_session_hours: int = 12
     demo_mode: bool = False
 
     # Not in .env.example; sensible defaults that rarely need changing.
@@ -99,6 +103,10 @@ class Settings(BaseSettings):
 
     # Safety limits (task 4.2).
     max_new_cases_per_hour: int = 10
+    # Per client, per minute (escalate/api/limits.py). AI calls are slow and may cost money.
+    rate_limit_writes_per_minute: int = 120
+    rate_limit_ai_per_minute: int = 20
+    max_json_body_kb: int = 1024  # uploads are capped separately by max_upload_mb
     require_evidence: bool = True
     max_cases_per_recipient: int = 3  # within recipient_window_days: a harassment pattern
     recipient_window_days: int = 30

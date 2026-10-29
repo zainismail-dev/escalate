@@ -8,9 +8,10 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "alembic>=1.20.1",
     "apscheduler>=3.11.3",
+    "argon2-cffi>=23.1.0",
     "babel>=2.18.0",
     "cryptography==46.0.3 ; platform_machine == 'x86_64' and sys_platform == 'darwin'",
-    "cryptography>=46.0.3 ; platform_machine != 'x86_64' or sys_platform != 'darwin'",
+    "cryptography>=50.0.0 ; platform_machine != 'x86_64' or sys_platform != 'darwin'",
     "fastapi>=0.162.0",
     "google-api-python-client>=2.201.0",
     "google-auth-oauthlib>=1.5.0",
@@ -80,3 +81,9 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.File", "fastapi.Query", "f
 
 [tool.ruff.lint.per-file-ignores]
 "evals/make_*.py" = ["E501"]  # data tables of sample texts
+
+[tool.bandit]
+# B101 (assert): asserts here narrow types for mypy after a check that already ran; none guards
+# a security decision (those raise explicit exceptions: gate.py, approval.py, netguard.py).
+skips = ["B101"]
+exclude_dirs = [".venv", "tests", "evals", "migrations", "web"]

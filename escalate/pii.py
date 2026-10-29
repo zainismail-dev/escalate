@@ -79,13 +79,24 @@ class PiiFilter(logging.Filter):
         except Exception:  # a broken format string is not our problem to fix here
             return True
         record.msg, record.args = mask_pii(msg), None
+        if record.exc_info and not record.exc_text:
+            # Exception messages can quote user text; the formatter uses exc_text when it is set.
+            record.exc_text = mask_pii(logging.Formatter().formatException(record.exc_info))
         return True
 
 
-def install_log_filter(logger: logging.Logger | None = None) -> None:
-    target = logger or logging.getLogger()
+# uvicorn's loggers do not propagate to the root logger's filters: filter their handlers too.
+LOGGERS = ("", "uvicorn", "uvicorn.error", "uvicorn.access")
+
+
+def _add(target: logging.Logger | logging.Handler) -> None:
     if not any(isinstance(f, PiiFilter) for f in target.filters):
         target.addFilter(PiiFilter())
-    for handler in target.handlers:
-        if not any(isinstance(f, PiiFilter) for f in handler.filters):
-            handler.addFilter(PiiFilter())
+
+
+def install_log_filter(logger: logging.Logger | None = None) -> None:
+    targets = [logger] if logger else [logging.getLogger(name) for name in LOGGERS]
+    for target in targets:
+        _add(target)
+        for handler in target.handlers:
+            _add(handler)

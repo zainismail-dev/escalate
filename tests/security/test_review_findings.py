@@ -516,7 +516,7 @@ def test_public_id_migration_backfills_and_downgrades(tmp_path: Path) -> None:
     from alembic import command
     from alembic.config import Config
 
-    repo = Path(__file__).resolve().parents[1]
+    repo = Path(__file__).resolve().parents[2]
     url = f"sqlite:///{tmp_path / 'm.db'}"
     cfg = Config(str(repo / "alembic.ini"))
     cfg.attributes["configure_logger"] = False

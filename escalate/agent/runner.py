@@ -148,6 +148,8 @@ def confirm_delivery(case_id: int, proof_evidence_id: int | None = None) -> RunR
     p = _expect(case_id, "confirm_delivery")
     with session_scope() as s:
         proof = s.get(Evidence, proof_evidence_id) if proof_evidence_id else None
+        if proof_evidence_id and (proof is None or proof.case_id != case_id):
+            raise RunnerError("that proof of delivery is not evidence on this case")
         confirm_delivery_svc(s, int(p["message_id"]), proof)
     return _run(case_id, Command(resume={"confirmed": True}))
 

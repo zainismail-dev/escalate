@@ -34,14 +34,21 @@ class RateLimiter:
         self._hits: dict[str, deque[float]] = {}
         self._lock = threading.Lock()
 
-    def check(self, key: str, limit: int, window: timedelta = timedelta(hours=1)) -> None:
+    def check(
+        self,
+        key: str,
+        limit: int,
+        window: timedelta = timedelta(hours=1),
+        what: str = "new cases",
+    ) -> None:
         now = utcnow().timestamp()
         with self._lock:
             hits = self._hits.setdefault(key, deque())
             while hits and hits[0] <= now - window.total_seconds():
                 hits.popleft()
             if len(hits) >= limit:
-                raise RateLimited(f"too many new cases; try again later (limit {limit} per hour)")
+                per = "hour" if window == timedelta(hours=1) else f"{int(window.total_seconds())} s"
+                raise RateLimited(f"too many {what}; try again later (limit {limit} per {per})")
             hits.append(now)
 
     def reset(self) -> None:

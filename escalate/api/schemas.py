@@ -2,9 +2,9 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 from escalate.i18n.countries import letter_language
 
@@ -13,15 +13,26 @@ class Orm(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+# Every request field has an upper bound: a request can't make the API hold, store or send an
+# arbitrarily large value. Bodies as a whole are capped too (api/limits.py).
+Short = Annotated[str, StringConstraints(max_length=200)]
+Line = Annotated[str, StringConstraints(max_length=500)]
+Reason = Annotated[str, StringConstraints(max_length=2_000)]
+Letter = Annotated[str, StringConstraints(max_length=50_000)]
+LanguageTag = Annotated[str, StringConstraints(max_length=35)]  # BCP-47 maximum in practice
+FactKey = Annotated[str, StringConstraints(min_length=1, max_length=64)]
+FactValue = Annotated[str, StringConstraints(max_length=2_000)]
+
+
 class CaseCreate(BaseModel):
     description: str = Field(min_length=10, max_length=20_000)
-    country: str | None = Field(default=None, description="ISO 3166-1 alpha-2")
-    region: str | None = Field(default=None, description="ISO 3166-2, e.g. PK-SD")
-    language: str | None = Field(
+    country: str | None = Field(default=None, max_length=2, description="ISO 3166-1 alpha-2")
+    region: str | None = Field(default=None, max_length=10, description="ISO 3166-2, e.g. PK-SD")
+    language: LanguageTag | None = Field(
         default=None,
         description="BCP-47 letter language; must be in ENABLED_LETTER_LANGUAGES (v0.1: en)",
     )
-    company: str | None = None
+    company: Short | None = None
 
     @field_validator("country", "region", mode="before")
     @classmethod
@@ -165,12 +176,12 @@ class RunOut(BaseModel):
 
 
 class AnswersIn(BaseModel):
-    answers: dict[str, str]
+    answers: dict[FactKey, FactValue] = Field(max_length=100)
 
 
 class MessageEdit(BaseModel):
-    body: str = Field(min_length=1)
-    subject: str | None = None
+    body: str = Field(min_length=1, max_length=50_000)
+    subject: Line | None = None
 
 
 class ConfirmIn(BaseModel):
@@ -180,10 +191,10 @@ class ConfirmIn(BaseModel):
 
 
 class ApproveIn(ConfirmIn):
-    body: str | None = None
-    subject: str | None = None
+    body: Letter | None = None
+    subject: Line | None = None
     # The exact recipient the user checked. Required when the draft has one.
-    recipient: str | None = None
+    recipient: Line | None = None
 
 
 class RecipientIn(BaseModel):
@@ -204,7 +215,7 @@ class RecipientCheckOut(BaseModel):
 
 
 class RejectIn(BaseModel):
-    reason: str = ""
+    reason: Reason = ""
 
 
 class ReplyIn(BaseModel):
@@ -228,7 +239,7 @@ class DeliveryIn(BaseModel):
 
 
 class WithdrawIn(BaseModel):
-    reason: str = ""
+    reason: Reason = ""
 
 
 class EditOut(BaseModel):
@@ -255,7 +266,7 @@ class CaseUpdate(BaseModel):
 
 
 class LanguageIn(BaseModel):
-    language: str
+    language: LanguageTag
 
     @field_validator("language")
     @classmethod
@@ -339,16 +350,16 @@ class SettingsOut(BaseModel):
 class SettingsIn(BaseModel):
     """Only these keys can be changed from the web app; secrets are write-only."""
 
-    llm_base_url: str | None = Field(default=None, pattern=r"^https?://")
-    llm_api_key: str | None = None
-    model_smart: str | None = None
-    model_fast: str | None = None
-    smtp_host: str | None = None
+    llm_base_url: str | None = Field(default=None, max_length=500, pattern=r"^https?://")
+    llm_api_key: Line | None = None
+    model_smart: Short | None = None
+    model_fast: Short | None = None
+    smtp_host: Annotated[str, StringConstraints(max_length=253)] | None = None
     smtp_port: int | None = Field(default=None, ge=1, le=65535)
-    smtp_user: str | None = None
-    smtp_app_password: str | None = None
-    default_country: str | None = Field(default=None, pattern=r"^([A-Za-z]{2})?$")
-    default_language: str | None = None
+    smtp_user: Annotated[str, StringConstraints(max_length=320)] | None = None
+    smtp_app_password: Line | None = None
+    default_country: str | None = Field(default=None, max_length=2, pattern=r"^([A-Za-z]{2})?$")
+    default_language: LanguageTag | None = None
 
     @field_validator("default_language")
     @classmethod

@@ -5,8 +5,9 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader, StrictUndefined, UndefinedError, pass_context
+from jinja2 import FileSystemLoader, StrictUndefined, UndefinedError, pass_context
 from jinja2.runtime import Context
+from jinja2.sandbox import SandboxedEnvironment
 
 from escalate.config import get_settings
 from escalate.db.models import utcnow
@@ -33,13 +34,18 @@ def _date(ctx: Context, value: Any) -> str:
     return format_date(value, ctx.get("locale") or ctx.get("language", "en"))
 
 
-def make_env(templates_dir: Path | None = None) -> Environment:
-    env = Environment(
+def make_env(templates_dir: Path | None = None) -> SandboxedEnvironment:
+    """Templates are repo files; case facts are only ever passed in as variables, never compiled
+    as template source, so `{{ 7*7 }}` in a fact stays literal text. The sandbox also blocks
+    attribute tricks (`__class__`, `__globals__`) should a contributed template try them."""
+    env = SandboxedEnvironment(
         loader=FileSystemLoader(str(templates_dir)) if templates_dir else None,
         undefined=StrictUndefined,
         keep_trailing_newline=True,
         trim_blocks=False,
-        autoescape=False,  # Markdown letters, never HTML
+        # Markdown letters, never HTML: escaping would put "&amp;" in a posted letter. They are
+        # HTML-escaped when turned into a PDF (export/pdf.py text_to_html).
+        autoescape=False,
     )
     env.filters["money"] = _money
     env.filters["date"] = _date

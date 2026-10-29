@@ -164,7 +164,7 @@ def printable(message_id: MessagePk, session: Session = Depends(get_session)) ->
     return Response(
         pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="letter-{message_id}.pdf"'},
+        headers={"Content-Disposition": f'attachment; filename="letter-{msg.public_id}.pdf"'},
     )
 
 

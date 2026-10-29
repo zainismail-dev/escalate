@@ -26,9 +26,11 @@ def upgrade() -> None:
     for table in TABLES:
         with op.batch_alter_table(table, schema=None) as batch_op:
             batch_op.add_column(sa.Column("public_id", sa.String(length=36), nullable=True))
-        for (row_id,) in bind.execute(sa.text(f"SELECT id FROM {table}")).all():
+        # `table` comes from the TABLES constant above; values are bound parameters.
+        select_ids = sa.text(f"SELECT id FROM {table}")  # nosemgrep: avoid-sqlalchemy-text
+        for (row_id,) in bind.execute(select_ids).all():
             bind.execute(
-                sa.text(f"UPDATE {table} SET public_id = :p WHERE id = :id"),
+                sa.text(f"UPDATE {table} SET public_id = :p WHERE id = :id"),  # nosemgrep: avoid-sqlalchemy-text
                 {"p": str(uuid.uuid4()), "id": row_id},
             )
         with op.batch_alter_table(table, schema=None) as batch_op:

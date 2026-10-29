@@ -1,6 +1,13 @@
-"""Evidence files: hashed, Fernet-encrypted at rest under EVIDENCE_DIR/<case_id>/<sha>.bin."""
+"""Evidence files: hashed, Fernet-encrypted at rest under EVIDENCE_DIR/<case_id>/<random>.bin.
+
+The stored name is random (never derived from the upload's name, so no path traversal); the
+user's filename is kept for display only.
+"""
 
 import hashlib
+import re
+import secrets
+import unicodedata
 from pathlib import Path
 
 from cryptography.fernet import Fernet
@@ -32,6 +39,19 @@ class EvidenceKeyMissing(RuntimeError):
     pass
 
 
+MAX_FILENAME = 120
+
+
+def safe_filename(name: str) -> str:
+    """The display name: no directories, no control characters, bounded length."""
+    base = re.split(r"[\\/]", name or "")[-1]
+    base = "".join(ch for ch in base if unicodedata.category(ch)[0] != "C").strip(" .")
+    if len(base) > MAX_FILENAME:
+        stem, suffix = Path(base).stem, Path(base).suffix[:10]
+        base = stem[: MAX_FILENAME - len(suffix)] + suffix
+    return base or "upload"
+
+
 def kind_for(filename: str) -> str:
     return KINDS.get(Path(filename).suffix.lower(), "other")
 
@@ -56,14 +76,14 @@ def save_upload(
     """Encrypt and store an upload, extract its text, and log `evidence_added`."""
     s = settings or get_settings()
     sha = hashlib.sha256(data).hexdigest()
-    path = Path(s.evidence_dir) / str(case_id) / f"{sha}.bin"
+    path = Path(s.evidence_dir) / str(int(case_id)) / f"{secrets.token_hex(16)}.bin"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(_fernet(s).encrypt(data))
 
     ev = Evidence(
         case_id=case_id,
         kind=kind_for(filename),
-        filename=Path(filename).name,
+        filename=safe_filename(filename),
         file_path=str(path),
         sha256=sha,
     )

@@ -1,5 +1,6 @@
 """Time-critical scam steps shown before any letter: playbooks/<cc>/scam_checklist.yaml."""
 
+import re
 from pathlib import Path
 
 import yaml
@@ -24,7 +25,7 @@ class Checklist(BaseModel):
 
 def checklist_path(country: str | None, root: Path | None = None) -> Path:
     base = Path(root or get_settings().playbooks_dir)
-    if country:
+    if country and re.fullmatch(r"[A-Za-z]{2}", country):  # ISO 3166-1 alpha-2, never a path
         p = base / country.lower() / "scam_checklist.yaml"
         if p.is_file():
             return p

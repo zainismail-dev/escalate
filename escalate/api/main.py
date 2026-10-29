@@ -4,6 +4,7 @@ uv run uvicorn escalate.api.main:app --reload
 """
 
 import logging
+import uuid
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -11,6 +12,7 @@ from typing import Any
 
 import openai
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -18,8 +20,10 @@ from fastapi.responses import JSONResponse
 from escalate import __version__
 from escalate.agent import runner
 from escalate.agent.approval import ApprovalError, RecipientNotConfirmed, UnsupportedFacts
-from escalate.api.routes import cases, messages, system
-from escalate.api.security import CSRF_HEADER, CsrfGuard, split_list
+from escalate.api.applock import AppLock, AppLockGuard
+from escalate.api.limits import RequestLimits
+from escalate.api.routes import auth, cases, messages, system
+from escalate.api.security import CSRF_HEADER, CsrfGuard, SecurityHeaders, split_list
 from escalate.channels import NotApproved, ProofRequired
 from escalate.channels.email_smtp import EmailConfigError
 from escalate.config import env_file_problems, get_settings
@@ -99,16 +103,23 @@ def create_app(startup: bool = True) -> FastAPI:
             sched.shutdown(wait=False)
 
     app = FastAPI(title="Escalate", version=__version__, lifespan=lifespan)
-    # Middleware runs outermost-last: Host check, then CORS (answers preflights), then CSRF.
+    # Middleware runs outermost-last: Host check, then CORS (answers preflights), then CSRF,
+    # then the optional app lock, then rate and body-size limits.
     settings = get_settings()
+    app.state.lock = AppLock()
+    app.add_middleware(RequestLimits)
+    app.add_middleware(AppLockGuard, lock=app.state.lock)
     app.add_middleware(CsrfGuard)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=split_list(settings.web_origin),  # the web app calls the API from the browser
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Content-Type", CSRF_HEADER],
+        allow_credentials=True,  # the app lock's session cookie (explicit origins only)
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=split_list(settings.allowed_hosts))
+    app.add_middleware(SecurityHeaders)  # outermost: also on refusals from the guards above
+    app.include_router(auth.router)
     app.include_router(cases.router)
     app.include_router(messages.router)
     app.include_router(system.router)
@@ -139,11 +150,35 @@ def create_app(startup: bool = True) -> FastAPI:
         ) -> JSONResponse:
             body: dict[str, Any] = {"detail": str(exc)}
             if extra:
-                body.update(extra(exc))
+                # dict.update on a JSON body (bandit B610 is about Django's QuerySet.extra).
+                body.update(extra(exc))  # nosec B610
             return JSONResponse(body, status_code=code)
 
         app.add_exception_handler(exc_type, handler)
+    app.add_exception_handler(RequestValidationError, validation_error)
+    app.add_exception_handler(Exception, internal_error)
     return app
+
+
+def validation_error(_req: Request, exc: Exception) -> JSONResponse:
+    """422 without echoing the submitted values back (they may be a password or API key)."""
+    errors = exc.errors() if isinstance(exc, RequestValidationError) else []
+    detail = [
+        {"loc": list(e.get("loc", ())), "msg": e.get("msg", ""), "type": e.get("type", "")}
+        for e in errors
+    ]
+    return JSONResponse({"detail": detail}, status_code=422)
+
+
+def internal_error(_req: Request, exc: Exception) -> JSONResponse:
+    """An unexpected error: the client gets an id to quote, the console gets the traceback
+    (masked by the PII log filter). Never a stack trace or internal message in the response."""
+    error_id = uuid.uuid4().hex[:12]
+    log.error("unhandled error %s: %s", error_id, type(exc).__name__, exc_info=exc)
+    return JSONResponse(
+        {"detail": f"internal error (id {error_id}); see the API console", "error_id": error_id},
+        status_code=500,
+    )
 
 
 app = create_app()

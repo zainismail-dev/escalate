@@ -1,6 +1,6 @@
 """Case endpoints."""
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -37,7 +37,8 @@ from escalate.config import get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Event, Message, utcnow
 from escalate.db.session import session_scope
-from escalate.evidence.store import save_upload
+from escalate.evidence.sniff import UploadRejected, check_upload
+from escalate.evidence.store import safe_filename, save_upload
 from escalate.i18n.countries import currency_for, default_letter_language, is_rtl
 from escalate.i18n.formatting import format_amount, locale_for
 from escalate.pii import mask_pii
@@ -157,9 +158,9 @@ def create_case(
 
 @router.get("", response_model=list[CaseSummary])
 def list_cases(
-    status: str | None = None,
-    country: str | None = None,
-    q: str | None = None,
+    status: str | None = Query(default=None, max_length=40),
+    country: str | None = Query(default=None, max_length=2),
+    q: str | None = Query(default=None, max_length=200),
     session: Session = Depends(get_session),
 ) -> list[CaseSummary]:
     query = select(Case).order_by(Case.id.desc())
@@ -202,7 +203,12 @@ async def upload_evidence(
         raise HTTPException(413, f"file is larger than {settings.upload_limit_mb} MB")
     if not data:
         raise HTTPException(422, "empty file")
-    ev = save_upload(session, case_id, file.filename or "upload", data)
+    name = safe_filename(file.filename or "upload")
+    try:
+        check_upload(name, data)
+    except UploadRejected as exc:
+        raise HTTPException(415, str(exc)) from exc
+    ev = save_upload(session, case_id, name, data)
     session.commit()
     return EvidenceOut.model_validate(ev)
 

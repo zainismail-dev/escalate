@@ -15,6 +15,13 @@ from escalate.config import Settings, get_settings
 from escalate.db.models import Evidence
 
 REVIEW_BELOW = 60.0  # mean Tesseract confidence (0-100)
+MAX_TEXT = 200_000  # characters kept from one file
+MAX_PDF_PAGES = 300
+MAX_IMAGE_PIXELS = 40_000_000  # ~ 8000 x 5000: far above any phone screenshot or scan
+
+# Defence in depth for files stored before upload checks (evidence/sniff.py): Pillow raises
+# DecompressionBombError above twice this, which the OSError handler below does not catch.
+Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
 
 
 @dataclass
@@ -38,9 +45,9 @@ def extract_text(
         case "pdf":
             return _pdf(data)
         case "email":
-            return ExtractResult(_eml(data))
+            return ExtractResult(_eml(data)[:MAX_TEXT])
         case "text":
-            return ExtractResult(data.decode("utf-8", errors="replace"))
+            return ExtractResult(data.decode("utf-8", errors="replace")[:MAX_TEXT])
         case _:
             return ExtractResult("", needs_review=True)
 
@@ -49,7 +56,12 @@ def _image(data: bytes, langs: str) -> ExtractResult:
     try:
         img = Image.open(io.BytesIO(data))
         d = pytesseract.image_to_data(img, lang=langs, output_type=pytesseract.Output.DICT)
-    except (pytesseract.TesseractNotFoundError, pytesseract.TesseractError, OSError):
+    except (
+        pytesseract.TesseractNotFoundError,
+        pytesseract.TesseractError,
+        OSError,
+        Image.DecompressionBombError,
+    ):
         return ExtractResult("", confidence=0.0, needs_review=True)
 
     lines: dict[tuple[int, int, int], list[str]] = {}
@@ -69,7 +81,8 @@ def _image(data: bytes, langs: str) -> ExtractResult:
 def _pdf(data: bytes) -> ExtractResult:
     try:
         reader = PdfReader(io.BytesIO(data))
-        text = "\n".join((page.extract_text() or "") for page in reader.pages).strip()
+        pages = list(reader.pages)[:MAX_PDF_PAGES]
+        text = "\n".join((page.extract_text() or "") for page in pages).strip()[:MAX_TEXT]
     except Exception:  # malformed PDFs raise many different errors
         return ExtractResult("", needs_review=True)
     # A PDF with no text layer is a scan: ask the user to check it.

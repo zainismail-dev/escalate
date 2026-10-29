@@ -63,3 +63,40 @@ class CsrfGuard:
                 await JSONResponse({"detail": problem}, status_code=403)(scope, receive, send)
                 return
         await self.app(scope, receive, send)
+
+
+# The API serves JSON and PDFs, never pages to render (except FastAPI's /docs, which loads
+# Swagger UI from a CDN): nothing may run, frame or be sniffed.
+API_HEADERS = [
+    (b"x-content-type-options", b"nosniff"),
+    (b"x-frame-options", b"DENY"),
+    (b"referrer-policy", b"no-referrer"),
+    (b"cross-origin-resource-policy", b"same-site"),
+    (b"cache-control", b"no-store"),
+]
+API_CSP = (b"content-security-policy", b"default-src 'none'; frame-ancestors 'none'")
+DOCS_PATHS = ("/docs", "/redoc")
+
+
+class SecurityHeaders:
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        extra = list(API_HEADERS)
+        if not scope["path"].startswith(DOCS_PATHS):
+            extra.append(API_CSP)
+
+        async def with_headers(message: MutableMapping[str, Any]) -> None:
+            if message["type"] == "http.response.start":
+                names = {k.lower() for k, _ in message.get("headers", [])}
+                message["headers"] = [
+                    *message.get("headers", []),
+                    *((k, v) for k, v in extra if k not in names),
+                ]
+            await send(message)
+
+        await self.app(scope, receive, with_headers)

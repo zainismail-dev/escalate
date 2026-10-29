@@ -59,10 +59,19 @@ def test_extract_saves_confident_facts_with_sources(db: Session) -> None:
 
 
 def test_unknown_evidence_id_is_dropped(db: Session) -> None:
+    """A citation to evidence that doesn't exist: kept only if the user wrote that value."""
     case, _ = _case(db)
     llm = FakeLLM(script=[{"facts": {"order_id": {"value": "X1", "evidence_id": 999}}}])
     extract(db, case, "order X1", [], ["order_id"], llm=llm)
     assert case.facts[0].source_evidence_id is None
+
+
+def test_fact_citing_missing_evidence_and_not_in_user_text_is_not_stored(db: Session) -> None:
+    case, _ = _case(db)
+    llm = FakeLLM(script=[{"facts": {"amount": {"value": "999999", "evidence_id": 999}}}])
+    result = extract(db, case, "I paid for a TV", [], ["amount"], llm=llm)
+    assert "amount" not in {f.key for f in case.facts}
+    assert result.missing == ["amount"]
 
 
 def test_user_answers_are_not_overwritten_by_lower_confidence(db: Session) -> None:

@@ -83,12 +83,17 @@ def extract(
         value = mask_pii(fact.value.strip())
         if key not in allowed or not value or fact.confidence < MIN_CONFIDENCE:
             continue
+        src = fact.evidence_id
+        if src is not None and src not in valid_evidence:
+            # Cites evidence that doesn't exist. Keep it only as the user's own words.
+            if value.casefold() not in user_text.casefold():
+                continue
+            src = None
         old = existing.get(key)
         if old is not None and old.source_evidence_id is None and old.confidence >= 1.0:
             continue  # the user typed it in: evidence (or text hidden in it) never overrides it
         if old is not None and old.confidence > fact.confidence:
             continue
-        src = fact.evidence_id if fact.evidence_id in valid_evidence else None
         if old is None:
             old = CaseFact(case_id=case.id, key=key, value=value)
             session.add(old)

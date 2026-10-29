@@ -1,4 +1,5 @@
 import hashlib
+import re
 import shutil
 from pathlib import Path
 from typing import Any
@@ -29,7 +30,10 @@ def test_upload_is_encrypted_hashed_and_logged(db: Session, case: Case, settings
 
     sha = hashlib.sha256(data).hexdigest()
     assert ev.sha256 == sha
-    assert ev.file_path == str(settings.evidence_dir / str(case.id) / f"{sha}.bin")
+    # Stored under a random name in the case's folder: not the hash, not the user's filename.
+    stored = Path(ev.file_path)
+    assert stored.parent == settings.evidence_dir / str(case.id)
+    assert re.fullmatch(r"[0-9a-f]{32}\.bin", stored.name)
     on_disk = Path(ev.file_path).read_bytes()
     assert b"claim is approved" not in on_disk
     assert b"BM-48213" not in on_disk

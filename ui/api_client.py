@@ -24,8 +24,20 @@ UI_ORIGIN = os.environ.get("UI_ORIGIN", "http://localhost:8501").rstrip("/")
 APP_HEADERS = {"Origin": UI_ORIGIN, "X-Escalate-Request": "1"}
 
 
+# With the optional app lock (APP_PASSCODE), the UI logs in once and reuses the session cookie.
+# A hashed APP_PASSCODE can't be replayed: give the UI the plain passcode in UI_PASSCODE.
+_PASSCODE = os.environ.get("UI_PASSCODE") or os.environ.get("APP_PASSCODE", "")
+_cookies = httpx.Cookies()
+
+
 def _client() -> httpx.Client:
-    return httpx.Client(base_url=API_URL, timeout=600, headers=APP_HEADERS)
+    c = httpx.Client(base_url=API_URL, timeout=600, headers=APP_HEADERS, cookies=_cookies)
+    if _PASSCODE and not _PASSCODE.startswith("$argon2") and "escalate_session" not in _cookies:
+        r = c.post("/auth/login", json={"passcode": _PASSCODE})
+        if r.status_code == 204:
+            _cookies.update(r.cookies)
+            c.cookies = _cookies
+    return c
 
 
 def _check(r: httpx.Response) -> Any:

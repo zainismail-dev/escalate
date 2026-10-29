@@ -1,4 +1,5 @@
 import os
+import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -16,6 +17,11 @@ Settings.model_config["env_file"] = None
 
 # Never read a developer's saved web settings (data/settings.json) in tests.
 os.environ["ESCALATE_SETTINGS_FILE"] = os.devnull
+
+# Never touch the developer's ./escalate.db or ./data: a test that forgets the `db` fixture
+# gets an empty in-memory database (and fails loudly) instead.
+os.environ["DATABASE_URL"] = "sqlite://"
+os.environ["CHECKPOINT_DB"] = os.path.join(tempfile.mkdtemp(prefix="escalate-tests-"), "cp.db")
 
 # pandas (pulled in by pytesseract) crashes if first imported while time is frozen.
 freezegun.configure(extend_ignore_list=["pandas", "pytesseract"])

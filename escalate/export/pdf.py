@@ -3,12 +3,36 @@
 import html
 import re
 from functools import lru_cache
+from typing import Any
 
 from escalate.i18n.countries import is_rtl
 
 
 class PdfUnavailable(RuntimeError):
     pass
+
+
+# Letters and case files embed their images as data: URIs. Nothing else is ever fetched while
+# rendering: no file:// (local files), no http(s) (SSRF, tracking pixels), no redirects.
+ALLOWED_SCHEMES = frozenset({"data"})
+
+
+def fetch_allowed(url: str) -> bool:
+    scheme, sep, _ = url.partition(":")
+    return bool(sep) and scheme.strip().lower() in ALLOWED_SCHEMES
+
+
+def url_fetcher() -> Any:
+    """A WeasyPrint fetcher that refuses every URL except data: URIs."""
+    from weasyprint.urls import URLFetcher
+
+    class DataOnlyFetcher(URLFetcher):
+        def fetch(self, url: str, headers: Any = None) -> Any:
+            if not fetch_allowed(url):
+                raise ValueError(f"PDF rendering does not fetch URLs ({url.split(':', 1)[0]}:)")
+            return super().fetch(url, headers)
+
+    return DataOnlyFetcher(allowed_protocols=ALLOWED_SCHEMES, allow_redirects=False, timeout=1)
 
 
 @lru_cache
@@ -27,8 +51,9 @@ def html_to_pdf(document: str) -> bytes:
         )
     from weasyprint import HTML
 
-    pdf = HTML(string=document).write_pdf()
-    assert pdf is not None
+    pdf = HTML(string=document, url_fetcher=url_fetcher()).write_pdf()
+    if pdf is None:
+        raise PdfUnavailable("WeasyPrint returned no PDF")
     return bytes(pdf)
 
 

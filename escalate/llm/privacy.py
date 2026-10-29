@@ -4,7 +4,8 @@ from urllib.parse import urlparse
 
 from escalate.config import Settings, get_settings
 
-LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "ollama", "host.docker.internal"}
+# Classifies an endpoint as on this machine (privacy notice); nothing binds to these.
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "ollama", "host.docker.internal"}  # nosec B104
 
 
 def is_local_url(url: str) -> bool:

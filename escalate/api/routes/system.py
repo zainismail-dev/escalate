@@ -3,7 +3,7 @@
 import json
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -31,7 +31,7 @@ def health() -> HealthOut:
 
 
 @router.get("/checklist", response_model=Checklist)
-def checklist(country: str | None = None) -> Checklist:
+def checklist(country: str | None = Query(default=None, max_length=2)) -> Checklist:
     return load_checklist(country)
 
 

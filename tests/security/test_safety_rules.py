@@ -38,7 +38,7 @@ from tests.factories import (
 )
 from tests.fakes.fake_smtp import FakeSMTP
 
-ROOT = Path(__file__).resolve().parents[1] / "escalate"
+ROOT = Path(__file__).resolve().parents[2] / "escalate"
 DAY0 = datetime(2026, 10, 1, 9, 0)
 CARD = "4111 1111 1111 1111"
 
