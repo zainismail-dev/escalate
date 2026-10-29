@@ -40,7 +40,7 @@ def login(body: LoginIn, request: Request, response: Response) -> None:
     try:
         token = lock.login(body.passcode, client)
     except TooManyAttempts as exc:
-        raise HTTPException(429, str(exc), headers={"Retry-After": "900"}) from exc
+        raise HTTPException(429, str(exc), headers={"Retry-After": str(exc.retry_after)}) from exc
     if token is None:
         raise HTTPException(401, "wrong passcode")
     response.set_cookie(

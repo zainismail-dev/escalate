@@ -7,7 +7,8 @@ the same computer or network out. Unset = no lock and no change in behaviour.
   plain value is hashed in memory at first use, so it is only ever compared with argon2.
 - A correct passcode sets an httpOnly, SameSite=Strict session cookie (Secure over https).
   Sessions live in memory: restarting the API locks the app again.
-- Failed attempts are rate limited per client and in total.
+- Each check of a passcode is reserved first (no parallel guessing). Per client: 5 free
+  attempts, then one at a time with exponential backoff (30 s doubling, 15 min cap).
 """
 
 import secrets
@@ -16,6 +17,7 @@ import threading
 import time
 from collections import deque
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 from http.cookies import SimpleCookie
 
 from argon2 import PasswordHasher
@@ -29,22 +31,39 @@ COOKIE = "escalate_session"
 OPEN_ROUTES = frozenset(
     {("GET", "/health"), ("GET", "/auth/status"), ("POST", "/auth/login"), ("POST", "/auth/logout")}
 )
-FAIL_WINDOW = 15 * 60  # seconds
-FAILS_PER_CLIENT = 5
-FAILS_TOTAL = 20
+FAIL_WINDOW = 15 * 60  # seconds: failures older than this are forgotten
+FAILS_PER_CLIENT = 5  # free attempts; after that one at a time, with exponential backoff
+BACKOFF_START = 30  # seconds after the 5th failure, doubling with each further failure
+BACKOFF_MAX = 15 * 60
 
 _hasher = PasswordHasher()
 
 
 class TooManyAttempts(Exception):
-    pass
+    def __init__(self, retry_after: int) -> None:
+        super().__init__(f"too many wrong passcodes; try again in {retry_after} seconds")
+        self.retry_after = retry_after
+
+
+@dataclass
+class _Client:
+    fails: deque[float] = field(default_factory=deque)
+    in_flight: int = 0  # attempts reserved and being verified right now
+    blocked_until: float = 0.0
+
+
+def backoff(fails: int) -> float:
+    """Seconds to wait after `fails` recent failures (0 while under the free attempts)."""
+    if fails < FAILS_PER_CLIENT:
+        return 0.0
+    return float(min(BACKOFF_MAX, BACKOFF_START * 2 ** (fails - FAILS_PER_CLIENT)))
 
 
 class AppLock:
     def __init__(self) -> None:
         self._lock = threading.Lock()
         self._sessions: dict[str, float] = {}  # token -> expiry (epoch seconds)
-        self._fails: dict[str, deque[float]] = {}
+        self._clients: dict[str, _Client] = {}
         self._hashes: dict[str, str] = {}  # configured passcode -> argon2 hash
 
     @staticmethod
@@ -59,31 +78,41 @@ class AppLock:
             self._hashes = {configured: _hasher.hash(configured)}
         return self._hashes[configured]
 
-    def _recent_fails(self, key: str, now: float) -> deque[float]:
-        fails = self._fails.setdefault(key, deque())
-        while fails and fails[0] <= now - FAIL_WINDOW:
-            fails.popleft()
-        return fails
+    def _reserve(self, client: str, now: float) -> _Client:
+        """Atomically claim one attempt before the (slow) argon2 check, so parallel requests
+        can't all pass the limit check first. Limits are per client: a flood from one address
+        never locks the owner out from another."""
+        with self._lock:
+            st = self._clients.setdefault(client, _Client())
+            while st.fails and st.fails[0] <= now - FAIL_WINDOW:
+                st.fails.popleft()
+            used = len(st.fails) + st.in_flight
+            over = len(st.fails) >= FAILS_PER_CLIENT
+            if now < st.blocked_until or (used >= FAILS_PER_CLIENT and (not over or st.in_flight)):
+                wait = max(st.blocked_until - now, 1.0)
+                raise TooManyAttempts(int(wait + 0.999))
+            st.in_flight += 1
+            return st
 
     def login(self, passcode: str, client: str) -> str | None:
         """A new session token, or None for a wrong passcode. Raises TooManyAttempts."""
         now = time.time()
-        with self._lock:
-            mine, total = self._recent_fails(client, now), self._recent_fails("*", now)
-            if len(mine) >= FAILS_PER_CLIENT or len(total) >= FAILS_TOTAL:
-                raise TooManyAttempts(
-                    f"too many wrong passcodes; try again in {FAIL_WINDOW // 60} minutes"
-                )
+        st = self._reserve(client, now)
         ok: bool
         try:
             ok = _hasher.verify(self._hash(), passcode)
         except (VerificationError, InvalidHashError):
             ok = False
+        finally:
+            with self._lock:
+                st.in_flight -= 1
         with self._lock:
             if not ok:
-                mine.append(now)
-                total.append(now)
+                st.fails.append(now)
+                st.blocked_until = now + backoff(len(st.fails))
                 return None
+            st.fails.clear()
+            st.blocked_until = 0.0
             token = secrets.token_urlsafe(32)
             self._sessions[token] = now + get_settings().app_session_hours * 3600
             return token
