@@ -57,6 +57,20 @@ In short:
 | Web app | Nonce-based CSP (no `unsafe-inline`/`unsafe-eval` for scripts), HSTS, `X-Frame-Options: DENY`, nosniff, Referrer-Policy, Permissions-Policy; no raw HTML rendering (ESLint) | Playwright console guard, `npm run lint` |
 | Supply chain | Actions pinned to SHAs, read-only token; Dependabot; gitleaks, pip-audit, bandit, semgrep, npm audit and ZAP in CI; pre-commit secret scanning (`make hooks`) | `.github/workflows/ci.yml` |
 
+## Second independent review
+
+| Attack | Defence | Regression test |
+| --- | --- | --- |
+| DNS rebinding through the Streamlit dev UI (N1) and its stored-passcode auto-login (N3) | Streamlit retired: not in compose or default targets; `make dev-ui-legacy` only, localhost-only with XSRF on; no stored passcode | `tests/security/test_legacy_ui.py` |
+| SSRF via a 307 redirect from the LLM endpoint (N2) | The LLM client never follows redirects; the model test never returns a response body | `tests/security/test_llm_redirect.py` |
+| Deleted cases recoverable from the database files (N4) | `secure_delete`, `VACUUM` and WAL truncation after delete-all; checkpoints and evidence removed | `tests/security/test_delete_all_scrub.py` |
+| Broken access log (N5) | Masking keeps the log record's arguments | `tests/security/test_logging.py` |
+| Parallel passcode guessing; owner lockout (N6) | Attempts reserved before verify; per-client exponential backoff | `tests/security/test_applock.py` |
+| One upload freezes the API (N7) | Upload parsing and OCR off the event loop, with a timeout | `tests/security/test_upload_blocking.py` |
+| Look-alike recipient addresses (N8) | Warning plus punycode on the confirmation | `tests/security/test_lookalike.py` |
+
+Details: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md#the-second-independent-review-8-findings--info).
+
 ## Why there's no login in v0.1
 
 Escalate v0.1 runs on **your own computer, for you alone**: the API listens on `127.0.0.1`,
@@ -86,6 +100,9 @@ list is in [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md#must-dos-before-phase
 - Endpoint checks resolve DNS when settings are saved and again before connecting; a hostname
   that changes its DNS answer between that check and the connection is not fully covered.
 - Rate limits and app-lock sessions are in memory (one API process; a restart resets them).
+- `WEB_ORIGIN` (and `UI_ORIGIN`, empty by default) are trusted completely: whatever serves
+  pages on those local ports can change cases and approve letters. Don't run other web servers
+  there.
 - Masking is pattern-based. It will miss unusual ID formats; please report the ones it misses.
 - Case text and facts in the SQLite database are masked but not encrypted; protect the
   `data/` folder (disk encryption).

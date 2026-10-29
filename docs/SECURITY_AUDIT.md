@@ -1,6 +1,7 @@
 # Security audit: Escalate v0.1
 
-**Date:** 2026-10-29 · **Commit range:** up to the "Part 1–3" security work on `main` ·
+**Date:** 2026-10-29, updated after the second independent review (N1–N8) ·
+**Commit range:** up to the second-review fixes on `main` ·
 **Status:** all High and Medium findings fixed; nothing open above Low.
 
 This file records what was checked, how, what was found, and what is left. The short user-facing
@@ -9,7 +10,8 @@ version is [SECURITY.md](../SECURITY.md).
 ## Scope
 
 - **Backend:** the FastAPI API (`escalate/`), agent, channels (email, post), evidence storage,
-  OCR, PDF export, templates, settings, scheduler. Also the Streamlit dev UI client (`ui/`).
+  OCR, PDF export, templates, settings, scheduler. The Streamlit dev UI (`ui/`) was in scope for the second review and is now retired
+  (opt-in `make dev-ui-legacy` only, unsupported).
 - **Web app:** the Next.js app (`web/`), in both builds: self-hosted, and the static live demo.
 - **Supply chain:** Python and npm dependencies, GitHub Actions, Docker images.
 - **Repository:** the full git history (the repository is public).
@@ -86,6 +88,25 @@ replayed against a throwaway API and now fail (403/400/409/422 as listed).
 | A21 | Settings → Delete all showed "All cases deleted" even when the request failed | Low | Fixed | Success is shown only after the API confirms | `web/e2e/demo.spec.ts` |
 | A22 | FastAPI's `/docs` (Swagger UI) loads scripts from a CDN without Subresource Integrity, and the page had no CSP (ZAP 90003, 10038) | Medium | Fixed | `/docs` and `/redoc` are off unless `API_DOCS=true` (`make api` sets it for development); `/openapi.json` stays | `tests/security/test_limits.py::test_api_docs_are_opt_in`; CI `zap` job |
 
+### The second independent review (8 findings + INFO)
+
+Each fix has a regression test that replays the reported attack; every one of those tests
+fails on the code before the fix.
+
+| # | Finding | Severity | Status | Fix | Regression test |
+| --- | --- | --- | --- | --- | --- |
+| N1 | The Streamlit dev UI answered any `Host` header: a DNS-rebinding page could drive it, and through it the API (it ran server-side with a trusted origin) | High | Fixed | Retired: removed from docker-compose and the default make targets; opt-in `make dev-ui-legacy` with an UNSUPPORTED warning and `.streamlit/config.toml` (bind 127.0.0.1, `server.allowedHosts` localhost/127.0.0.1, XSRF protection on). `UI_ORIGIN` now defaults to empty, so the API trusts only the web app. Docs point to the web app only | `tests/security/test_legacy_ui.py` (compose has no Streamlit service; 8501 origin refused by default) |
+| N2 | SSRF via redirect: an allowed LLM endpoint answered 307 to an internal address; the SDK followed it with the API key, and `/settings/llm-test` returned the internal response body | Medium | Fixed | The OpenAI client uses `DefaultHttpx2Client(follow_redirects=False)`; llm-test reports only "the endpoint answered HTTP <code>" / "connection failed" / our own settings messages | `tests/security/test_llm_redirect.py` (the reviewer's 307 → internal-server repro: no hit, no key, no body) |
+| N3 | The Streamlit UI logged in automatically with a stored `UI_PASSCODE`/`APP_PASSCODE` through one module-level cookie jar shared by every browser session | Medium | Fixed | Removed with N1: no stored passcode, no shared cookies | `test_legacy_ui.py::test_legacy_ui_client_has_no_auto_login_or_shared_cookies` |
+| N4 | After delete-all, `strings` on the database, its WAL and the checkpoint file still showed the deleted cases | Low | Fixed | `PRAGMA secure_delete=ON` on both SQLite files; delete-all clears every LangGraph checkpoint, `VACUUM`s both files, truncates their WALs and removes leftover evidence folders | `tests/security/test_delete_all_scrub.py` (no demo-case text in any file on disk) |
+| N5 | The PII log filter set `record.args=None`, which broke uvicorn's access log formatter | Low | Fixed | Masks the message template and each argument, keeping their shape | `tests/security/test_logging.py::test_uvicorn_access_log_still_formats_and_is_masked` |
+| N6 | Passcode limiter race (parallel guesses all verified) and a global lockout the owner couldn't escape | Low | Fixed | Each attempt is reserved under a lock before argon2 runs; per client 5 free attempts, then one at a time with exponential backoff (30 s doubling, 15 min cap); no global lockout | `tests/security/test_applock.py` (40 parallel wrong logins → ≤5 verified; backoff 30 → 60 s; owner unaffected) |
+| N7 | OCR and PDF parsing ran on the event loop: one large upload froze every request | Low | Fixed | Upload checks, extraction and encryption run in worker threads; extraction is abandoned after `OCR_TIMEOUT_S` (Tesseract gets the same timeout) and the file is marked for review | `tests/security/test_upload_blocking.py` (`/health` answers during OCR; timeout path) |
+| N8 | Look-alike recipients (e.g. Cyrillic "а") looked identical on the confirmation screen | Low | Fixed | Non-ASCII addresses get a warning ("mixes alphabets" / "non-English letters") and the punycode form next to the confirmation checkbox | `tests/security/test_lookalike.py` |
+| INFO | `/openapi.json` served the full route map in production | Info | Fixed | Follows `API_DOCS` like `/docs`; `python -m escalate.api.schema` exports it for tools (ZAP) | `test_limits.py::test_api_docs_are_opt_in`, `test_info_items.py` |
+| INFO | A saved hostname that doesn't resolve gave no feedback | Info | Fixed | Saved with a warning shown on the settings page | `test_info_items.py` |
+| INFO | `WEB_ORIGIN`/`UI_ORIGIN` trust whatever runs on those local ports | Info | Documented | `.env.example` and SECURITY.md say so; `UI_ORIGIN` is empty by default (N1) | — |
+
 **Open: none above Low.** Every finding is fixed, a false positive or accepted with a reason
 above.
 
@@ -125,7 +146,12 @@ See [DEPLOY_DEMO.md](DEPLOY_DEMO.md).
 6. **The database is not encrypted** (evidence files are). Use disk encryption.
 7. **Prompt injection is mitigated, not solved:** the user's review of facts, recipient and
    letter is the final control. Evals with a real model are still a manual step.
-8. **`style-src-attr 'unsafe-inline'`** in the web CSP: React and Radix set some styles as
+8. **Trusted local origins:** any program serving pages on `WEB_ORIGIN` (default
+   `http://localhost:3000`) or `UI_ORIGIN` can make state-changing calls. Don't run other web
+   servers on those ports.
+9. **Abandoned OCR threads** keep running until Tesseract's own timeout (`OCR_TIMEOUT_S`)
+   stops them; PDF parsing has no internal timeout, only the page cap.
+10. **`style-src-attr 'unsafe-inline'`** in the web CSP: React and Radix set some styles as
    attributes. Style attributes cannot run script.
 
 ## Must-dos before Phase 2 (hosted / multi-user)
