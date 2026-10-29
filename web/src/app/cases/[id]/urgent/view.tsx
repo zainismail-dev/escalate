@@ -20,7 +20,7 @@ function clean(detail: string): { text: string; unverified: boolean } {
   return { text: detail.replace(/TODO\(verify\):[^.]*\.\s*/g, "").trim(), unverified };
 }
 
-function useChecked(caseId: number) {
+function useChecked(caseId: string) {
   const key = `escalate:checklist:${caseId}`;
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   useEffect(() => {
@@ -44,7 +44,7 @@ function useChecked(caseId: number) {
   return { checked, toggle };
 }
 
-export function UrgentChecklist({ id }: { id: number }) {
+export function UrgentChecklist({ id }: { id: string }) {
   const t = useTranslations("urgent");
   const ui = useLocale();
   const router = useRouter();

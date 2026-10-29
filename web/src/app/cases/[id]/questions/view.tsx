@@ -11,7 +11,7 @@ import { useAction, useApi } from "@/lib/use-api";
 import Link from "next/link";
 import { CaseHeader } from "../case-header";
 
-export function CaseQuestions({ id }: { id: number }) {
+export function CaseQuestions({ id }: { id: string }) {
   const t = useTranslations("questions");
   const router = useRouter();
   const caseQ = useApi(() => api.getCase(id), [id]);

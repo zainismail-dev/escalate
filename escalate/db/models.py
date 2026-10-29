@@ -1,5 +1,6 @@
 """SQLAlchemy models (section 5). Countries, regions, languages and currencies are ISO codes."""
 
+import uuid
 from datetime import UTC, datetime
 from decimal import Decimal
 from enum import StrEnum
@@ -30,9 +31,17 @@ class CaseStatus(StrEnum):
     WITHDRAWN = "withdrawn"
 
 
+def new_public_id() -> str:
+    """Unguessable id for the API (internal integer ids are never exposed)."""
+    return str(uuid.uuid4())
+
+
 class Case(Base):
     __tablename__ = "cases"
     id: Mapped[int] = mapped_column(primary_key=True)
+    public_id: Mapped[str] = mapped_column(
+        String(36), unique=True, index=True, default=new_public_id
+    )
     description: Mapped[str] = mapped_column(Text, default="")  # the user's own words
     title: Mapped[str | None] = mapped_column(String(160))  # from facts at intake, or the user's
     case_type: Mapped[str | None] = mapped_column(String(40))  # refund_refused | ... | scam
@@ -100,6 +109,9 @@ class Evidence(Base):
 class Message(Base):
     __tablename__ = "messages"
     id: Mapped[int] = mapped_column(primary_key=True)
+    public_id: Mapped[str] = mapped_column(
+        String(36), unique=True, index=True, default=new_public_id
+    )
     case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"), index=True)
     step_id: Mapped[str] = mapped_column(String(80))
     direction: Mapped[str] = mapped_column(String(3))  # out | in

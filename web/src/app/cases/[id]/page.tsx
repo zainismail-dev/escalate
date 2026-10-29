@@ -9,5 +9,5 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function CasePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <CaseDashboard id={Number(id)} />;
+  return <CaseDashboard id={id} />;
 }

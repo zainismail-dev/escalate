@@ -8,7 +8,7 @@ export const apiContext = () =>
   request.newContext({ extraHTTPHeaders: { Origin: new URL(WEB_URL).origin, "X-Escalate-Request": "1" } });
 
 export interface DemoCase {
-  id: number;
+  id: string;
   country: string;
   waiting_for: string | null;
   pending_draft?: { id: number };
@@ -24,11 +24,11 @@ export async function demoCases(): Promise<Record<string, DemoCase>> {
   return out;
 }
 
-export async function draftId(caseId: number): Promise<number> {
+export async function draftId(caseId: string): Promise<string> {
   return (await pendingDraft(caseId)).id;
 }
 
-export async function pendingDraft(caseId: number): Promise<{ id: number; recipient: string | null }> {
+export async function pendingDraft(caseId: string): Promise<{ id: string; recipient: string | null }> {
   const ctx = await apiContext();
   const c = await (await ctx.get(`${API_URL}/cases/${caseId}`)).json();
   await ctx.dispose();

@@ -61,7 +61,7 @@ class EvidenceOut(Orm):
 
 
 class MessageOut(Orm):
-    id: int
+    id: str = Field(validation_alias="public_id")  # unguessable; internal ids never leave
     step_id: str
     direction: str
     channel: str
@@ -92,7 +92,7 @@ class DeadlineOut(BaseModel):
 
 
 class CaseOut(Orm):
-    id: int
+    id: str = Field(validation_alias="public_id")  # unguessable; internal ids never leave
     title: str | None = None  # stored or built from facts; never None in responses
     case_type: str | None
     country: str | None
@@ -158,7 +158,7 @@ class CaseDetail(CaseOut):
 
 
 class RunOut(BaseModel):
-    case_id: int
+    case_id: str
     waiting_for: str | None
     pending: dict[str, Any] | None
     warnings: list[str] = Field(default_factory=list)
@@ -293,7 +293,7 @@ class ProblemOut(BaseModel):
 
 class ReviewOut(BaseModel):
     message: MessageOut
-    case_id: int
+    case_id: str
     language: str
     locale: str
     text_direction: Literal["ltr", "rtl"]
@@ -357,4 +357,4 @@ class SettingsIn(BaseModel):
 
 
 class DemoOut(BaseModel):
-    case_ids: list[int]
+    case_ids: list[str]

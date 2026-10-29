@@ -24,7 +24,7 @@ import { useAction, useApi } from "@/lib/use-api";
 import { cn } from "@/lib/utils";
 import { CaseHeader } from "../case-header";
 
-export function ReviewDraft({ id }: { id: number }) {
+export function ReviewDraft({ id }: { id: string }) {
   const t = useTranslations("review");
   const tc = useTranslations("common");
   const tch = useTranslations("channel");

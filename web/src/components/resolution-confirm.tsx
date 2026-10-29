@@ -12,7 +12,7 @@ const OTHER = ["refused", "partial", "no_reply"] as const;
  * The agent judged a reply "resolved". A reply can be written to fool the model, so the case
  * only closes when the user confirms they really got what they asked for.
  */
-export function ResolutionConfirm({ caseId, reason, onDone }: { caseId: number; reason?: string | null; onDone: () => void }) {
+export function ResolutionConfirm({ caseId, reason, onDone }: { caseId: string; reason?: string | null; onDone: () => void }) {
   const t = useTranslations("reply.confirmResolution");
   const tv = useTranslations("verdict");
   const [verdict, setVerdict] = useState<(typeof OTHER)[number]>("refused");

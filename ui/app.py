@@ -50,7 +50,7 @@ def privacy_banner() -> None:
         st.info(t("app.demo_mode"))
 
 
-def pick_case() -> int | None:
+def pick_case() -> str | None:
     cases = api.get("/cases")
     if not cases:
         st.info(t("app.no_cases"))
@@ -64,7 +64,7 @@ def pick_case() -> int | None:
     index = ids.index(current) if current in ids else 0
     chosen = st.sidebar.selectbox(t("app.case"), ids, index=index, format_func=labels.get)
     st.session_state["case_id"] = chosen
-    return int(chosen)
+    return str(chosen)
 
 
 def show_checklist(items: list[dict[str, Any]], warnings: list[str]) -> None:

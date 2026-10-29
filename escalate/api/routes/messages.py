@@ -9,7 +9,7 @@ from escalate.agent import review as rv
 from escalate.agent import runner
 from escalate.agent.approval import approved_text, edit_message, same_recipient
 from escalate.agent.intake import save_answers
-from escalate.api.deps import get_message, get_session
+from escalate.api.deps import MessagePk, get_message, get_session
 from escalate.api.routes.cases import run_out
 from escalate.api.schemas import (
     ApproveIn,
@@ -49,13 +49,15 @@ def _pending_case(session: Session, message_id: int, kind: str) -> int:
     key = "draft" if kind == "approve_draft" else None
     pending_id = (p or {}).get(key, {}).get("message_id") if key else (p or {}).get("message_id")
     if not p or p.get("type") != kind or pending_id != message_id:
-        raise HTTPException(409, f"message {message_id} is not waiting for {kind}")
+        raise HTTPException(409, f"this message is not waiting for {kind}")
     session.close()
     return case_id
 
 
 @router.put("/{message_id}", response_model=EditOut)
-def edit(message_id: int, body: MessageEdit, session: Session = Depends(get_session)) -> EditOut:
+def edit(
+    message_id: MessagePk, body: MessageEdit, session: Session = Depends(get_session)
+) -> EditOut:
     warnings = edit_message(session, message_id, body.body, body.subject)
     session.commit()
     return EditOut(
@@ -64,7 +66,9 @@ def edit(message_id: int, body: MessageEdit, session: Session = Depends(get_sess
 
 
 @router.post("/{message_id}/approve", response_model=RunOut)
-def approve(message_id: int, body: ApproveIn, session: Session = Depends(get_session)) -> RunOut:
+def approve(
+    message_id: MessagePk, body: ApproveIn, session: Session = Depends(get_session)
+) -> RunOut:
     """Body: {"confirm": true, "recipient": "<the address the user checked>"}. Approving sends."""
     case_id = _pending_case(session, message_id, "approve_draft")
     return run_out(
@@ -84,7 +88,7 @@ def _recipient_fact(case_playbook_id: str | None, step_id: str) -> str | None:
 
 @router.post("/{message_id}/recipient", response_model=MessageOut)
 def set_recipient(
-    message_id: int, body: RecipientIn, session: Session = Depends(get_session)
+    message_id: MessagePk, body: RecipientIn, session: Session = Depends(get_session)
 ) -> MessageOut:
     """The user corrects a draft's recipient. It becomes a fact the user provided, so
     evidence read later can't replace it."""
@@ -138,21 +142,23 @@ def recipient_check(msg: Message) -> RecipientCheckOut:
 
 
 @router.post("/{message_id}/reject", response_model=RunOut)
-def reject(message_id: int, body: RejectIn, session: Session = Depends(get_session)) -> RunOut:
+def reject(
+    message_id: MessagePk, body: RejectIn, session: Session = Depends(get_session)
+) -> RunOut:
     case_id = _pending_case(session, message_id, "approve_draft")
     return run_out(runner.resume_with_decision(case_id, "reject", reason=body.reason))
 
 
 @router.post("/{message_id}/confirm-delivery", response_model=RunOut)
 def confirm_delivery(
-    message_id: int, body: DeliveryIn, session: Session = Depends(get_session)
+    message_id: MessagePk, body: DeliveryIn, session: Session = Depends(get_session)
 ) -> RunOut:
     case_id = _pending_case(session, message_id, "confirm_delivery")
     return run_out(runner.confirm_delivery(case_id, body.evidence_id))
 
 
 @router.get("/{message_id}/printable.pdf")
-def printable(message_id: int, session: Session = Depends(get_session)) -> Response:
+def printable(message_id: MessagePk, session: Session = Depends(get_session)) -> Response:
     msg = get_message(session, message_id)
     pdf = letter_pdf(msg.subject, msg.body, msg.case.language)
     return Response(
@@ -167,7 +173,7 @@ def _segments(text: str, displays: dict[str, list[str]]) -> list[SegmentOut]:
 
 
 @router.get("/{message_id}/review", response_model=ReviewOut)
-def review(message_id: int, session: Session = Depends(get_session)) -> ReviewOut:
+def review(message_id: MessagePk, session: Session = Depends(get_session)) -> ReviewOut:
     """Everything the review screen needs: highlighted text, facts with sources, checks."""
     msg = get_message(session, message_id)
     case = msg.case
@@ -189,7 +195,7 @@ def review(message_id: int, session: Session = Depends(get_session)) -> ReviewOu
     tdir = get_settings().templates_dir
     return ReviewOut(
         message=MessageOut.model_validate(msg),
-        case_id=case.id,
+        case_id=case.public_id,
         language=case.language,
         locale=locale_for(case.language, case.country).replace("_", "-"),
         text_direction="rtl" if is_rtl(case.language) else "ltr",
@@ -218,7 +224,9 @@ def review(message_id: int, session: Session = Depends(get_session)) -> ReviewOu
 
 
 @router.get("/{message_id}/preview", response_model=PreviewOut)
-def preview(message_id: int, language: str, session: Session = Depends(get_session)) -> PreviewOut:
+def preview(
+    message_id: MessagePk, language: str, session: Session = Depends(get_session)
+) -> PreviewOut:
     """The step's template filled in another language, for the side-by-side view only. It is
     never sent: switching the letter language redrafts through the agent and the fact check."""
     try:

@@ -55,7 +55,7 @@ function Deadlines({ c, locale }: { c: CaseDetail; locale: string }) {
   );
 }
 
-function Timeline({ id, locale }: { id: number; locale: string }) {
+function Timeline({ id, locale }: { id: string; locale: string }) {
   const t = useTranslations("timeline");
   const { data } = useApi(() => api.timeline(id), [id]);
   if (!data) return null;
@@ -72,7 +72,7 @@ function Timeline({ id, locale }: { id: number; locale: string }) {
   );
 }
 
-export function CaseDashboard({ id }: { id: number }) {
+export function CaseDashboard({ id }: { id: string }) {
   const t = useTranslations("dashboard");
   const tc = useTranslations("common");
   const ui = useLocale();

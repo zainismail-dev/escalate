@@ -41,7 +41,7 @@ export interface Evidence {
 }
 
 export interface Message {
-  id: number;
+  id: string;
   step_id: string;
   direction: "in" | "out";
   channel: string;
@@ -79,7 +79,7 @@ export interface Deadline {
 }
 
 export interface CaseSummary {
-  id: number;
+  id: string;
   title: string;
   case_type: string | null;
   country: string | null;
@@ -106,8 +106,8 @@ export interface Pending {
   type: Exclude<WaitingFor, null>;
   missing?: string[];
   items?: ChecklistItem[];
-  draft?: { message_id: number; recipient: string | null; subject: string | null; body: string; channel: string };
-  message_id?: number;
+  draft?: { message_id: string; recipient: string | null; subject: string | null; body: string; channel: string };
+  message_id?: string;
   channel?: string;
   note?: string;
   step?: string;
@@ -128,7 +128,7 @@ export interface CaseDetail extends Omit<CaseSummary, "deadline_warning" | "days
 }
 
 export interface RunOut {
-  case_id: number;
+  case_id: string;
   waiting_for: WaitingFor;
   pending: Pending | null;
   warnings: string[];
@@ -172,7 +172,7 @@ export interface Problem {
 
 export interface Review {
   message: Message;
-  case_id: number;
+  case_id: string;
   language: string;
   locale: string;
   text_direction: "ltr" | "rtl";

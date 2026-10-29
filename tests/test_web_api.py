@@ -155,7 +155,7 @@ def test_preview_and_letter_language_switch(
         assert r["waiting_for"] == "approve_draft"
         assert r["pending"]["draft"]["message_id"] != mid
         with session_scope() as s:
-            old = s.get_one(Message, mid)
+            old = s.query(Message).filter_by(public_id=mid).one()
             assert old.status == "rejected" and old.approved_at is None
     assert FakeSMTP.all_sent() == []
 

@@ -404,7 +404,7 @@ def test_recipient_changed_warning(client: TestClient, agent_env: AgentEnv) -> N
                 )
             )
         with session_scope() as s:
-            new_id = s.query(Message).filter_by(status="draft").one().id
+            new_id = s.query(Message).filter_by(status="draft").one().public_id
         check = client.get(f"/messages/{new_id}/review").json()["recipient_check"]
     assert check["changed"] is True
     assert check["previous"] == "support@brightmart.example"
@@ -493,3 +493,50 @@ def test_saved_secrets_are_encrypted_at_rest(
     monkeypatch.setenv("FERNET_KEY", "")
     get_settings.cache_clear()
     assert client.put("/settings", json={"llm_api_key": "sk-x"}).status_code == 400
+
+
+def test_api_ids_are_unguessable(client: TestClient) -> None:  # noqa: F811
+    """Report #8: sequential ids let anyone with access try /messages/1..N/approve."""
+    import uuid
+
+    cid, mid = _draft(client)
+    for public in (cid, mid):
+        assert str(uuid.UUID(public)) == public  # UUIDs, not counters
+    assert client.get("/cases/1").status_code == 404
+    assert client.get("/messages/1/review").status_code == 404
+    bad = {"confirm": True, "recipient": "support@brightmart.example"}
+    assert client.post("/messages/1/approve", json=bad).status_code == 404
+    pending = client.get(f"/cases/{cid}").json()["pending"]
+    assert pending["draft"]["message_id"] == mid  # interrupt payloads carry public ids too
+    assert FakeSMTP.all_sent() == []
+
+
+def test_public_id_migration_backfills_and_downgrades(tmp_path: Path) -> None:
+    import sqlalchemy as sa
+    from alembic import command
+    from alembic.config import Config
+
+    repo = Path(__file__).resolve().parents[1]
+    url = f"sqlite:///{tmp_path / 'm.db'}"
+    cfg = Config(str(repo / "alembic.ini"))
+    cfg.attributes["configure_logger"] = False
+    cfg.set_main_option("script_location", str(repo / "migrations"))
+    cfg.set_main_option("sqlalchemy.url", url)
+    command.upgrade(cfg, "e73f0d0b09bd")
+    engine = sa.create_engine(url)
+    with engine.begin() as c:
+        c.execute(
+            sa.text(
+                "INSERT INTO cases (id, description, language, status, created_at) VALUES"
+                " (1, 'a', 'en', 'intake', '2026-10-01'), (2, 'b', 'en', 'intake', '2026-10-01')"
+            )
+        )
+    command.upgrade(cfg, "head")
+    with engine.connect() as c:
+        ids = [r[0] for r in c.execute(sa.text("SELECT public_id FROM cases"))]
+    assert len(set(ids)) == 2 and all(len(i) == 36 for i in ids)
+    command.downgrade(cfg, "e73f0d0b09bd")
+    with engine.connect() as c:
+        cols = [r[1] for r in c.execute(sa.text("PRAGMA table_info(cases)"))]
+    assert "public_id" not in cols
+    engine.dispose()

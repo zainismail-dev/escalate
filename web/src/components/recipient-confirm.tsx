@@ -21,7 +21,7 @@ export function RecipientConfirm({
   onChanged,
 }: {
   check: RecipientCheck;
-  messageId: number;
+  messageId: string;
   checked: boolean;
   onChecked: (v: boolean) => void;
   onChanged: () => void;

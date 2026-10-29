@@ -10,7 +10,7 @@ from escalate.agent.deadlines import deadline_status
 from escalate.agent.review import display_value
 from escalate.agent.titles import display_title
 from escalate.api import views
-from escalate.api.deps import get_case, get_session
+from escalate.api.deps import CasePk, get_case, get_session, public_case_id, public_pending
 from escalate.api.schemas import (
     AnswersIn,
     CaseCreate,
@@ -36,6 +36,7 @@ from escalate.api.schemas import (
 from escalate.config import get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Event, Message, utcnow
+from escalate.db.session import session_scope
 from escalate.evidence.store import save_upload
 from escalate.i18n.countries import currency_for, default_letter_language, is_rtl
 from escalate.i18n.formatting import format_amount, locale_for
@@ -48,9 +49,14 @@ router = APIRouter(prefix="/cases", tags=["cases"])
 
 
 def run_out(r: runner.RunResult) -> RunOut:
-    return RunOut(
-        case_id=r.case_id, waiting_for=r.waiting_for, pending=r.pending, warnings=r.warnings or []
-    )
+    """The agent's state for the API, with public ids only."""
+    with session_scope() as s:
+        return RunOut(
+            case_id=public_case_id(s, r.case_id),
+            waiting_for=r.waiting_for,
+            pending=public_pending(s, r.pending),
+            warnings=r.warnings or [],
+        )
 
 
 def _playbook(case: Case) -> Playbook | None:
@@ -91,11 +97,11 @@ def case_summary(case: Case) -> CaseSummary:
     return out
 
 
-def _list_order(c: CaseSummary) -> tuple[int, int, int]:
+def _list_order(c: CaseSummary) -> tuple[int, int, float]:
     """Urgent (scam checklist) first, then the nearest deadline, then the newest."""
     urgent = 0 if c.waiting_for == "urgent_checklist" else 1
     due = c.days_left if c.days_left is not None else 10**6
-    return (urgent, due, -c.id)
+    return (urgent, due, -c.created_at.timestamp())
 
 
 def case_detail(session: Session, case: Case) -> CaseDetail:
@@ -105,11 +111,12 @@ def case_detail(session: Session, case: Case) -> CaseDetail:
     detail.amount_display = _amount_display(case)
     for f in detail.facts:
         f.display = display_value(case, f.key, f.value)
-    detail.pending = runner.pending(case.id)
-    detail.waiting_for = detail.pending.get("type") if detail.pending else None
+    raw = runner.pending(case.id)
+    detail.pending = public_pending(session, raw)
+    detail.waiting_for = raw.get("type") if raw else None
     detail.text_direction = "rtl" if is_rtl(case.language) else "ltr"
     if detail.pending and detail.pending.get("type") == "approve_draft":
-        msg = session.get(Message, detail.pending["draft"]["message_id"])
+        msg = session.get(Message, raw["draft"]["message_id"]) if raw else None
         detail.pending_draft = MessageOut.model_validate(msg) if msg else None
     pb = _playbook(case)
     if pb is not None:
@@ -167,13 +174,13 @@ def list_cases(
 
 
 @router.get("/{case_id}", response_model=CaseDetail)
-def read_case(case_id: int, session: Session = Depends(get_session)) -> CaseDetail:
+def read_case(case_id: CasePk, session: Session = Depends(get_session)) -> CaseDetail:
     return case_detail(session, get_case(session, case_id))
 
 
 @router.patch("/{case_id}", response_model=CaseDetail)
 def update_case(
-    case_id: int, body: CaseUpdate, session: Session = Depends(get_session)
+    case_id: CasePk, body: CaseUpdate, session: Session = Depends(get_session)
 ) -> CaseDetail:
     """Rename a case. The agent never overwrites a title once it is set."""
     case = get_case(session, case_id)
@@ -185,7 +192,7 @@ def update_case(
 
 @router.post("/{case_id}/evidence", response_model=EvidenceOut, status_code=201)
 async def upload_evidence(
-    case_id: int, file: UploadFile = File(...), session: Session = Depends(get_session)
+    case_id: CasePk, file: UploadFile = File(...), session: Session = Depends(get_session)
 ) -> EvidenceOut:
     get_case(session, case_id)
     settings = get_settings()
@@ -201,7 +208,7 @@ async def upload_evidence(
 
 
 @router.post("/{case_id}/start", response_model=RunOut)
-def start(case_id: int, session: Session = Depends(get_session)) -> RunOut:
+def start(case_id: CasePk, session: Session = Depends(get_session)) -> RunOut:
     require_evidence(get_case(session, case_id))
     session.close()
     if runner.pending(case_id) is not None:
@@ -210,35 +217,35 @@ def start(case_id: int, session: Session = Depends(get_session)) -> RunOut:
 
 
 @router.post("/{case_id}/answers", response_model=RunOut)
-def answers(case_id: int, body: AnswersIn, session: Session = Depends(get_session)) -> RunOut:
+def answers(case_id: CasePk, body: AnswersIn, session: Session = Depends(get_session)) -> RunOut:
     get_case(session, case_id)
     session.close()
     return run_out(runner.resume_with_answers(case_id, body.answers))
 
 
 @router.post("/{case_id}/checklist/ack", response_model=RunOut)
-def ack_checklist(case_id: int, session: Session = Depends(get_session)) -> RunOut:
+def ack_checklist(case_id: CasePk, session: Session = Depends(get_session)) -> RunOut:
     get_case(session, case_id)
     session.close()
     return run_out(runner.acknowledge_checklist(case_id))
 
 
 @router.post("/{case_id}/retry", response_model=RunOut)
-def retry(case_id: int, session: Session = Depends(get_session)) -> RunOut:
+def retry(case_id: CasePk, session: Session = Depends(get_session)) -> RunOut:
     get_case(session, case_id)
     session.close()
     return run_out(runner.retry(case_id))
 
 
 @router.get("/{case_id}/timeline", response_model=list[EventOut])
-def timeline(case_id: int, session: Session = Depends(get_session)) -> list[EventOut]:
+def timeline(case_id: CasePk, session: Session = Depends(get_session)) -> list[EventOut]:
     get_case(session, case_id)
     q = select(Event).where(Event.case_id == case_id).order_by(Event.created_at, Event.id)
     return [EventOut.model_validate(e) for e in session.scalars(q)]
 
 
 @router.post("/{case_id}/replies", response_model=ReplyOut)
-def log_reply(case_id: int, body: ReplyIn, session: Session = Depends(get_session)) -> ReplyOut:
+def log_reply(case_id: CasePk, body: ReplyIn, session: Session = Depends(get_session)) -> ReplyOut:
     get_case(session, case_id)
     session.close()
     r = runner.resume_with_reply(case_id, body.text)
@@ -260,7 +267,7 @@ def log_reply(case_id: int, body: ReplyIn, session: Session = Depends(get_sessio
 
 @router.post("/{case_id}/resolution", response_model=RunOut)
 def confirm_resolution(
-    case_id: int, body: ResolutionIn, session: Session = Depends(get_session)
+    case_id: CasePk, body: ResolutionIn, session: Session = Depends(get_session)
 ) -> RunOut:
     """The user confirms (or denies) that the company's reply resolved the case."""
     get_case(session, case_id)
@@ -270,7 +277,7 @@ def confirm_resolution(
 
 @router.post("/{case_id}/verdict", response_model=RunOut)
 def override_verdict(
-    case_id: int, body: VerdictIn, session: Session = Depends(get_session)
+    case_id: CasePk, body: VerdictIn, session: Session = Depends(get_session)
 ) -> RunOut:
     """The user corrects the agent's verdict on the last reply; the ladder is replayed from it."""
     get_case(session, case_id)
@@ -279,7 +286,7 @@ def override_verdict(
 
 
 @router.get("/{case_id}/export.pdf")
-def export_pdf(case_id: int, session: Session = Depends(get_session)) -> Response:
+def export_pdf(case_id: CasePk, session: Session = Depends(get_session)) -> Response:
     from escalate.export.case_pdf import build_case_pdf
 
     case = get_case(session, case_id)
@@ -287,13 +294,15 @@ def export_pdf(case_id: int, session: Session = Depends(get_session)) -> Respons
     return Response(
         pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="escalate-case-{case_id}.pdf"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="escalate-case-{case.public_id}.pdf"'
+        },
     )
 
 
 @router.post("/{case_id}/letter-language", response_model=RunOut)
 def letter_language(
-    case_id: int, body: LanguageIn, session: Session = Depends(get_session)
+    case_id: CasePk, body: LanguageIn, session: Session = Depends(get_session)
 ) -> RunOut:
     """Change the letter language. A draft waiting for approval is redrafted in it (the old draft
     is rejected, never sent)."""
@@ -306,11 +315,11 @@ def letter_language(
     if p and p.get("type") == "approve_draft":
         reason = f"letter language changed to {body.language}"
         return run_out(runner.resume_with_decision(case_id, "reject", reason=reason))
-    return RunOut(case_id=case_id, waiting_for=p.get("type") if p else None, pending=p)
+    return run_out(runner.RunResult(case_id, p))
 
 
 @router.post("/{case_id}/withdraw", response_model=CaseOut)
-def withdraw(case_id: int, body: WithdrawIn, session: Session = Depends(get_session)) -> CaseOut:
+def withdraw(case_id: CasePk, body: WithdrawIn, session: Session = Depends(get_session)) -> CaseOut:
     case = get_case(session, case_id)
     if case.status in (CaseStatus.RESOLVED, CaseStatus.WITHDRAWN):
         raise HTTPException(409, f"case is already {case.status}")
@@ -323,7 +332,7 @@ def withdraw(case_id: int, body: WithdrawIn, session: Session = Depends(get_sess
 
 
 @router.delete("/{case_id}", status_code=204)
-def delete_case(case_id: int, session: Session = Depends(get_session)) -> Response:
+def delete_case(case_id: CasePk, session: Session = Depends(get_session)) -> Response:
     get_case(session, case_id)
     session.close()
     runner.delete_case(case_id)

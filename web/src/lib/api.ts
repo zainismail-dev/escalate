@@ -74,45 +74,45 @@ export const api = {
     const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v) as [string, string][]);
     return request<CaseSummary[]>("GET", `/cases${qs.size ? `?${qs}` : ""}`);
   },
-  getCase: (id: number) => request<CaseDetail>("GET", `/cases/${id}`),
-  renameCase: (id: number, title: string) => request<CaseDetail>("PATCH", `/cases/${id}`, { title }),
+  getCase: (id: string) => request<CaseDetail>("GET", `/cases/${id}`),
+  renameCase: (id: string, title: string) => request<CaseDetail>("PATCH", `/cases/${id}`, { title }),
   createCase: (body: { description: string; country?: string; region?: string; language?: string; company?: string }) =>
     request<CaseDetail>("POST", "/cases", body),
-  uploadEvidence: (id: number, file: File) => {
+  uploadEvidence: (id: string, file: File) => {
     const form = new FormData();
     form.append("file", file);
     return request<Evidence>("POST", `/cases/${id}/evidence`, form);
   },
-  start: (id: number) => request<RunOut>("POST", `/cases/${id}/start`),
-  retry: (id: number) => request<RunOut>("POST", `/cases/${id}/retry`),
-  answers: (id: number, answers: Record<string, string>) => request<RunOut>("POST", `/cases/${id}/answers`, { answers }),
-  ackChecklist: (id: number) => request<RunOut>("POST", `/cases/${id}/checklist/ack`),
-  timeline: (id: number) => request<TimelineEvent[]>("GET", `/cases/${id}/timeline`),
-  logReply: (id: number, text: string) => request<ReplyOut>("POST", `/cases/${id}/replies`, { text }),
-  overrideVerdict: (id: number, verdict: string) => request<RunOut>("POST", `/cases/${id}/verdict`, { verdict }),
-  setLetterLanguage: (id: number, language: string) =>
+  start: (id: string) => request<RunOut>("POST", `/cases/${id}/start`),
+  retry: (id: string) => request<RunOut>("POST", `/cases/${id}/retry`),
+  answers: (id: string, answers: Record<string, string>) => request<RunOut>("POST", `/cases/${id}/answers`, { answers }),
+  ackChecklist: (id: string) => request<RunOut>("POST", `/cases/${id}/checklist/ack`),
+  timeline: (id: string) => request<TimelineEvent[]>("GET", `/cases/${id}/timeline`),
+  logReply: (id: string, text: string) => request<ReplyOut>("POST", `/cases/${id}/replies`, { text }),
+  overrideVerdict: (id: string, verdict: string) => request<RunOut>("POST", `/cases/${id}/verdict`, { verdict }),
+  setLetterLanguage: (id: string, language: string) =>
     request<RunOut>("POST", `/cases/${id}/letter-language`, { language }),
-  withdraw: (id: number, reason = "") => request<CaseSummary>("POST", `/cases/${id}/withdraw`, { reason }),
-  deleteCase: (id: number) => request<void>("DELETE", `/cases/${id}`),
-  exportUrl: (id: number) => `${API_URL}/cases/${id}/export.pdf`,
-  printableUrl: (messageId: number) => `${API_URL}/messages/${messageId}/printable.pdf`,
-  review: (messageId: number) => request<Review>("GET", `/messages/${messageId}/review`),
-  preview: (messageId: number, language: string) =>
+  withdraw: (id: string, reason = "") => request<CaseSummary>("POST", `/cases/${id}/withdraw`, { reason }),
+  deleteCase: (id: string) => request<void>("DELETE", `/cases/${id}`),
+  exportUrl: (id: string) => `${API_URL}/cases/${id}/export.pdf`,
+  printableUrl: (messageId: string) => `${API_URL}/messages/${messageId}/printable.pdf`,
+  review: (messageId: string) => request<Review>("GET", `/messages/${messageId}/review`),
+  preview: (messageId: string, language: string) =>
     request<Preview>("GET", `/messages/${messageId}/preview?language=${encodeURIComponent(language)}`),
-  editMessage: (messageId: number, body: string, subject?: string | null) =>
+  editMessage: (messageId: string, body: string, subject?: string | null) =>
     request<{ message: Message; warnings: string[] }>("PUT", `/messages/${messageId}`, { body, subject }),
   /**
    * The only way the web app approves a message. The user must state the exact recipient they
    * checked; the API sets approved_at, then it is sent.
    */
-  approve: (messageId: number, recipient: string | null) =>
+  approve: (messageId: string, recipient: string | null) =>
     request<RunOut>("POST", `/messages/${messageId}/approve`, { confirm: true, recipient }),
-  setRecipient: (messageId: number, recipient: string) =>
+  setRecipient: (messageId: string, recipient: string) =>
     request<Message>("POST", `/messages/${messageId}/recipient`, { recipient }),
-  confirmResolution: (caseId: number, resolved: boolean, verdict?: string) =>
+  confirmResolution: (caseId: string, resolved: boolean, verdict?: string) =>
     request<RunOut>("POST", `/cases/${caseId}/resolution`, { resolved, verdict: verdict ?? null }),
-  reject: (messageId: number, reason: string) => request<RunOut>("POST", `/messages/${messageId}/reject`, { reason }),
-  confirmDelivery: (messageId: number, evidenceId?: number) =>
+  reject: (messageId: string, reason: string) => request<RunOut>("POST", `/messages/${messageId}/reject`, { reason }),
+  confirmDelivery: (messageId: string, evidenceId?: number) =>
     request<RunOut>("POST", `/messages/${messageId}/confirm-delivery`, { evidence_id: evidenceId ?? null }),
   checklist: (country?: string | null) =>
     request<Checklist>("GET", `/checklist${country ? `?country=${encodeURIComponent(country)}` : ""}`),
@@ -120,5 +120,5 @@ export const api = {
   saveSettings: (body: Partial<Record<string, string | number>>) => request<Settings>("PUT", "/settings", body),
   testModel: () => request<{ ok: boolean; reply?: string; error?: string }>("POST", "/settings/llm-test"),
   deleteAll: () => request<void>("POST", "/privacy/delete-all", { confirm: true }),
-  seedDemo: () => request<{ case_ids: number[] }>("POST", "/demo/seed"),
+  seedDemo: () => request<{ case_ids: string[] }>("POST", "/demo/seed"),
 };

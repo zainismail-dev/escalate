@@ -19,7 +19,7 @@ import { CaseHeader } from "../case-header";
 const VERDICTS = ["resolved", "partial", "refused", "no_reply"] as const;
 const TONE = { resolved: "success", partial: "warning", refused: "danger", no_reply: "neutral" } as const;
 
-export function LogReply({ id }: { id: number }) {
+export function LogReply({ id }: { id: string }) {
   const t = useTranslations("reply");
   const tv = useTranslations("verdict");
   const caseQ = useApi(() => api.getCase(id), [id]);

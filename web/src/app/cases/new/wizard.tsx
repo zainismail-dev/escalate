@@ -80,7 +80,7 @@ export function Wizard() {
   }, []);
 
   // Resume an unfinished case: /cases/new?case=12
-  const resumeId = Number(params.get("case")) || null;
+  const resumeId = params.get("case") || null;
   useEffect(() => {
     if (!resumeId) return;
     api

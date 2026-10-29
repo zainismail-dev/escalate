@@ -12,10 +12,11 @@ from sqlalchemy.orm import Session
 from escalate import __version__
 from escalate.agent import runner
 from escalate.agent.checklist import Checklist, load_checklist
-from escalate.api.deps import get_session
+from escalate.api.deps import get_session, public_case_id
 from escalate.api.schemas import ConfirmIn, DemoOut, HealthOut, SettingsIn, SettingsOut
 from escalate.config import SECRET_FIELDS, encrypt_secret, get_settings, settings_file
 from escalate.db.models import Case
+from escalate.db.session import session_scope
 from escalate.i18n.countries import CountryOut, coverage, default_letter_language
 from escalate.llm import get_llm, set_llm
 from escalate.llm.privacy import is_cloud
@@ -154,4 +155,6 @@ def demo_seed() -> DemoOut:
         raise HTTPException(403, "demo data is turned off (ALLOW_DEMO_SEED=false)")
     from escalate.demo import seed
 
-    return DemoOut(case_ids=seed())
+    ids = seed()
+    with session_scope() as s:
+        return DemoOut(case_ids=[public_case_id(s, i) for i in ids])

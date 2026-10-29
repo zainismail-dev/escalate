@@ -9,7 +9,7 @@ import { api, type ApiError, API_URL } from "@/lib/api";
 import type { Problem, ReviewFact } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function DemoButton({ onDone, variant = "lime" }: { onDone?: (ids: number[]) => void; variant?: "lime" | "outline" }) {
+export function DemoButton({ onDone, variant = "lime" }: { onDone?: (ids: string[]) => void; variant?: "lime" | "outline" }) {
   const t = useTranslations("common");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -50,7 +50,7 @@ export function EmptyState({
   body: string;
   action?: React.ReactNode;
   demo?: boolean;
-  onDemo?: (ids: number[]) => void;
+  onDemo?: (ids: string[]) => void;
 }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line bg-card px-6 py-12 text-center" data-testid="empty-state">

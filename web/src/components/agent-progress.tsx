@@ -31,7 +31,7 @@ export function AgentProgress({
   since,
   stages = DRAFT_STAGES,
 }: {
-  caseId: number;
+  caseId: string;
   running: boolean;
   since: number;
   stages?: Stages;
@@ -95,7 +95,7 @@ export function AgentProgress({
 }
 
 /** Highest event id so far, so progress only counts what happens after a click. */
-export async function lastEventId(caseId: number): Promise<number> {
+export async function lastEventId(caseId: string): Promise<number> {
   try {
     const ev = await api.timeline(caseId);
     return ev.reduce((m, e) => Math.max(m, e.id), 0);
