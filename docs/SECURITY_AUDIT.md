@@ -35,7 +35,7 @@ same user on the same computer are not in scope.
 | Python SAST | bandit 1.9.4; semgrep `p/python`, `p/fastapi`, `p/flask`, `p/secrets` | A3–A5 |
 | Web SAST | semgrep `p/typescript`, `p/react`, `p/nextjs`; ESLint with `eslint-plugin-security` and `eslint-plugin-no-unsanitized` | A6; no `dangerouslySetInnerHTML`, `eval` or HTML sinks |
 | Manual review | every route (inventory test), uploads, PDF, templates, logging, errors, prompt-injection paths | A7–A19 |
-| DAST | OWASP ZAP 2.17.0 baseline (spider + passive scan) against a production web build and a `DEMO_MODE` API, both on throwaway data | Informational only (A20) |
+| DAST | OWASP ZAP 2.17.0 baseline (spider + passive scan) against a production web build and a `DEMO_MODE` API, both on throwaway data | A22 (fixed); then Informational only (A20) |
 | Regression | `tests/security/` (pytest) and Playwright (`demo`, `guard`) | all pass; run in CI on every push |
 
 ## Findings
@@ -84,6 +84,7 @@ replayed against a throwaway API and now fail (403/400/409/422 as listed).
 | A19 | Tests that forgot the database fixture used `./escalate.db` | Low | Fixed | `tests/conftest.py` points `DATABASE_URL` at an in-memory DB | the whole suite |
 | A20 | ZAP: "Information Disclosure – Suspicious Comments" (the word "user" in minified JavaScript) | Info | Accepted | Framework code, no secrets | CI `zap` job (fails on Medium or higher) |
 | A21 | Settings → Delete all showed "All cases deleted" even when the request failed | Low | Fixed | Success is shown only after the API confirms | `web/e2e/demo.spec.ts` |
+| A22 | FastAPI's `/docs` (Swagger UI) loads scripts from a CDN without Subresource Integrity, and the page had no CSP (ZAP 90003, 10038) | Medium | Fixed | `/docs` and `/redoc` are off unless `API_DOCS=true` (`make api` sets it for development); `/openapi.json` stays | `tests/security/test_limits.py::test_api_docs_are_opt_in`; CI `zap` job |
 
 **Open: none above Low.** Every finding is fixed, a false positive or accepted with a reason
 above.

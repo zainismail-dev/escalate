@@ -51,7 +51,7 @@ In short:
 | PDF export | WeasyPrint only loads embedded `data:` images: no `file://`, no network | `tests/security/test_pdf_fetcher.py` |
 | Templates (SSTI) | Sandboxed Jinja2; facts are variables, never template source | `tests/security/test_templates.py` |
 | Abuse and size | Per-client limits on changes (120/min) and AI calls (20/min); 1 MB JSON cap; every request field bounded | `tests/security/test_limits.py` |
-| Errors and logs | No stack traces or echoed input in responses; PII masking on uvicorn's loggers and tracebacks | `tests/security/test_limits.py`, `test_logging.py` |
+| Errors and logs | No stack traces or echoed input in responses; PII masking on uvicorn's loggers and tracebacks; API docs pages (CDN scripts) only with `API_DOCS=true` | `tests/security/test_limits.py`, `test_logging.py` |
 | Routes | Every route is listed in a test; every state-changing route is behind the CSRF guard | `tests/security/test_routes.py` |
 | Optional app lock | `APP_PASSCODE`: httpOnly SameSite=Strict session, argon2, rate-limited attempts | `tests/security/test_applock.py` |
 | Web app | Nonce-based CSP (no `unsafe-inline`/`unsafe-eval` for scripts), HSTS, `X-Frame-Options: DENY`, nosniff, Referrer-Policy, Permissions-Policy; no raw HTML rendering (ESLint) | Playwright console guard, `npm run lint` |
