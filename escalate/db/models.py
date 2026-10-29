@@ -23,6 +23,7 @@ class CaseStatus(StrEnum):
     DRAFTING = "drafting"
     AWAITING_APPROVAL = "awaiting_approval"
     WAITING_REPLY = "waiting_reply"
+    CONFIRM_RESOLUTION = "confirm_resolution"  # the reply looks like a resolution: user confirms
     PICK_NEXT = "pick_next"
     RESOLVED = "resolved"
     CLOSED_UNRESOLVED = "closed_unresolved"

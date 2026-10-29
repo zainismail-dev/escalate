@@ -65,6 +65,7 @@
   "status.drafting": "drafting",
   "status.awaiting_approval": "awaiting your approval",
   "status.waiting_reply": "waiting for a reply",
+  "status.confirm_resolution": "confirm it's resolved",
   "status.pick_next": "choosing next step",
   "status.resolved": "resolved",
   "status.closed_unresolved": "ladder finished",
@@ -112,5 +113,9 @@
   "dash.withdrawn": "Case withdrawn.",
   "dash.delete": "Delete this case and all its files",
   "dash.delete_confirm": "Yes, delete everything for this case",
-  "dash.deleted": "Case deleted."
+  "dash.deleted": "Case deleted.",
+  "review.recipient_checked": "I checked the recipient: {to}",
+  "pending.confirm_resolution": "The agent thinks the company's reply resolves your case. Confirm before it closes.",
+  "pending.resolved_yes": "Yes, it's resolved",
+  "pending.resolved_no": "No, keep going"
 }

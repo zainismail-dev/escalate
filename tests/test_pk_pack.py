@@ -9,7 +9,7 @@ from escalate.db import session as db_session
 from escalate.evidence.store import save_upload
 from escalate.playbooks.loader import get_playbook
 from escalate.templates_engine import disclaimer, render_step
-from tests.agent_env import AgentEnv, agent_env, make_llm  # noqa: F401
+from tests.agent_env import AgentEnv, agent_env, approve_pending, make_llm  # noqa: F401
 from tests.factories import LED_FACTS, LED_TEXT
 
 PB = "pk-ecommerce-refund-refused"
@@ -84,11 +84,11 @@ def test_late_case_gets_condonation_through_the_graph(agent_env: AgentEnv) -> No
     with freeze_time(datetime(2026, 10, 1, 9)):
         cid = env.new_case(description=LED_TEXT, country="PK", region="PK-SD")
         runner.start_case(cid)
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
         r = runner.resume_with_reply(cid, "We refuse. Read our policy.")
         assert env.case(cid).current_step == "s3_legal_notice"  # on_refused skips the platform
         assert "CONDONATION" not in r.pending["draft"]["body"]  # type: ignore[index]
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
         with db_session.session_scope() as s:
             proof_id = save_upload(s, cid, "tcs.txt", b"TCS receipt", env.settings).id
         runner.confirm_delivery(cid, proof_id)

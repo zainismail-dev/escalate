@@ -126,3 +126,10 @@ def agent_env(tmp_path: Path, settings: Settings) -> Iterator[AgentEnv]:
         sched.shutdown()
         set_llm(None)
         engine.dispose()
+
+
+def approve_pending(case_id: int, **kw: Any) -> runner.RunResult:
+    """Approve the waiting draft as the user does: confirming the exact recipient shown."""
+    p = runner.pending(case_id)
+    assert p and p["type"] == "approve_draft", p
+    return runner.resume_with_decision(case_id, "approve", recipient=p["draft"]["recipient"], **kw)

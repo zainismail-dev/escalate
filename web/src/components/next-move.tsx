@@ -19,6 +19,7 @@ export function NextMove({ c, onDeliveryUpload }: { c: CaseDetail; onDeliveryUpl
     questions: `/cases/${c.id}/questions`,
     urgent_checklist: `/cases/${c.id}/urgent`,
     waiting_reply: `/cases/${c.id}/reply`,
+    confirm_resolution: `/cases/${c.id}/reply`,
     start: `/cases/new?case=${c.id}`,
   };
   const when = c.next_action_at ? (formatDateTime(c.next_action_at, locale) ?? "") : "";

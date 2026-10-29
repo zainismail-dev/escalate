@@ -20,7 +20,7 @@ from escalate.i18n.formatting import locale_for
 from escalate.playbooks.models import template_file
 from tests.agent_env import AgentEnv, agent_env  # noqa: F401
 from tests.fakes.fake_smtp import FakeSMTP
-from tests.test_api import DAY0, _create, _started, client  # noqa: F401
+from tests.test_api import DAY0, _create, _started, client, confirm_body  # noqa: F401
 
 WEB = "http://localhost:3000"
 
@@ -122,7 +122,7 @@ def test_review_highlights_facts_and_gates_blanks(client: TestClient) -> None:  
         client.put(f"/messages/{mid}", json={"body": body})
         r = client.get(f"/messages/{mid}/review").json()
         assert r["blanks"] == ["your phone"] and not r["can_approve"]
-        bad = client.post(f"/messages/{mid}/approve", json={"confirm": True})
+        bad = client.post(f"/messages/{mid}/approve", json=confirm_body(client, mid))
         assert bad.status_code == 422 and "fill in the blank: your phone" in bad.json()["issues"]
         assert FakeSMTP.all_sent() == []
 
@@ -241,7 +241,10 @@ def test_override_verdict_replays_from_the_reply(client: TestClient) -> None:  #
     with freeze_time(DAY0):
         cid = _started(client)
         mid = client.get(f"/cases/{cid}").json()["pending_draft"]["id"]
-        assert client.post(f"/messages/{mid}/approve", json={"confirm": True}).status_code == 200
+        assert (
+            client.post(f"/messages/{mid}/approve", json=confirm_body(client, mid)).status_code
+            == 200
+        )
         assert client.post(f"/cases/{cid}/verdict", json={"verdict": "resolved"}).status_code == 409
         r = client.post(f"/cases/{cid}/replies", json={"text": "We refuse."}).json()
         assert r["verdict"] == "refused" and r["waiting_for"] == "questions"

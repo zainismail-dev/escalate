@@ -53,7 +53,8 @@
     "pick_next": "Choosing next step",
     "resolved": "Resolved",
     "closed_unresolved": "Ladder finished",
-    "withdrawn": "Withdrawn"
+    "withdrawn": "Withdrawn",
+    "confirm_resolution": "Confirm it's resolved"
   },
   "waiting": {
     "questions": "Answer questions",
@@ -61,7 +62,8 @@
     "approve_draft": "Draft ready",
     "confirm_delivery": "Confirm delivery",
     "waiting_reply": "Waiting for a reply",
-    "none": "Nothing needed"
+    "none": "Nothing needed",
+    "confirm_resolution": "Confirm the result"
   },
   "verdict": {
     "resolved": "Resolved",
@@ -131,16 +133,62 @@
   },
   "nextMove": {
     "title": "Your next move",
-    "approve_draft": { "title": "Review and approve the draft", "body": "Your letter for \"{step}\" is ready. Nothing is sent until you approve it.", "cta": "Review draft" },
-    "questions": { "title": "Answer a few questions", "body": "The agent needs a few facts it couldn't find in your evidence.", "cta": "Answer questions" },
-    "urgent_checklist": { "title": "Do the urgent steps first", "body": "In a scam, the first hours matter. Call your bank before anything else.", "cta": "Open the checklist" },
-    "confirm_delivery": { "title": "Send it yourself, then confirm", "body": "This step goes by post, web form or court. Print it, deliver it, then upload your proof.", "cta": "Confirm delivery", "print": "Download printable PDF" },
-    "waiting_reply": { "title": "Waiting for their reply", "body": "If they haven't replied by {when}, the agent prepares the next step for you.", "cta": "Log their reply" },
-    "start": { "title": "Add evidence to start", "body": "Upload a receipt, screenshot or email so the agent can read the facts.", "cta": "Continue setup" },
-    "resolved": { "title": "Resolved", "body": "This case is closed. Well done for not giving up.", "cta": "" },
-    "closed_unresolved": { "title": "The ladder is finished", "body": "Every step has been taken. Export the case file if you go to court yourself.", "cta": "" },
-    "withdrawn": { "title": "Withdrawn", "body": "You stopped this case. Nothing more will be sent.", "cta": "" },
-    "none": { "title": "The agent is working", "body": "Nothing needed from you right now.", "cta": "" }
+    "approve_draft": {
+      "title": "Review and approve the draft",
+      "body": "Your letter for \"{step}\" is ready. Nothing is sent until you approve it.",
+      "cta": "Review draft"
+    },
+    "questions": {
+      "title": "Answer a few questions",
+      "body": "The agent needs a few facts it couldn't find in your evidence.",
+      "cta": "Answer questions"
+    },
+    "urgent_checklist": {
+      "title": "Do the urgent steps first",
+      "body": "In a scam, the first hours matter. Call your bank before anything else.",
+      "cta": "Open the checklist"
+    },
+    "confirm_delivery": {
+      "title": "Send it yourself, then confirm",
+      "body": "This step goes by post, web form or court. Print it, deliver it, then upload your proof.",
+      "cta": "Confirm delivery",
+      "print": "Download printable PDF"
+    },
+    "waiting_reply": {
+      "title": "Waiting for their reply",
+      "body": "If they haven't replied by {when}, the agent prepares the next step for you.",
+      "cta": "Log their reply"
+    },
+    "start": {
+      "title": "Add evidence to start",
+      "body": "Upload a receipt, screenshot or email so the agent can read the facts.",
+      "cta": "Continue setup"
+    },
+    "resolved": {
+      "title": "Resolved",
+      "body": "This case is closed. Well done for not giving up.",
+      "cta": ""
+    },
+    "closed_unresolved": {
+      "title": "The ladder is finished",
+      "body": "Every step has been taken. Export the case file if you go to court yourself.",
+      "cta": ""
+    },
+    "withdrawn": {
+      "title": "Withdrawn",
+      "body": "You stopped this case. Nothing more will be sent.",
+      "cta": ""
+    },
+    "none": {
+      "title": "The agent is working",
+      "body": "Nothing needed from you right now.",
+      "cta": ""
+    },
+    "confirm_resolution": {
+      "title": "Did they really resolve it?",
+      "body": "The agent thinks the company's reply resolves your case. The case only closes when you confirm.",
+      "cta": "Confirm the result"
+    }
   },
   "progress": {
     "agent": "Agent",
@@ -165,11 +213,26 @@
     "retry": "Try again",
     "checkSettings": "Check model settings",
     "nothingSent": "Nothing was sent",
-    "model_offline": { "title": "The AI model is offline", "body": "Escalate couldn't reach your AI model. Start it (for example Ollama) or pick another source in Settings, then try again." },
-    "offline_api": { "title": "Can't reach Escalate", "body": "The Escalate API at {url} isn't answering. Start it with `make up` or `uv run uvicorn escalate.api.main:app`." },
-    "fact_check": { "title": "Blocked by the fact check", "body": "The letter has a value that isn't in your evidence." },
-    "rate_limited": { "title": "Too many new cases", "body": "Please wait a little before opening more cases." },
-    "other": { "title": "Something went wrong", "body": "The request failed. Details below." }
+    "model_offline": {
+      "title": "The AI model is offline",
+      "body": "Escalate couldn't reach your AI model. Start it (for example Ollama) or pick another source in Settings, then try again."
+    },
+    "offline_api": {
+      "title": "Can't reach Escalate",
+      "body": "The Escalate API at {url} isn't answering. Start it with `make up` or `uv run uvicorn escalate.api.main:app`."
+    },
+    "fact_check": {
+      "title": "Blocked by the fact check",
+      "body": "The letter has a value that isn't in your evidence."
+    },
+    "rate_limited": {
+      "title": "Too many new cases",
+      "body": "Please wait a little before opening more cases."
+    },
+    "other": {
+      "title": "Something went wrong",
+      "body": "The request failed. Details below."
+    }
   },
   "blocked": {
     "title": "Draft blocked by the fact check",
@@ -183,52 +246,190 @@
     "verified": "Verified fact",
     "fromFile": "from {file}",
     "fromYou": "you told us",
-    "account_id": { "label": "Account or member number", "why": "So the company can find your account straight away." },
-    "amount": { "label": "Amount paid", "why": "The letter must state exactly how much is at stake." },
-    "authority_contact": { "label": "Consumer authority contact", "why": "Where the complaint to the authority is sent." },
-    "authority_name": { "label": "Consumer authority", "why": "The official body for this step. Use the name on its official website." },
-    "bank_contact": { "label": "Bank fraud team contact", "why": "Where the fraud report goes. Use the contact on your bank's official website or card." },
-    "bank_name": { "label": "Bank or card issuer", "why": "The fraud report is addressed to them." },
-    "buyer_address": { "label": "Your postal address", "why": "Legal notices and court forms must include it." },
-    "buyer_contact": { "label": "Your phone or email", "why": "So they can reply to you." },
-    "product": { "label": "Product or service", "why": "Names what you bought, for the letter and the case title." },
-    "buyer_name": { "label": "Your full name", "why": "Letters are signed with it and the company needs it to find your order." },
-    "cancel_requested_on": { "label": "Date you asked to cancel", "why": "Charges after this date are the ones you can claim back." },
-    "card_issuer": { "label": "Card issuer", "why": "Needed for the card dispute letter." },
-    "card_issuer_contact": { "label": "Card issuer contact", "why": "Where the dispute letter goes." },
-    "card_last4": { "label": "Last 4 digits of the card", "why": "Identifies the card. Never give the full number, PIN or security code." },
-    "cause_of_action_on": { "label": "Date the dispute started", "why": "Court time limits often count from this date." },
-    "charges_after_cancel": { "label": "Charges after cancelling", "why": "The letter lists what you want refunded." },
-    "commission_name": { "label": "Consumer commission", "why": "The body the complaint is filed with." },
-    "company_contact": { "label": "Company email or contact", "why": "Where the letter is sent." },
-    "company_name": { "label": "Company name", "why": "The letter is addressed to them." },
-    "court_name": { "label": "Court name", "why": "Court forms must name the court you file in." },
-    "currency": { "label": "Currency", "why": "Amounts are written with their currency code." },
-    "defect_description": { "label": "What went wrong", "why": "A short, factual description makes the demand clear." },
-    "delay_reason": { "label": "Reason for the delay", "why": "If a deadline passed, the court may excuse it for a good reason." },
-    "last_promise_on": { "label": "Date of their last promise", "why": "Shows how long they've kept you waiting." },
-    "last_promise_text": { "label": "What they promised", "why": "Quoting their own words is strong evidence." },
-    "notice_delivered_on": { "label": "Date the notice was delivered", "why": "The waiting period counts from delivery." },
-    "order_date": { "label": "Order date", "why": "Dates the purchase; some time limits count from it." },
-    "order_id": { "label": "Order number", "why": "So the company can find your order straight away." },
-    "paid_on": { "label": "Date you paid", "why": "Banks need it to trace the payment." },
-    "payment_method": { "label": "How you paid", "why": "Each payment method has a different way to dispute." },
-    "plan_name": { "label": "Plan or membership", "why": "Names exactly what you're cancelling." },
-    "platform_name": { "label": "Marketplace or platform", "why": "If you bought through a marketplace, it's the next rung of the ladder." },
-    "police_contact": { "label": "Police station contact", "why": "Where the police report goes." },
-    "police_station": { "label": "Police station", "why": "The report is addressed to it." },
-    "remedy_wanted": { "label": "What you want", "why": "A clear request (refund, replacement, repair) is easier to say yes to." },
-    "reporting_body": { "label": "National reporting body", "why": "The official body for fraud reports in your country." },
-    "reporting_body_contact": { "label": "Reporting body contact", "why": "Where the report is filed. Use the official website." },
-    "return_shipped_on": { "label": "Date you returned it", "why": "Shows you did your part." },
-    "return_tracking": { "label": "Return tracking number", "why": "Proof the item reached them." },
-    "scam_description": { "label": "What happened", "why": "A short timeline helps the bank and the police act fast." },
-    "scammer_contact": { "label": "Scammer's number or profile", "why": "Helps the police and platforms block them." },
-    "scammer_name": { "label": "Name the scammer used", "why": "Goes in the police report." },
-    "seller_address": { "label": "Seller's postal address", "why": "A legal notice must be delivered to an address, with proof." },
-    "seller_contact": { "label": "Seller's email or contact", "why": "Where the first letter is sent." },
-    "seller_name": { "label": "Seller or shop name", "why": "The letter is addressed to them." },
-    "transaction_id": { "label": "Transaction or reference ID", "why": "Banks trace payments by this reference." }
+    "account_id": {
+      "label": "Account or member number",
+      "why": "So the company can find your account straight away."
+    },
+    "amount": {
+      "label": "Amount paid",
+      "why": "The letter must state exactly how much is at stake."
+    },
+    "authority_contact": {
+      "label": "Consumer authority contact",
+      "why": "Where the complaint to the authority is sent."
+    },
+    "authority_name": {
+      "label": "Consumer authority",
+      "why": "The official body for this step. Use the name on its official website."
+    },
+    "bank_contact": {
+      "label": "Bank fraud team contact",
+      "why": "Where the fraud report goes. Use the contact on your bank's official website or card."
+    },
+    "bank_name": {
+      "label": "Bank or card issuer",
+      "why": "The fraud report is addressed to them."
+    },
+    "buyer_address": {
+      "label": "Your postal address",
+      "why": "Legal notices and court forms must include it."
+    },
+    "buyer_contact": {
+      "label": "Your phone or email",
+      "why": "So they can reply to you."
+    },
+    "product": {
+      "label": "Product or service",
+      "why": "Names what you bought, for the letter and the case title."
+    },
+    "buyer_name": {
+      "label": "Your full name",
+      "why": "Letters are signed with it and the company needs it to find your order."
+    },
+    "cancel_requested_on": {
+      "label": "Date you asked to cancel",
+      "why": "Charges after this date are the ones you can claim back."
+    },
+    "card_issuer": {
+      "label": "Card issuer",
+      "why": "Needed for the card dispute letter."
+    },
+    "card_issuer_contact": {
+      "label": "Card issuer contact",
+      "why": "Where the dispute letter goes."
+    },
+    "card_last4": {
+      "label": "Last 4 digits of the card",
+      "why": "Identifies the card. Never give the full number, PIN or security code."
+    },
+    "cause_of_action_on": {
+      "label": "Date the dispute started",
+      "why": "Court time limits often count from this date."
+    },
+    "charges_after_cancel": {
+      "label": "Charges after cancelling",
+      "why": "The letter lists what you want refunded."
+    },
+    "commission_name": {
+      "label": "Consumer commission",
+      "why": "The body the complaint is filed with."
+    },
+    "company_contact": {
+      "label": "Company email or contact",
+      "why": "Where the letter is sent."
+    },
+    "company_name": {
+      "label": "Company name",
+      "why": "The letter is addressed to them."
+    },
+    "court_name": {
+      "label": "Court name",
+      "why": "Court forms must name the court you file in."
+    },
+    "currency": {
+      "label": "Currency",
+      "why": "Amounts are written with their currency code."
+    },
+    "defect_description": {
+      "label": "What went wrong",
+      "why": "A short, factual description makes the demand clear."
+    },
+    "delay_reason": {
+      "label": "Reason for the delay",
+      "why": "If a deadline passed, the court may excuse it for a good reason."
+    },
+    "last_promise_on": {
+      "label": "Date of their last promise",
+      "why": "Shows how long they've kept you waiting."
+    },
+    "last_promise_text": {
+      "label": "What they promised",
+      "why": "Quoting their own words is strong evidence."
+    },
+    "notice_delivered_on": {
+      "label": "Date the notice was delivered",
+      "why": "The waiting period counts from delivery."
+    },
+    "order_date": {
+      "label": "Order date",
+      "why": "Dates the purchase; some time limits count from it."
+    },
+    "order_id": {
+      "label": "Order number",
+      "why": "So the company can find your order straight away."
+    },
+    "paid_on": {
+      "label": "Date you paid",
+      "why": "Banks need it to trace the payment."
+    },
+    "payment_method": {
+      "label": "How you paid",
+      "why": "Each payment method has a different way to dispute."
+    },
+    "plan_name": {
+      "label": "Plan or membership",
+      "why": "Names exactly what you're cancelling."
+    },
+    "platform_name": {
+      "label": "Marketplace or platform",
+      "why": "If you bought through a marketplace, it's the next rung of the ladder."
+    },
+    "police_contact": {
+      "label": "Police station contact",
+      "why": "Where the police report goes."
+    },
+    "police_station": {
+      "label": "Police station",
+      "why": "The report is addressed to it."
+    },
+    "remedy_wanted": {
+      "label": "What you want",
+      "why": "A clear request (refund, replacement, repair) is easier to say yes to."
+    },
+    "reporting_body": {
+      "label": "National reporting body",
+      "why": "The official body for fraud reports in your country."
+    },
+    "reporting_body_contact": {
+      "label": "Reporting body contact",
+      "why": "Where the report is filed. Use the official website."
+    },
+    "return_shipped_on": {
+      "label": "Date you returned it",
+      "why": "Shows you did your part."
+    },
+    "return_tracking": {
+      "label": "Return tracking number",
+      "why": "Proof the item reached them."
+    },
+    "scam_description": {
+      "label": "What happened",
+      "why": "A short timeline helps the bank and the police act fast."
+    },
+    "scammer_contact": {
+      "label": "Scammer's number or profile",
+      "why": "Helps the police and platforms block them."
+    },
+    "scammer_name": {
+      "label": "Name the scammer used",
+      "why": "Goes in the police report."
+    },
+    "seller_address": {
+      "label": "Seller's postal address",
+      "why": "A legal notice must be delivered to an address, with proof."
+    },
+    "seller_contact": {
+      "label": "Seller's email or contact",
+      "why": "Where the first letter is sent."
+    },
+    "seller_name": {
+      "label": "Seller or shop name",
+      "why": "The letter is addressed to them."
+    },
+    "transaction_id": {
+      "label": "Transaction or reference ID",
+      "why": "Banks trace payments by this reference."
+    }
   },
   "questions": {
     "metaTitle": "Questions",
@@ -263,10 +464,22 @@
     "how": {
       "eyebrow": "How it works",
       "title": "From \"we'll get back to you\" to a court-ready file",
-      "s1": { "title": "Tell your story", "body": "In your own words. Pick your country: every country is supported." },
-      "s2": { "title": "Add your evidence", "body": "Receipts, screenshots, emails. The agent reads the facts and shows where each one came from." },
-      "s3": { "title": "Approve each letter", "body": "Every amount, date and ID is checked against your evidence. You approve, edit or reject." },
-      "s4": { "title": "Climb the ladder", "body": "No reply or a refusal? The agent drafts the next rung, on time, up to consumer court." }
+      "s1": {
+        "title": "Tell your story",
+        "body": "In your own words. Pick your country: every country is supported."
+      },
+      "s2": {
+        "title": "Add your evidence",
+        "body": "Receipts, screenshots, emails. The agent reads the facts and shows where each one came from."
+      },
+      "s3": {
+        "title": "Approve each letter",
+        "body": "Every amount, date and ID is checked against your evidence. You approve, edit or reject."
+      },
+      "s4": {
+        "title": "Climb the ladder",
+        "body": "No reply or a refusal? The agent drafts the next rung, on time, up to consumer court."
+      }
     },
     "showcase": {
       "eyebrow": "Agent reasoning",
@@ -295,10 +508,22 @@
     "safety": {
       "eyebrow": "Safety",
       "title": "Built so it can't go rogue",
-      "approve": { "title": "You approve everything", "body": "Nothing is sent until you click approve. The AI has no way to send." },
-      "facts": { "title": "Facts only", "body": "Every number, date and ID is checked against your evidence. Your own edits too." },
-      "private": { "title": "Private by default", "body": "Runs on your computer with a local model. Evidence is encrypted; card numbers and codes are masked." },
-      "legal": { "title": "Not legal advice", "body": "A self-help tool. Letters say so, and playbooks cite their sources." }
+      "approve": {
+        "title": "You approve everything",
+        "body": "Nothing is sent until you click approve. The AI has no way to send."
+      },
+      "facts": {
+        "title": "Facts only",
+        "body": "Every number, date and ID is checked against your evidence. Your own edits too."
+      },
+      "private": {
+        "title": "Private by default",
+        "body": "Runs on your computer with a local model. Evidence is encrypted; card numbers and codes are masked."
+      },
+      "legal": {
+        "title": "Not legal advice",
+        "body": "A self-help tool. Letters say so, and playbooks cite their sources."
+      }
     },
     "cta": {
       "title": "Ready to stop waiting?",
@@ -383,7 +608,8 @@
       "questions": "Answer a few questions",
       "checklist": "Do the checklist",
       "confirmDelivery": "Confirm delivery of {step}",
-      "waitingReply": "Waiting for their reply"
+      "waitingReply": "Waiting for their reply",
+      "confirmResolution": "Confirm it's resolved"
     },
     "cta": {
       "open": "Open case",
@@ -391,7 +617,8 @@
       "questions": "Answer questions",
       "urgent_checklist": "Do this now",
       "confirm_delivery": "Confirm delivery",
-      "deadline": "Open case"
+      "deadline": "Open case",
+      "confirm_resolution": "Confirm the result"
     },
     "empty": {
       "title": "No cases yet",
@@ -470,18 +697,26 @@
     "case_withdrawn": "Case withdrawn",
     "ladder_complete": "Ladder finished",
     "demo_case": "Demo case (fictional)",
-    "title_set": "Case title set"
+    "title_set": "Case title set",
+    "recipient_set": "You changed the recipient",
+    "resolution_rejected": "You said it's not resolved"
   },
   "review": {
     "metaTitle": "Review draft",
     "title": "Review: {step}",
     "backToCase": "Back to the case",
-    "noDraft": { "title": "No draft waiting", "body": "There's no letter waiting for your approval in this case right now." },
+    "noDraft": {
+      "title": "No draft waiting",
+      "body": "There's no letter waiting for your approval in this case right now."
+    },
     "letterLanguage": "Letter language",
     "compareWith": "Compare with",
     "sideBySide": "Side by side",
     "edit": "Edit",
-    "legend": { "fact": "verified fact", "blank": "blank to fill in" },
+    "legend": {
+      "fact": "verified fact",
+      "blank": "blank to fill in"
+    },
     "noRecipient": "no recipient yet",
     "subject": "Subject",
     "body": "Letter",
@@ -501,7 +736,8 @@
       "reject": "Reject",
       "fillBlanks": "Fill in {count, plural, one {# blank} other {# blanks}} first.",
       "fixFacts": "Fix the values the fact check flagged first.",
-      "youApprove": "Only you can approve. The agent has no way to send."
+      "youApprove": "Only you can approve. The agent has no way to send.",
+      "checkRecipient": "Check the recipient first."
     },
     "checks": {
       "title": "Safety checks",
@@ -524,13 +760,25 @@
       "facts": "Facts checked against your evidence",
       "noBlanks": "No blanks left",
       "disclaimer": "Not-legal-advice notice included",
-      "cta": "Approve & send"
+      "cta": "Approve & send",
+      "recipient": "Recipient checked by you: {recipient}"
     },
     "rejectDialog": {
       "title": "Reject this draft?",
       "body": "The agent writes a new draft. Tell it what to change.",
       "reason": "What should change?",
       "cta": "Reject and redraft"
+    },
+    "recipient": {
+      "label": "Goes to",
+      "fromEvidence": "Read from your evidence ({file}). Text in a document can be planted, so check it.",
+      "fromYou": "You entered this address.",
+      "fromAgent": "Filled in by the agent. Check it.",
+      "changed": "Recipient changed: earlier letters for this step went to {previous}.",
+      "confirm": "I checked this is the right recipient",
+      "hint": "Letters can contain your name, address and order details.",
+      "change": "Change the recipient",
+      "save": "Save"
     }
   },
   "reply": {
@@ -562,7 +810,14 @@
     "resolvedTitle": "Case resolved",
     "resolvedBody": "Nothing more will be sent.",
     "reviewNext": "Review the next letter",
-    "answerNext": "Answer questions"
+    "answerNext": "Answer questions",
+    "confirmResolution": {
+      "title": "Did they really resolve it?",
+      "body": "The agent thinks this reply gives you what you asked for. Replies can be written to mislead, so the case only closes when you confirm.",
+      "yes": "Yes, it's resolved",
+      "no": "No, keep going",
+      "notResolvedLabel": "What did they actually do?"
+    }
   },
   "urgent": {
     "metaTitle": "Urgent checklist",

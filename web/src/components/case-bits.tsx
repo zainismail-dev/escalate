@@ -72,6 +72,7 @@ const STATUS_TONE: Record<CaseStatus, "neutral" | "lime" | "success" | "warning"
   drafting: "info",
   awaiting_approval: "lime",
   waiting_reply: "neutral",
+  confirm_resolution: "lime",
   pick_next: "info",
   resolved: "success",
   closed_unresolved: "warning",

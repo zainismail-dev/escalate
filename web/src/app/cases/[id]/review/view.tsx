@@ -8,6 +8,7 @@ import { AgentProgress, lastEventId } from "@/components/agent-progress";
 import { useFactLabel } from "@/components/fact-chip";
 import { Letter } from "@/components/letter";
 import { LanguagePicker } from "@/components/pickers";
+import { RecipientConfirm } from "@/components/recipient-confirm";
 import { ErrorState, FactCheckBlocked, PageSkeleton } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +44,8 @@ export function ReviewDraft({ id }: { id: number }) {
   const [compare, setCompare] = useState<string | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [dialog, setDialog] = useState<"approve" | "reject" | null>(null);
+  // The address the user ticked "I checked" for: any change to the recipient un-ticks it.
+  const [checkedRecipient, setCheckedRecipient] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [redrafting, setRedrafting] = useState(false);
   const [since, setSince] = useState(0);
@@ -104,7 +107,7 @@ export function ReviewDraft({ id }: { id: number }) {
   }
 
   async function approve() {
-    const out = await act.run(() => api.approve(msg.id));
+    const out = await act.run(() => api.approve(msg.id, msg.recipient));
     if (out) {
       router.push(`/cases/${c!.id}`);
       return;
@@ -124,11 +127,14 @@ export function ReviewDraft({ id }: { id: number }) {
   }
 
   const failingChecks = r.checks.filter((ch) => !ch.ok);
+  const recipientOk = !msg.recipient || checkedRecipient === msg.recipient;
   const approveDisabledReason = blanksLeft
     ? t("decision.fillBlanks", { count: blanksLeft })
     : !r.checks.find((ch) => ch.id === "facts")?.ok
       ? t("decision.fixFacts")
-      : null;
+      : !recipientOk
+        ? t("decision.checkRecipient")
+        : null;
 
   return (
     <div className="space-y-6">
@@ -297,11 +303,21 @@ export function ReviewDraft({ id }: { id: number }) {
             <p className="label-mono text-muted">{t("decision.eyebrow")}</p>
             <h2 id="decision" className="mt-1 font-display text-xl">{t("decision.title")}</h2>
             <p className="mt-1 text-sm text-text-2">{t("decision.body", { recipient: msg.recipient ?? t("noRecipient"), channel: tch(msg.channel) })}</p>
+            {r.recipient_check && (
+              <RecipientConfirm
+                key={`${msg.id}:${msg.recipient}`}
+                check={r.recipient_check}
+                messageId={msg.id}
+                checked={checkedRecipient === msg.recipient}
+                onChecked={(v) => setCheckedRecipient(v ? msg.recipient : null)}
+                onChanged={() => void reviewQ.reload()}
+              />
+            )}
             <Button
               variant="lime"
               size="lg"
               className="mt-4 w-full"
-              disabled={!r.can_approve || act.busy || redrafting}
+              disabled={!r.can_approve || !recipientOk || act.busy || redrafting}
               aria-describedby={approveDisabledReason ? "approve-why" : undefined}
               onClick={() => setDialog("approve")}
               data-testid="approve"
@@ -394,6 +410,7 @@ export function ReviewDraft({ id }: { id: number }) {
                 {t("confirm.body", { recipient: msg.recipient ?? t("noRecipient"), channel: tch(msg.channel) })}
               </DialogDescription>
               <ul className="mt-4 space-y-1 text-sm text-text-2">
+                {msg.recipient && <li>✓ {t("confirm.recipient", { recipient: msg.recipient })}</li>}
                 <li>✓ {t("confirm.facts")}</li>
                 <li>✓ {t("confirm.noBlanks")}</li>
                 <li>✓ {t("confirm.disclaimer")}</li>

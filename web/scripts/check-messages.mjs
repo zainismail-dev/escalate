@@ -35,8 +35,8 @@ for (const file of files(join(root, "src"))) {
 
 // Keys built at runtime from API values.
 const DYNAMIC = {
-  status: ["intake", "urgent_checklist", "drafting", "awaiting_approval", "waiting_reply", "pick_next", "resolved", "closed_unresolved", "withdrawn"],
-  waiting: ["questions", "urgent_checklist", "approve_draft", "confirm_delivery", "waiting_reply"],
+  status: ["intake", "urgent_checklist", "drafting", "awaiting_approval", "waiting_reply", "pick_next", "confirm_resolution", "resolved", "closed_unresolved", "withdrawn"],
+  waiting: ["questions", "urgent_checklist", "approve_draft", "confirm_delivery", "waiting_reply", "confirm_resolution"],
   verdict: ["resolved", "partial", "refused", "no_reply"],
   channel: ["email", "post", "court", "web_form", "info"],
   caseType: ["refund_refused", "subscription_cancel", "scam", "other", "unknown"],
@@ -45,13 +45,13 @@ const DYNAMIC = {
   "why.reasons": ["first_step", "after_verdict", "skipped", "position", "channel", "channel_only", "wait", "proof", "deadline", "deadline_late", "playbook"],
   "errors": ["model_offline.title", "model_offline.body", "offline_api.title", "offline_api.body", "fact_check.title", "rate_limited.title", "other.title", "other.body"],
   "review.checks": ["facts", "blanks", "tone", "disclaimer", "no_secrets"],
-  "cases.cta": ["open", "approve_draft", "questions", "urgent_checklist", "confirm_delivery"],
+  "cases.cta": ["open", "approve_draft", "questions", "urgent_checklist", "confirm_delivery", "confirm_resolution"],
   "progress.steps": ["classify", "playbook", "facts", "draft", "check", "reply", "judge", "next"],
   "wizard.steps": ["where", "what", "evidence", "missing", "review"],
   "wizard.titles": ["where", "what", "evidence", "missing", "review"],
   "wizard.intros": ["where", "what", "evidence", "missing", "review"],
 };
-for (const k of ["approve_draft", "questions", "urgent_checklist", "confirm_delivery", "waiting_reply", "start", "resolved", "closed_unresolved", "withdrawn", "none"]) {
+for (const k of ["approve_draft", "questions", "urgent_checklist", "confirm_delivery", "waiting_reply", "confirm_resolution", "start", "resolved", "closed_unresolved", "withdrawn", "none"]) {
   for (const f of ["title", "body", "cta"]) (DYNAMIC.nextMove ??= []).push(`${k}.${f}`);
 }
 for (const [ns, keys] of Object.entries(DYNAMIC)) for (const k of keys) if (!has(`${ns}.${k}`)) errors.push(`dynamic key missing: ${ns}.${k}`);

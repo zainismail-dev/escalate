@@ -12,7 +12,7 @@ from escalate.db.models import Case
 from escalate.evidence.store import save_upload
 from escalate.export.case_pdf import build_case_html, build_case_pdf
 from escalate.export.pdf import pdf_available
-from tests.agent_env import AgentEnv, agent_env, facts_reply  # noqa: F401
+from tests.agent_env import AgentEnv, agent_env, approve_pending, facts_reply  # noqa: F401
 from tests.factories import LED_FACTS, LED_TEXT
 
 FIX = Path(__file__).parent / "fixtures"
@@ -32,7 +32,7 @@ def _led_case_with_history(env: AgentEnv) -> int:
         reply["facts"]["order_id"]["evidence_id"] = ev_id  # the receipt is the source
         env.llm.rules[0] = ("You extract facts", reply)
         runner.start_case(cid)
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
         clock.tick(timedelta(days=3))
         runner.resume_with_reply(cid, "We will replace it when the company claim is approved.")
     return cid

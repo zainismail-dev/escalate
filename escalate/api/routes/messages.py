@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 
 from escalate.agent import review as rv
 from escalate.agent import runner
-from escalate.agent.approval import approved_text, edit_message
+from escalate.agent.approval import approved_text, edit_message, same_recipient
+from escalate.agent.intake import save_answers
 from escalate.api.deps import get_message, get_session
 from escalate.api.routes.cases import run_out
 from escalate.api.schemas import (
@@ -19,13 +20,18 @@ from escalate.api.schemas import (
     MessageOut,
     PreviewOut,
     ProblemOut,
+    RecipientCheckOut,
+    RecipientIn,
     RejectIn,
     ReviewFactOut,
     ReviewOut,
     RunOut,
     SegmentOut,
 )
+from escalate.channels.email_smtp import EMAIL_RE
 from escalate.config import get_settings
+from escalate.db.events import log_event
+from escalate.db.models import Message
 from escalate.export.pdf import letter_pdf
 from escalate.i18n.countries import is_rtl, letter_language, primary_language
 from escalate.i18n.formatting import locale_for
@@ -59,9 +65,76 @@ def edit(message_id: int, body: MessageEdit, session: Session = Depends(get_sess
 
 @router.post("/{message_id}/approve", response_model=RunOut)
 def approve(message_id: int, body: ApproveIn, session: Session = Depends(get_session)) -> RunOut:
-    """Body must include {"confirm": true}: approving sends the letter."""
+    """Body: {"confirm": true, "recipient": "<the address the user checked>"}. Approving sends."""
     case_id = _pending_case(session, message_id, "approve_draft")
-    return run_out(runner.resume_with_decision(case_id, "approve", body.body, body.subject))
+    return run_out(
+        runner.resume_with_decision(
+            case_id, "approve", body.body, body.subject, recipient=body.recipient
+        )
+    )
+
+
+def _recipient_fact(case_playbook_id: str | None, step_id: str) -> str | None:
+    if not case_playbook_id:
+        return None
+    pb = get_playbook(case_playbook_id)
+    ids = {s.id for s in pb.steps}
+    return pb.step(step_id).recipient_fact if step_id in ids else None
+
+
+@router.post("/{message_id}/recipient", response_model=MessageOut)
+def set_recipient(
+    message_id: int, body: RecipientIn, session: Session = Depends(get_session)
+) -> MessageOut:
+    """The user corrects a draft's recipient. It becomes a fact the user provided, so
+    evidence read later can't replace it."""
+    msg = get_message(session, message_id)
+    if msg.direction != "out" or msg.status != "draft":
+        raise HTTPException(409, f"message {message_id} is not a draft")
+    value = " ".join(body.recipient.split())
+    if msg.channel == "email" and not EMAIL_RE.match(value):
+        raise HTTPException(422, "enter a valid email address")
+    msg.recipient = value
+    key = _recipient_fact(msg.case.playbook_id, msg.step_id)
+    if key:
+        save_answers(session, msg.case, {key: value})
+    log_event(session, msg.case_id, "recipient_set", {"message_id": msg.id, "fact": key})
+    session.commit()
+    return MessageOut.model_validate(msg)
+
+
+def recipient_check(msg: Message) -> RecipientCheckOut:
+    """Where the recipient came from, and whether it differs from an earlier approved letter
+    for the same role (a "recipient changed" warning)."""
+    case = msg.case
+    key = _recipient_fact(case.playbook_id, msg.step_id)
+    fact = next((f for f in case.facts if f.key == key), None) if key else None
+    files = {e.id: e.filename for e in case.evidence}
+    if fact is None or not same_recipient(fact.value, msg.recipient):
+        source, filename = ("agent" if msg.recipient else "none"), None
+    elif fact.source_evidence_id is not None:
+        source, filename = "evidence", files.get(fact.source_evidence_id)
+    elif fact.confidence >= 1.0:
+        source, filename = "you", None
+    else:
+        source, filename = "agent", None
+    earlier = [
+        m.recipient
+        for m in case.messages
+        if m.approved_at
+        and m.id != msg.id
+        and m.recipient
+        and _recipient_fact(case.playbook_id, m.step_id) == key
+    ]
+    previous = earlier[-1] if earlier else None
+    changed = bool(previous and msg.recipient and not same_recipient(previous, msg.recipient))
+    return RecipientCheckOut(
+        recipient=msg.recipient,
+        source=source,
+        source_filename=filename,
+        previous=previous,
+        changed=changed,
+    )
 
 
 @router.post("/{message_id}/reject", response_model=RunOut)
@@ -140,6 +213,7 @@ def review(message_id: int, session: Session = Depends(get_session)) -> ReviewOu
         can_approve=waiting and all(c.ok for c in checks if c.id in blocking),
         template_languages=template_languages(tdir, step.template) if step else [],
         step_name=step.title if step else None,
+        recipient_check=recipient_check(msg),
     )
 
 

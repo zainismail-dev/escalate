@@ -1,6 +1,6 @@
 import path from "node:path";
 import { expect, type Page, test } from "@playwright/test";
-import { API_URL, apiContext, demoCases, draftId, settled } from "./helpers";
+import { API_URL, apiContext, demoCases, draftId, pendingDraft, settled } from "./helpers";
 
 /**
  * Screenshots of every page for the README: `make screenshots` (needs E2E_RESET=1 and demo
@@ -108,7 +108,10 @@ test("log a reply", async ({ page }) => {
   const { GB } = await demoCases();
   // Approve the demo letter (DEMO_MODE: nothing leaves the machine) so the case waits for a reply.
   const ctx = await apiContext();
-  const ok = await ctx.post(`${API_URL}/messages/${await draftId(GB.id)}/approve`, { data: { confirm: true } });
+  const draft = await pendingDraft(GB.id);
+  const ok = await ctx.post(`${API_URL}/messages/${draft.id}/approve`, {
+    data: { confirm: true, recipient: draft.recipient },
+  });
   expect(ok.ok()).toBeTruthy();
   await ctx.dispose();
   await page.goto(`/cases/${GB.id}/reply`);

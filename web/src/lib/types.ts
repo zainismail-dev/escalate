@@ -6,6 +6,7 @@ export type CaseStatus =
   | "drafting"
   | "awaiting_approval"
   | "waiting_reply"
+  | "confirm_resolution"
   | "pick_next"
   | "resolved"
   | "closed_unresolved"
@@ -17,6 +18,7 @@ export type WaitingFor =
   | "approve_draft"
   | "confirm_delivery"
   | "waiting_reply"
+  | "confirm_resolution"
   | null;
 
 export interface Fact {
@@ -183,6 +185,15 @@ export interface Review {
   can_approve: boolean;
   template_languages: string[];
   step_name: string | null;
+  recipient_check: RecipientCheck | null;
+}
+
+export interface RecipientCheck {
+  recipient: string | null;
+  source: "evidence" | "you" | "agent" | "none";
+  source_filename: string | null;
+  previous: string | null;
+  changed: boolean;
 }
 
 export interface Preview {

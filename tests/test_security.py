@@ -14,7 +14,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from escalate.agent import runner
-from escalate.agent.approval import approve_message
 from escalate.agent.draft import draft_step
 from escalate.agent.fact_check import code_check
 from escalate.api.main import create_app
@@ -28,8 +27,15 @@ from escalate.pii import PiiFilter, mask_pii
 from escalate.playbooks.loader import get_playbook
 from escalate.safety import HarassmentPattern, new_case_limiter
 from escalate.scheduler import jobs
-from tests.agent_env import AgentEnv, agent_env  # noqa: F401
-from tests.factories import APP_BASE_URL, APP_HEADERS, LED_FACTS, LED_TEXT, led_case
+from tests.agent_env import AgentEnv, agent_env, approve_pending  # noqa: F401
+from tests.factories import (
+    APP_BASE_URL,
+    APP_HEADERS,
+    LED_FACTS,
+    LED_TEXT,
+    approve_as_user,
+    led_case,
+)
 from tests.fakes.fake_smtp import FakeSMTP
 
 ROOT = Path(__file__).resolve().parents[1] / "escalate"
@@ -168,7 +174,7 @@ def test_delete_case_removes_rows_files_jobs_and_checkpoint(
             ev = save_upload(s, cid, "r.txt", b"receipt BM-48213", env.settings)
             path = Path(ev.file_path)
         runner.start_case(cid)
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
         assert env.scheduler.get_jobs() and path.exists()
 
         runner.delete_case(cid)
@@ -225,11 +231,11 @@ def test_repeated_recipient_is_refused(db: Session) -> None:
     pb = get_playbook("intl-generic-refund-refused")
     for _ in range(3):
         case = led_case(db)
-        approve_message(db, draft_step(db, case, pb, pb.steps[0], use_llm=False).id)
+        approve_as_user(db, draft_step(db, case, pb, pb.steps[0], use_llm=False).id)
     fourth = led_case(db)
     msg = draft_step(db, fourth, pb, pb.steps[0], use_llm=False)
     with pytest.raises(HarassmentPattern):
-        approve_message(db, msg.id)
+        approve_as_user(db, msg.id)
     assert msg.approved_at is None
 
 
@@ -237,7 +243,7 @@ def test_same_case_can_write_to_its_recipient_repeatedly(db: Session) -> None:
     pb = get_playbook("intl-generic-refund-refused")
     case = led_case(db)
     for step in pb.steps[:2]:
-        approve_message(db, draft_step(db, case, pb, step, use_llm=False).id)
+        approve_as_user(db, draft_step(db, case, pb, step, use_llm=False).id)
 
 
 # --- 5. DEMO_MODE ---------------------------------------------------------------------
@@ -256,7 +262,7 @@ def test_demo_mode_never_sends_real_email(agent_env: AgentEnv, demo: None) -> No
     with freeze_time(DAY0):
         cid = agent_env.new_case(description=LED_TEXT, country="PK", region="PK-SD")
         runner.start_case(cid)
-        r = runner.resume_with_decision(cid, "approve")
+        r = approve_pending(cid)
     assert r.waiting_for == "waiting_reply"
     assert FakeSMTP.all_sent() == []  # the fake SMTP override is ignored too
     with agent_env.session() as s:

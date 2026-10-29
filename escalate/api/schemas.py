@@ -182,6 +182,25 @@ class ConfirmIn(BaseModel):
 class ApproveIn(ConfirmIn):
     body: str | None = None
     subject: str | None = None
+    # The exact recipient the user checked. Required when the draft has one.
+    recipient: str | None = None
+
+
+class RecipientIn(BaseModel):
+    recipient: str = Field(min_length=3, max_length=500)
+
+
+class ResolutionIn(BaseModel):
+    resolved: bool
+    verdict: Literal["partial", "refused", "no_reply"] | None = None  # when not resolved
+
+
+class RecipientCheckOut(BaseModel):
+    recipient: str | None
+    source: Literal["evidence", "you", "agent", "none"]
+    source_filename: str | None = None
+    previous: str | None = None  # the address an earlier approved letter for this role went to
+    changed: bool = False
 
 
 class RejectIn(BaseModel):
@@ -290,6 +309,7 @@ class ReviewOut(BaseModel):
     can_approve: bool
     template_languages: list[str]
     step_name: str | None = None
+    recipient_check: RecipientCheckOut | None = None
 
 
 class PreviewOut(BaseModel):

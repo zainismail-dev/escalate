@@ -27,6 +27,7 @@ from escalate.api.schemas import (
     ReasonOut,
     ReplyIn,
     ReplyOut,
+    ResolutionIn,
     RunOut,
     SourceOut,
     VerdictIn,
@@ -255,6 +256,16 @@ def log_reply(case_id: int, body: ReplyIn, session: Session = Depends(get_sessio
             out.promise, out.promise_date = p.get("promise"), p.get("promise_date")
             out.condition = p.get("condition")
     return out
+
+
+@router.post("/{case_id}/resolution", response_model=RunOut)
+def confirm_resolution(
+    case_id: int, body: ResolutionIn, session: Session = Depends(get_session)
+) -> RunOut:
+    """The user confirms (or denies) that the company's reply resolved the case."""
+    get_case(session, case_id)
+    session.close()
+    return run_out(runner.confirm_resolution(case_id, body.resolved, body.verdict))
 
 
 @router.post("/{case_id}/verdict", response_model=RunOut)

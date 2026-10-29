@@ -14,6 +14,18 @@ class ApprovalError(Exception):
     """The message cannot be approved or rejected in its current state."""
 
 
+class RecipientNotConfirmed(ApprovalError):
+    """The user must confirm the exact recipient (it may come from evidence the model read)."""
+
+    def __init__(self, recipient: str) -> None:
+        super().__init__(f"confirm the recipient before approving: {recipient}")
+        self.recipient = recipient
+
+
+def same_recipient(a: str | None, b: str | None) -> bool:
+    return " ".join((a or "").split()).casefold() == " ".join((b or "").split()).casefold()
+
+
 class UnsupportedFacts(ApprovalError):
     def __init__(self, issues: list[str]) -> None:
         super().__init__("; ".join(issues))
@@ -55,10 +67,15 @@ def approve_message(
     edited_body: str | None = None,
     edited_subject: str | None = None,
     reference: str = "",
+    recipient: str | None = None,
 ) -> Message:
     """Approve a draft. The final text (with any edits, including earlier PUT edits) must pass
-    the code fact check against the facts and the fact-checked draft."""
+    the code fact check against the facts and the fact-checked draft, and the approver must
+    state the exact recipient they checked: a recipient read from evidence by the model is
+    never used on the model's word alone (prompt injection in evidence)."""
     msg = _get_draft(session, message_id)
+    if msg.recipient and not same_recipient(recipient, msg.recipient):
+        raise RecipientNotConfirmed(msg.recipient)
     edited = edited_body is not None or edited_subject is not None
     body = mask_pii(edited_body) if edited_body is not None else msg.body
     subject = mask_pii(edited_subject) if edited_subject is not None else msg.subject
@@ -77,7 +94,12 @@ def approve_message(
     msg.status = "approved"
     msg.approved_at = utcnow()
     session.flush()
-    log_event(session, msg.case_id, "message_approved", {"message_id": msg.id, "step": msg.step_id})
+    log_event(
+        session,
+        msg.case_id,
+        "message_approved",
+        {"message_id": msg.id, "step": msg.step_id, "recipient": msg.recipient},
+    )
     return msg
 
 

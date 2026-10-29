@@ -8,7 +8,6 @@ from typing import Any
 import pytest
 from sqlalchemy.orm import Session
 
-from escalate.agent.approval import approve_message
 from escalate.agent.draft import draft_step
 from escalate.channels import (
     Attachment,
@@ -27,7 +26,7 @@ from escalate.config import Settings
 from escalate.db.models import CaseFact, Evidence, Message
 from escalate.export.pdf import letter_pdf, pdf_available
 from escalate.playbooks.loader import get_playbook
-from tests.factories import led_case
+from tests.factories import approve_as_user, led_case
 from tests.fakes.fake_smtp import FakeSMTP
 
 
@@ -45,7 +44,7 @@ def _msg(db: Session, step: str = "s1_written_demand", approve: bool = True) -> 
     case = led_case(db)
     pb = get_playbook("intl-generic-refund-refused")
     msg = draft_step(db, case, pb, pb.step(step), use_llm=False)
-    return approve_message(db, msg.id) if approve else msg
+    return approve_as_user(db, msg.id) if approve else msg
 
 
 def _pk_notice(db: Session, approve: bool = True) -> Message:
@@ -55,7 +54,7 @@ def _pk_notice(db: Session, approve: bool = True) -> Message:
     db.refresh(case)
     pb = get_playbook("pk-ecommerce-refund-refused")
     msg = draft_step(db, case, pb, pb.step("s3_legal_notice"), use_llm=False)
-    return approve_message(db, msg.id) if approve else msg
+    return approve_as_user(db, msg.id) if approve else msg
 
 
 # --- email --------------------------------------------------------------------------

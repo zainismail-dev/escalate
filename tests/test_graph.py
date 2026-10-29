@@ -13,7 +13,7 @@ from escalate.channels import NotApproved, ProofRequired
 from escalate.db import session as db_session
 from escalate.db.models import CaseStatus, Message
 from escalate.evidence.store import save_upload
-from tests.agent_env import AgentEnv, agent_env, make_llm  # noqa: F401
+from tests.agent_env import AgentEnv, agent_env, approve_pending, make_llm  # noqa: F401
 from tests.factories import LED_FACTS, LED_TEXT
 from tests.fakes.fake_smtp import FakeSMTP
 
@@ -51,7 +51,7 @@ def test_led_case_runs_up_the_ladder(agent_env: AgentEnv) -> None:  # noqa: F811
         assert case.status == CaseStatus.AWAITING_APPROVAL
 
         # approve -> email sent -> waiting 5 days
-        r = runner.resume_with_decision(cid, "approve")
+        r = approve_pending(cid)
         assert r.waiting_for == "waiting_reply"
         assert len(FakeSMTP.all_sent()) == 1
         assert FakeSMTP.all_sent()[0]["To"] == "support@brightmart.example"
@@ -66,7 +66,7 @@ def test_led_case_runs_up_the_ladder(agent_env: AgentEnv) -> None:  # noqa: F811
         assert env.case(cid).current_step == "s2_platform"
 
         # approve the follow-up; it's a web form, so the user confirms they submitted it
-        r = runner.resume_with_decision(cid, "approve")
+        r = approve_pending(cid)
         assert r.waiting_for == "confirm_delivery"
         r = runner.confirm_delivery(cid)
         assert r.waiting_for == "waiting_reply"
@@ -81,7 +81,7 @@ def test_led_case_runs_up_the_ladder(agent_env: AgentEnv) -> None:  # noqa: F811
         assert env.case(cid).current_step == "s3_legal_notice"
 
         # approve the notice -> printable post; proof of delivery required
-        r = runner.resume_with_decision(cid, "approve")
+        r = approve_pending(cid)
         assert r.waiting_for == "confirm_delivery"
         with pytest.raises(ProofRequired):
             runner.confirm_delivery(cid)
@@ -149,7 +149,7 @@ def test_led_promise_reply_jumps_to_legal_notice(agent_env: AgentEnv) -> None:  
     with freeze_time(DAY0) as clock:
         cid = _new_led(env)
         runner.start_case(cid)
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
         clock.tick(timedelta(days=2))
         r = runner.resume_with_reply(
             cid, "We will replace the LED when the company claim is approved."
@@ -175,8 +175,12 @@ def test_resolved_reply_ends_case(agent_env: AgentEnv) -> None:  # noqa: F811
     with freeze_time(DAY0):
         cid = _new_led(env)
         runner.start_case(cid)
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
         r = runner.resume_with_reply(cid, "We have refunded PKR 45,000 today.")
+        # A "resolved" verdict waits for the user (a reply could be written to fool the model).
+        assert r.waiting_for == "confirm_resolution"
+        assert env.case(cid).status == CaseStatus.CONFIRM_RESOLUTION
+        r = runner.confirm_resolution(cid, resolved=True)
     assert r.pending is None
     assert env.case(cid).status == CaseStatus.RESOLVED
 
@@ -199,7 +203,7 @@ def test_edit_with_invented_amount_is_blocked(agent_env: AgentEnv) -> None:  # n
         cid = _new_led(env)
         body = runner.start_case(cid).pending["draft"]["body"]  # type: ignore[index]
         with pytest.raises(UnsupportedFacts):
-            runner.resume_with_decision(cid, "approve", edited_body=body + "\nPay 99,999 too.")
+            approve_pending(cid, edited_body=body + "\nPay 99,999 too.")
         assert runner.pending(cid)["type"] == "approve_draft"  # type: ignore[index]
     assert FakeSMTP.all_sent() == []
 
@@ -244,7 +248,7 @@ def test_withdraw_cancels_wake(agent_env: AgentEnv) -> None:  # noqa: F811
     with freeze_time(DAY0) as clock:
         cid = _new_led(env)
         runner.start_case(cid)
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
         runner.withdraw(cid, "settled privately")
         assert env.scheduler.get_jobs() == []
         _tick(env, clock, 10)
@@ -279,7 +283,7 @@ def test_smtp_failure_can_be_retried(agent_env: AgentEnv) -> None:  # noqa: F811
         cid = _new_led(env)
         runner.start_case(cid)
         with pytest.raises(OSError):
-            runner.resume_with_decision(cid, "approve")
+            approve_pending(cid)
         override_channel("email", good)
         r = runner.retry(cid)
         assert r.waiting_for == "waiting_reply"

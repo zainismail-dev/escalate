@@ -84,8 +84,10 @@ def extract(
         if key not in allowed or not value or fact.confidence < MIN_CONFIDENCE:
             continue
         old = existing.get(key)
+        if old is not None and old.source_evidence_id is None and old.confidence >= 1.0:
+            continue  # the user typed it in: evidence (or text hidden in it) never overrides it
         if old is not None and old.confidence > fact.confidence:
-            continue  # e.g. the user typed it in themselves
+            continue
         src = fact.evidence_id if fact.evidence_id in valid_evidence else None
         if old is None:
             old = CaseFact(case_id=case.id, key=key, value=value)

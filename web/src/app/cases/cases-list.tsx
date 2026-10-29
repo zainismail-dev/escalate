@@ -14,7 +14,7 @@ import type { CaseStatus, CaseSummary } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 import { cn } from "@/lib/utils";
 
-const NEEDS_YOU = new Set(["approve_draft", "questions", "urgent_checklist", "confirm_delivery"]);
+const NEEDS_YOU = new Set(["approve_draft", "questions", "urgent_checklist", "confirm_delivery", "confirm_resolution"]);
 const STATUSES: CaseStatus[] = [
   "urgent_checklist",
   "intake",
@@ -33,6 +33,8 @@ function actionHref(c: CaseSummary) {
       return `/cases/${c.id}/questions`;
     case "urgent_checklist":
       return `/cases/${c.id}/urgent`;
+    case "confirm_resolution":
+      return `/cases/${c.id}/reply`;
     default:
       return `/cases/${c.id}`;
   }
@@ -55,6 +57,8 @@ function useNextStep() {
         return t("confirmDelivery", { step });
       case "waiting_reply":
         return t("waitingReply");
+      case "confirm_resolution":
+        return t("confirmResolution");
       default:
         return ts(c.status);
     }

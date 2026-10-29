@@ -23,5 +23,9 @@
   "page.questions": "سوالات",
   "page.reply": "جواب درج کریں",
   "page.cases": "میرے کیس",
-  "page.settings": "ترتیبات"
+  "page.settings": "ترتیبات",
+  "review.recipient_checked": "I checked the recipient: {to}",
+  "pending.confirm_resolution": "The agent thinks the company's reply resolves your case. Confirm before it closes.",
+  "pending.resolved_yes": "Yes, it's resolved",
+  "pending.resolved_no": "No, keep going"
 }

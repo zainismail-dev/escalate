@@ -42,6 +42,12 @@ def _started(client: TestClient) -> int:
     return cid
 
 
+def confirm_body(client: TestClient, mid: object) -> dict:
+    """What the web app sends on approve: the confirmation and the recipient the user checked."""
+    recipient = client.get(f"/messages/{mid}/review").json()["message"]["recipient"]
+    return {"confirm": True, "recipient": recipient}
+
+
 def _create(client: TestClient, **kw: object) -> dict:
     body = {"description": LED_TEXT, "country": "PK", "region": "PK-SD", **kw}
     r = client.post("/cases", json=body)
@@ -90,18 +96,21 @@ def test_full_flow_over_http(client: TestClient) -> None:
         # edit: warnings for an invented amount, then approval is refused
         e = client.put(f"/messages/{mid}", json={"body": draft["body"] + "\nPay 77,777."})
         assert e.json()["warnings"] == ["number 77777 is not in the case facts"]
-        bad = client.post(f"/messages/{mid}/approve", json={"confirm": True})
+        bad = client.post(f"/messages/{mid}/approve", json=confirm_body(client, mid))
         assert bad.status_code == 422
         assert bad.json()["issues"] == ["number 77777 is not in the case facts"]
         assert FakeSMTP.all_sent() == []
 
         # fix the edit, approve -> sent
         client.put(f"/messages/{mid}", json={"body": draft["body"]})
-        ok = client.post(f"/messages/{mid}/approve", json={"confirm": True})
+        ok = client.post(f"/messages/{mid}/approve", json=confirm_body(client, mid))
         assert ok.status_code == 200, ok.text
         assert ok.json()["waiting_for"] == "waiting_reply"
         assert len(FakeSMTP.all_sent()) == 1
-        assert client.post(f"/messages/{mid}/approve", json={"confirm": True}).status_code == 409
+        assert (
+            client.post(f"/messages/{mid}/approve", json=confirm_body(client, mid)).status_code
+            == 409
+        )
 
         listed = client.get("/cases").json()
         assert listed[0]["status"] == "waiting_reply"

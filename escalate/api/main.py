@@ -17,7 +17,7 @@ from fastapi.responses import JSONResponse
 
 from escalate import __version__
 from escalate.agent import runner
-from escalate.agent.approval import ApprovalError, UnsupportedFacts
+from escalate.agent.approval import ApprovalError, RecipientNotConfirmed, UnsupportedFacts
 from escalate.api.routes import cases, messages, system
 from escalate.api.security import CSRF_HEADER, CsrfGuard, split_list
 from escalate.channels import NotApproved, ProofRequired
@@ -119,6 +119,7 @@ def create_app(startup: bool = True) -> FastAPI:
         (NoEvidence, 422, None),
         (HarassmentPattern, 403, None),
         (runner.RunnerError, 409, None),
+        (RecipientNotConfirmed, 409, lambda e: {"recipient": e.recipient}),  # type: ignore[attr-defined]
         (ApprovalError, 409, None),
         (NotApproved, 409, None),
         (ProofRequired, 422, None),

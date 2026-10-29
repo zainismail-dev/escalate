@@ -25,10 +25,14 @@ export async function demoCases(): Promise<Record<string, DemoCase>> {
 }
 
 export async function draftId(caseId: number): Promise<number> {
+  return (await pendingDraft(caseId)).id;
+}
+
+export async function pendingDraft(caseId: number): Promise<{ id: number; recipient: string | null }> {
   const ctx = await apiContext();
   const c = await (await ctx.get(`${API_URL}/cases/${caseId}`)).json();
   await ctx.dispose();
-  return c.pending_draft.id;
+  return c.pending_draft;
 }
 
 /** Wait until skeletons are gone. */

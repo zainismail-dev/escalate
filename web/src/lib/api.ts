@@ -101,8 +101,16 @@ export const api = {
     request<Preview>("GET", `/messages/${messageId}/preview?language=${encodeURIComponent(language)}`),
   editMessage: (messageId: number, body: string, subject?: string | null) =>
     request<{ message: Message; warnings: string[] }>("PUT", `/messages/${messageId}`, { body, subject }),
-  /** The only way the web app approves a message. The API sets approved_at; then it is sent. */
-  approve: (messageId: number) => request<RunOut>("POST", `/messages/${messageId}/approve`, { confirm: true }),
+  /**
+   * The only way the web app approves a message. The user must state the exact recipient they
+   * checked; the API sets approved_at, then it is sent.
+   */
+  approve: (messageId: number, recipient: string | null) =>
+    request<RunOut>("POST", `/messages/${messageId}/approve`, { confirm: true, recipient }),
+  setRecipient: (messageId: number, recipient: string) =>
+    request<Message>("POST", `/messages/${messageId}/recipient`, { recipient }),
+  confirmResolution: (caseId: number, resolved: boolean, verdict?: string) =>
+    request<RunOut>("POST", `/cases/${caseId}/resolution`, { resolved, verdict: verdict ?? null }),
   reject: (messageId: number, reason: string) => request<RunOut>("POST", `/messages/${messageId}/reject`, { reason }),
   confirmDelivery: (messageId: number, evidenceId?: number) =>
     request<RunOut>("POST", `/messages/${messageId}/confirm-delivery`, { evidence_id: evidenceId ?? null }),

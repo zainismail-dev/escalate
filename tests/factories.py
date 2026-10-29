@@ -2,7 +2,7 @@
 
 from sqlalchemy.orm import Session
 
-from escalate.db.models import Case, CaseFact
+from escalate.db.models import Case, CaseFact, Message
 
 LED_TEXT = (
     "My name is Ali Raza. On 14 February 2026 I bought a 43 inch LED TV from BrightMart "
@@ -52,3 +52,12 @@ def led_case(db: Session, with_facts: bool = True, **kw: object) -> Case:
 APP_ORIGIN = "http://localhost:3000"
 APP_HEADERS = {"Origin": APP_ORIGIN, "X-Escalate-Request": "1"}
 APP_BASE_URL = "http://localhost"
+
+
+def approve_as_user(db: Session, message_id: int, **kw: object) -> Message:
+    """approve_message as the user does it: stating the exact recipient they checked."""
+    from escalate.agent.approval import approve_message
+
+    msg = db.get(Message, message_id)
+    assert msg is not None
+    return approve_message(db, message_id, recipient=msg.recipient, **kw)  # type: ignore[arg-type]

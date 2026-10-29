@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { AgentProgress, lastEventId, REPLY_STAGES } from "@/components/agent-progress";
+import { ResolutionConfirm } from "@/components/resolution-confirm";
 import { ErrorState, PageSkeleton } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,12 +59,15 @@ export function LogReply({ id }: { id: number }) {
   }
 
   const waiting = c.waiting_for === "waiting_reply";
+  const confirming = c.waiting_for === "confirm_resolution";
   return (
     <div className="space-y-6">
       <CaseHeader c={c} heading={t("title")} />
       {act.error && <ErrorState error={act.error} />}
 
-      {!result && !waiting && (
+      {confirming && <ResolutionConfirm caseId={c.id} reason={result?.reason} onDone={() => void caseQ.reload()} />}
+
+      {!result && !waiting && !confirming && (
         <div className="rounded-2xl border border-dashed border-line bg-card p-8 text-center" data-testid="not-waiting">
           <p className="text-text-2">{t("notWaiting")}</p>
           <Button className="mt-3" asChild>
@@ -101,7 +105,7 @@ export function LogReply({ id }: { id: number }) {
 
       {running && <AgentProgress caseId={id} running={running} since={since} stages={REPLY_STAGES} />}
 
-      {result && result.verdict && (
+      {result && result.verdict && !confirming && (
         <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
           <section className="rounded-2xl border-[1.5px] border-line-strong bg-card p-5" aria-labelledby="verdict" data-testid="verdict-card">
             <div className="flex items-center gap-2">

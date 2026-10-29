@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from escalate.agent.approval import (
     ApprovalError,
     UnsupportedFacts,
-    approve_message,
     edit_message,
     reject_message,
 )
@@ -15,7 +14,7 @@ from escalate.agent.fact_check import code_check, fact_check, find_dates, find_i
 from escalate.channels.gate import NotApproved, require_approval
 from escalate.db.models import Message, utcnow
 from escalate.playbooks.loader import get_playbook
-from tests.factories import LED_FACTS, led_case
+from tests.factories import LED_FACTS, approve_as_user, led_case
 from tests.fakes.fake_llm import FakeLLM
 
 # --- fact check ------------------------------------------------------------------
@@ -114,7 +113,7 @@ def test_gate_blocks_status_without_timestamp(db: Session) -> None:
 
 
 def test_gate_blocks_already_sent(db: Session) -> None:
-    msg = approve_message(db, _draft(db).id)
+    msg = approve_as_user(db, _draft(db).id)
     require_approval(msg)  # passes once
     msg.sent_at = utcnow()
     with pytest.raises(NotApproved, match="already sent"):
@@ -122,7 +121,7 @@ def test_gate_blocks_already_sent(db: Session) -> None:
 
 
 def test_approve_sets_approved_at_and_logs(db: Session) -> None:
-    msg = approve_message(db, _draft(db).id)
+    msg = approve_as_user(db, _draft(db).id)
     assert msg.status == "approved"
     assert msg.approved_at is not None
     assert msg.case.events[-1].type == "message_approved"
@@ -131,13 +130,13 @@ def test_approve_sets_approved_at_and_logs(db: Session) -> None:
 
 def test_cannot_approve_twice_or_after_reject(db: Session) -> None:
     msg = _draft(db)
-    approve_message(db, msg.id)
+    approve_as_user(db, msg.id)
     with pytest.raises(ApprovalError):
-        approve_message(db, msg.id)
+        approve_as_user(db, msg.id)
     other = _draft(db)
     reject_message(db, other.id, "no")
     with pytest.raises(ApprovalError):
-        approve_message(db, other.id)
+        approve_as_user(db, other.id)
 
 
 def test_reject_records_reason(db: Session) -> None:
@@ -151,7 +150,7 @@ def test_reject_records_reason(db: Session) -> None:
 def test_approve_with_invented_amount_in_edit_is_blocked(db: Session) -> None:
     msg = _draft(db)
     with pytest.raises(UnsupportedFacts) as err:
-        approve_message(db, msg.id, edited_body=msg.body + "\nAlso pay me 99,000.")
+        approve_as_user(db, msg.id, edited_body=msg.body + "\nAlso pay me 99,000.")
     assert err.value.issues == ["number 99000 is not in the case facts"]
     assert msg.approved_at is None
 
@@ -159,7 +158,7 @@ def test_approve_with_invented_amount_in_edit_is_blocked(db: Session) -> None:
 def test_approve_with_clean_edit(db: Session) -> None:
     msg = _draft(db)
     new = msg.body.replace("Yours sincerely", "Kind regards")
-    approved = approve_message(db, msg.id, edited_body=new)
+    approved = approve_as_user(db, msg.id, edited_body=new)
     assert "Kind regards" in approved.body
     assert [e.type for e in approved.case.events][-2:] == ["draft_edited", "message_approved"]
 
@@ -189,7 +188,7 @@ def test_put_edit_then_plain_approve_is_still_checked(db: Session) -> None:
     msg = _draft(db)
     edit_message(db, msg.id, msg.body + "\nAnd 77,777 in damages.")
     with pytest.raises(UnsupportedFacts):
-        approve_message(db, msg.id)
+        approve_as_user(db, msg.id)
     assert msg.approved_at is None
 
 

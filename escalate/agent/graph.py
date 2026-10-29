@@ -265,11 +265,26 @@ def judge_reply(state: CaseState) -> CaseState:
         remedy = case.fact_dict().get("remedy_wanted", "")
         j = judge(state.get("last_reply"), remedy)
         log_verdict(s, case, j, state.get("step_id"))
-        if j.verdict == "resolved":
+        if j.verdict == "resolved":  # closed only once the user confirms (confirm_resolution)
+            case.status = CaseStatus.CONFIRM_RESOLUTION
+        return {"reply_verdict": j.verdict}
+
+
+def confirm_resolution(state: CaseState) -> CaseState:
+    """A "resolved" verdict closes the case only when the user confirms it: a reply can be
+    written to talk the model into "resolved" (prompt injection)."""
+    answer = interrupt({"type": "confirm_resolution", "step": state.get("step_id")}) or {}
+    with session_scope() as s:
+        case = _case(s, state)
+        if answer.get("resolved"):
             case.status = CaseStatus.RESOLVED
             case.next_action_at = None
-            log_event(s, case.id, "case_resolved", {"step": state.get("step_id")})
-        return {"reply_verdict": j.verdict}
+            log_event(s, case.id, "case_resolved", {"step": state.get("step_id"), "by": "user"})
+            return {"reply_verdict": "resolved"}
+        verdict: Literal["partial", "refused", "no_reply"] = answer.get("verdict") or "refused"
+        case.status = CaseStatus.PICK_NEXT
+        log_event(s, case.id, "resolution_rejected", {"verdict": verdict})
+        return {"reply_verdict": verdict}
 
 
 def pick_next(state: CaseState) -> CaseState:
@@ -312,6 +327,7 @@ def build_graph() -> StateGraph[CaseState]:
         ("send", send),
         ("wait", wait),
         ("judge_reply", judge_reply),
+        ("confirm_resolution", confirm_resolution),
         ("pick_next", pick_next),
     ]:
         g.add_node(name, fn)
@@ -337,7 +353,11 @@ def build_graph() -> StateGraph[CaseState]:
     g.add_conditional_edges("send", lambda s: END if s.get("done") else "wait")
     g.add_edge("wait", "judge_reply")
     g.add_conditional_edges(
-        "judge_reply", lambda s: END if s["reply_verdict"] == "resolved" else "pick_next"
+        "judge_reply",
+        lambda s: "confirm_resolution" if s["reply_verdict"] == "resolved" else "pick_next",
+    )
+    g.add_conditional_edges(
+        "confirm_resolution", lambda s: END if s["reply_verdict"] == "resolved" else "pick_next"
     )
     g.add_conditional_edges("pick_next", lambda s: "draft" if s.get("step_id") else END)
     return g

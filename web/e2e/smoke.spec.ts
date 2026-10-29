@@ -45,8 +45,14 @@ test("review: verified facts highlighted, approve gated by confirm dialog", asyn
   await expect(letter.locator("mark.fact-mark").first()).toBeVisible();
   await expect(letter).toContainText("BM-48213");
   const approve = page.getByTestId("approve");
+  // The recipient must be checked by the user first (it may come from evidence).
+  await expect(page.getByTestId("recipient-value")).toHaveText("support@brightmart.example");
+  await expect(approve).toBeDisabled();
+  await expect(page.getByTestId("approve-why")).toContainText("Check the recipient");
+  await page.getByTestId("recipient-checkbox").click();
   await expect(approve).toBeEnabled();
   await approve.click();
+  await expect(page.getByRole("dialog")).toContainText("Recipient checked by you");
   await expect(page.getByRole("dialog")).toContainText("Approve and send?");
   await page.getByRole("button", { name: "Cancel" }).click(); // never send in a smoke test
   await expect(page.getByRole("dialog")).toHaveCount(0);

@@ -12,7 +12,7 @@ from escalate.agent import runner
 from escalate.agent.checklist import load_checklist
 from escalate.db.models import CaseStatus
 from escalate.playbooks.validate import validate
-from tests.agent_env import AgentEnv, agent_env, make_llm  # noqa: F401
+from tests.agent_env import AgentEnv, agent_env, approve_pending, make_llm  # noqa: F401
 from tests.fakes.fake_smtp import FakeSMTP
 
 DAY0 = datetime(2026, 10, 1, 9, 0)
@@ -66,7 +66,7 @@ def test_subscription_cancel_flow(agent_env: AgentEnv) -> None:  # noqa: F811
         draft = r.pending["draft"]  # type: ignore[index]
         assert draft["subject"] == "Cancel my subscription (account FL-90211)"
         assert "Check the rules in your country" in draft["body"]
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
         assert FakeSMTP.all_sent()[0]["To"] == "members@fitlife.example"
 
         clock.tick(timedelta(days=7))
@@ -74,7 +74,7 @@ def test_subscription_cancel_flow(agent_env: AgentEnv) -> None:  # noqa: F811
         draft = runner.pending(cid)["draft"]  # type: ignore[index]
         assert "Final notice" in draft["subject"]
         assert "GBP 29.99 on 2026-06-01" in draft["body"]  # the charges are listed
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
 
         # no reply in 14 days -> card dispute, which needs the card issuer first
         clock.tick(timedelta(days=14))
@@ -86,7 +86,7 @@ def test_subscription_cancel_flow(agent_env: AgentEnv) -> None:  # noqa: F811
         draft = r.pending["draft"]  # type: ignore[index]
         assert draft["recipient"] == "disputes@bank.example"
         assert "I dispute charges taken by FitLife" in draft["body"]
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
 
         clock.tick(timedelta(days=30))
         env.scheduler.tick()
@@ -120,7 +120,7 @@ def test_scam_shows_checklist_before_anything(agent_env: AgentEnv) -> None:  # n
         draft = r.pending["draft"]  # type: ignore[index]
         assert draft["recipient"] == "fraud@meezan.example"
         assert "MZ-882100" in draft["body"] and "PKR 60,000.00" in draft["body"]
-        runner.resume_with_decision(cid, "approve")
+        approve_pending(cid)
 
         # 3. bank doesn't help in 10 days -> police report (by post, user delivers it)
         clock.tick(timedelta(days=10))

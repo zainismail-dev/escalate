@@ -122,13 +122,15 @@ def resume_with_decision(
     edited_body: str | None = None,
     edited_subject: str | None = None,
     reason: str = "",
+    recipient: str | None = None,
 ) -> RunResult:
     p = _expect(case_id, "approve_draft")
     msg_id = int(p["draft"]["message_id"])
     warnings: list[str] | None = None
     with session_scope() as s:
         if decision == "approve":
-            approve_message(s, msg_id, edited_body, edited_subject)  # may raise UnsupportedFacts
+            # may raise UnsupportedFacts or RecipientNotConfirmed
+            approve_message(s, msg_id, edited_body, edited_subject, recipient=recipient)
         elif decision == "reject":
             reject_message(s, msg_id, reason)
         elif decision == "edit":
@@ -159,6 +161,14 @@ def resume_with_reply(case_id: int, text: str) -> RunResult:
     if _scheduler is not None:
         jobs.cancel_case_jobs(_scheduler, case_id)
     return _run(case_id, Command(resume={"text": text}))
+
+
+def confirm_resolution(case_id: int, resolved: bool, verdict: str | None = None) -> RunResult:
+    """The user's answer to a "resolved" verdict: close the case, or continue with `verdict`."""
+    _expect(case_id, "confirm_resolution")
+    if not resolved and verdict == "resolved":
+        raise RunnerError("choose another verdict when the case is not resolved")
+    return _run(case_id, Command(resume={"resolved": resolved, "verdict": verdict}))
 
 
 def resume_timeout(case_id: int, step_id: str) -> RunResult | None:
@@ -207,7 +217,9 @@ def override_verdict(case_id: int, verdict: str) -> RunResult:
                 "verdict_overridden",
                 {"from": old, "to": verdict, "step": target.values.get("step_id")},
             )
-        cfg = graph().update_state(target.config, {"reply_verdict": verdict}, as_node="judge_reply")
+        # The user's own "resolved" needs no second confirmation: replay as if they confirmed it.
+        node = "confirm_resolution" if verdict == "resolved" else "judge_reply"
+        cfg = graph().update_state(target.config, {"reply_verdict": verdict}, as_node=node)
         graph().invoke(None, cfg)
         return RunResult(case_id, pending(case_id))
 

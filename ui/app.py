@@ -158,6 +158,15 @@ def pending_panel(case: dict[str, Any]) -> None:
             if st.button(t("pending.urgent_done"), type="primary"):
                 api.post(f"/cases/{cid}/checklist/ack")
                 st.rerun()
+        elif kind == "confirm_resolution":
+            st.warning(t("pending.confirm_resolution"))
+            yes, no = st.columns(2)
+            if yes.button(t("pending.resolved_yes"), type="primary"):
+                api.post(f"/cases/{cid}/resolution", json={"resolved": True})
+                st.rerun()
+            if no.button(t("pending.resolved_no")):
+                api.post(f"/cases/{cid}/resolution", json={"resolved": False, "verdict": "refused"})
+                st.rerun()
         elif kind == "approve_draft":
             st.info(t("pending.draft_waiting"))
             if st.button(t("pending.review"), type="primary"):
@@ -253,11 +262,15 @@ def page_review() -> None:
             use_container_width=True,
         )
     mid = draft["id"]
+    recipient = draft.get("recipient")
+    # The user confirms the exact recipient: it may come from evidence (prompt injection).
+    checked = not recipient or st.checkbox(t("review.recipient_checked", to=recipient))
     b1, b2, b3 = st.columns(3)
     try:
-        if b1.button(t("review.approve"), type="primary"):
+        if b1.button(t("review.approve"), type="primary", disabled=not checked):
             edited = body != draft["body"] or subject != (draft.get("subject") or "")
-            payload: dict[str, object] = {"confirm": True}  # the API needs explicit confirmation
+            # The API needs explicit confirmation and the recipient the user checked.
+            payload: dict[str, object] = {"confirm": True, "recipient": recipient}
             if edited:
                 payload.update(body=body, subject=subject)
             api.post(f"/messages/{mid}/approve", json=payload)
