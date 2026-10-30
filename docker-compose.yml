@@ -2,9 +2,10 @@
 # publishes them on every network interface (BIND_ADDR=0.0.0.0) and prints a warning.
 services:
   ollama:                       # free local LLM; remove if you use a cloud key
-    image: ollama/ollama
+    image: ollama/ollama:0.40.13  # pinned; Dependabot proposes updates
     volumes: ["./data/ollama:/root/.ollama"]
-    ports: ["${BIND_ADDR:-127.0.0.1}:11434:11434"]
+    # No published port: the API reaches it as http://ollama:11434 on the compose network, and
+    # `make pull` uses `docker compose exec`. Ollama has no auth, so it never faces the LAN.
   api:
     build: .
     command: uvicorn escalate.api.main:app --host 0.0.0.0 --port 8000

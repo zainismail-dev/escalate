@@ -96,3 +96,13 @@ def test_setup_env_keeps_real_key_and_drops_blank_duplicates(tmp_path: Path) -> 
     subprocess.run(["sh", "scripts/setup_env.sh"], cwd=tmp_path, check=True, capture_output=True)
     lines = [ln for ln in (tmp_path / ".env").read_text().splitlines() if ln.startswith("FERNET")]
     assert lines == [f"FERNET_KEY={real}"]
+
+
+def test_ollama_is_not_published_and_is_pinned() -> None:
+    """Third review L1: Ollama (no auth) was published on the host, and on the LAN with
+    ALLOW_LAN=true; the image was unpinned."""
+    ollama = yaml.safe_load((REPO / "docker-compose.yml").read_text())["services"]["ollama"]
+    assert "ports" not in ollama
+    image, _, tag = ollama["image"].partition(":")
+    assert image == "ollama/ollama"
+    assert tag and tag != "latest" and tag[0].isdigit()
