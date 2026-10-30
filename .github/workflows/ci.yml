@@ -74,6 +74,7 @@ jobs:
       - name: smoke test the image (imports, OCR binary, PDF rendering)
         run: |
           docker run --rm escalate:ci tesseract --version
+          test "$(docker run --rm escalate:ci id -u)" != "0"  # never root
           docker run --rm escalate:ci python -c "import escalate.api.main; from escalate.export.pdf import letter_pdf; assert letter_pdf('t', 'hello').startswith(b'%PDF'); print('ok')"
 
   web:

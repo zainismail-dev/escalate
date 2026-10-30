@@ -11,3 +11,8 @@ __pycache__/
 .DS_Store
 docs/demo.gif
 web/
+*.db-wal
+*.db-shm
+*.db-journal
+.env.*
+!.env.example

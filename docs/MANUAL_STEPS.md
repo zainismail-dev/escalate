@@ -92,3 +92,7 @@ that was not available. Each item names the task it came from.
 - [ ] **Nothing to rotate:** the full-history secret scan found no committed secrets (the two
   hits are an empty `SMTP_APP_PASSWORD=` template line). Your local `.env`, `escalate.db` and
   `data/` were never committed.
+- [ ] **Docker on Linux, existing install:** the API container now runs as uid 1000 (not root).
+  If `./data` was created by the old root container, give it to that user once:
+  `sudo chown -R 1000:1000 data secrets` (or rebuild with `--build-arg UID=$(id -u)`).
+  Docker Desktop on macOS/Windows needs nothing.

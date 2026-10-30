@@ -118,3 +118,18 @@ def test_locked_cryptography_is_at_least_48_0_1() -> None:
     assert versions
     for v in versions:
         assert tuple(int(x) for x in v.split(".")[:3]) >= (48, 0, 1), v
+
+
+def test_api_image_runs_as_non_root_and_ignores_local_data() -> None:
+    """Third review I2: the API container ran as root, and the build context could include
+    SQLite WAL/journal files and .env variants."""
+    lines = [ln.strip() for ln in (REPO / "Dockerfile").read_text().splitlines()]
+    users = [ln.split()[1] for ln in lines if ln.startswith("USER ")]
+    assert users and users[-1] not in ("root", "0")
+    assert lines.index(next(ln for ln in lines if ln.startswith("USER "))) < lines.index(
+        next(ln for ln in lines if ln.startswith("CMD"))
+    )
+    ignored = set((REPO / ".dockerignore").read_text().split())
+    for pattern in ("*.db", "*.db-wal", "*.db-shm", "*.db-journal", ".env", ".env.*", "data/"):
+        assert pattern in ignored, pattern
+    assert "!.env.example" in ignored  # the template stays (docs)
