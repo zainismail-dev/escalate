@@ -66,7 +66,7 @@ replayed against a throwaway API and now fail (403/400/409/422 as listed).
 | # | Finding | Severity | Status | Fix | Test |
 | --- | --- | --- | --- | --- | --- |
 | A1 | gitleaks `generic-api-key` in `.env.example` and `docs/BUILD_PLAN.md` | Info | False positive | The value is empty (`SMTP_APP_PASSWORD=`); the rule matched the next line's key name. Listed in `.gitleaksignore` by fingerprint. **Nothing to rotate.** | CI `security` job (gitleaks) |
-| A2 | `cryptography` 46.0.3: 7 advisories (EC subgroup check, X.509 name constraints, PKCS7 oracle, buffer overflow on non-contiguous buffers, bundled OpenSSL) | Medium | Fixed (Linux, Docker, CI, Apple Silicon); Accepted (Intel macOS) | `cryptography>=50` everywhere except Intel macOS, where no newer wheel exists (see residual risks). Escalate only uses Fernet on `bytes`; none of the affected APIs are called | CI `security` job (pip-audit) |
+| A2 | `cryptography` 46.0.3: 7 advisories (EC subgroup check, X.509 name constraints and chain building, PKCS7 oracle, buffer overflow on non-contiguous buffers, bundled OpenSSL) | Medium | Fixed (Linux, Docker, CI, Apple Silicon: 50.x); Fixed except 3 (Intel macOS: 48.0.1) | Intel macOS now gets 48.0.1 (its universal2 wheel; 49+ ship arm64 only), which fixes 4 of the 7. Still open there, accepted: PYSEC-2026-3554 and PYSEC-2026-3553 (X.509 name constraints / duplicate self-signed chain building, fixed in 49) and PYSEC-2026-3552 (PKCS7 decryption oracle, fixed in 50). Escalate never verifies certificate chains or decrypts PKCS7 with `cryptography` (only Fernet; TLS uses Python's `ssl`) | CI `security` job (pip-audit, those 3 ids ignored explicitly); `tests/test_packaging.py::test_locked_cryptography_is_at_least_48_0_1` |
 | A3 | Jinja2 `autoescape=False` (bandit B701) | Low | Fixed | `SandboxedEnvironment` for letters and the case file. Letters stay unescaped on purpose (Markdown sent as email text; escaping would put `&amp;` in a letter); they are HTML-escaped when turned into a PDF. Facts are only ever passed as variables | `tests/security/test_templates.py` (`{{7*7}}`, `{{config}}`, `__class__`, `__globals__`) |
 | A4 | bandit B104 (`"0.0.0.0"`), B610 (`.update(extra(...))`), B112 (cookie parse `continue`) | Info | False positive | Annotated with `# nosec` and a reason; B101 (assert) skipped in `pyproject.toml` with a reason | CI `security` job (bandit) |
 | A5 | semgrep `avoid-sqlalchemy-text` in the public-id migration | Info | False positive | Table names come from a constant tuple; values are bound parameters. Annotated | CI `security` job (semgrep) |
@@ -135,9 +135,10 @@ See [DEPLOY_DEMO.md](DEPLOY_DEMO.md).
 
 1. **No login by default.** Anyone who can run programs as you, or reach the API if you set
    `ALLOW_LAN=true`, can use it. `APP_PASSCODE` narrows this; it is not multi-user security.
-2. **Intel macOS keeps `cryptography` 46.0.3.** No newer wheel exists for that platform. The
-   advisories affect X.509, PKCS7 and EC key loading, plus the bundled OpenSSL; Escalate uses
-   only Fernet. Docker on Intel Macs uses the fixed Linux build.
+2. **Intel macOS uses `cryptography` 48.0.1** (the last release with a universal2 wheel). Three
+   advisories stay open there: PYSEC-2026-3554 and PYSEC-2026-3553 (X.509 verification, fixed
+   in 49) and PYSEC-2026-3552 (PKCS7 decryption, fixed in 50). Escalate calls none of those
+   APIs; it uses only Fernet. Docker on Intel Macs uses the fixed Linux build (50.x).
 3. **DNS time-of-check/time-of-use** on `LLM_BASE_URL`/`SMTP_HOST`: a hostname that changes
    its answer between the check and the connection is not fully covered.
 4. **In-memory limits and sessions:** one API process; a restart resets rate limits and logs

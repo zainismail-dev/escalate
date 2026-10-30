@@ -6,9 +6,9 @@ Defaults chosen during the autonomous build, with the reason for each.
 - **Flat package layout** (`escalate/` at the repo root, not `src/`), matching CLAUDE.md. Built with
   `uv_build` (`module-root = ""`) so `uv sync` installs the package editable and `ui/app.py` can
   import it.
-- **`cryptography` pinned to 46.0.3 on Intel macOS only.** Newer releases ship no x86_64 macOS
-  wheel and fail to build without OpenSSL headers. All other platforms (Linux, Docker, CI, Apple
-  Silicon) get the current release via a platform marker.
+- **`cryptography` on Intel macOS: 48.0.1 (`>=48.0.1,<49`).** 48.x is the last release with a
+  universal2 wheel; 49+ ship arm64 only and fail to build without OpenSSL headers. All other
+  platforms (Linux, Docker, CI, Apple Silicon) get the current release (>=50) via a marker.
 - **`python-multipart`** added: FastAPI needs it for the multipart evidence upload endpoint.
 - **`types-PyYAML`, `types-jsonschema`** added as dev deps so mypy can check YAML/schema code.
 - CI also runs `ruff format --check` (listed in CLAUDE.md's lint command) and installs Pango so

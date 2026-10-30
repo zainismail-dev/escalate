@@ -90,10 +90,10 @@ hooks:            ## install the pre-commit hooks (gitleaks, no .env/*.db, ruff)
 
 security:         ## the CI security checks, locally (needs gitleaks on PATH)
 	gitleaks git . --redact
-	# The Intel-macOS-only cryptography pin is a documented residual (docs/SECURITY_AUDIT.md).
-	uv export --frozen --no-hashes --no-emit-project --all-groups \
-	  | grep -v "platform_machine == 'x86_64' and sys_platform == 'darwin'" > /tmp/escalate-reqs.txt
-	uvx pip-audit -r /tmp/escalate-reqs.txt --disable-pip --no-deps --strict
+	# Intel macOS: cryptography 48.0.1 and 3 accepted advisories (docs/SECURITY_AUDIT.md, A2).
+	uv export --frozen --no-hashes --no-emit-project --all-groups > /tmp/escalate-reqs.txt
+	uvx pip-audit -r /tmp/escalate-reqs.txt --disable-pip --no-deps --strict \
+	  --ignore-vuln PYSEC-2026-3552 --ignore-vuln PYSEC-2026-3553 --ignore-vuln PYSEC-2026-3554
 	uvx bandit -c pyproject.toml -r escalate ui -q
 	uvx semgrep scan --config p/python --config p/fastapi --config p/secrets --config p/typescript --config p/react --config p/nextjs --metrics=off --error -q
 	cd web && npm audit --audit-level=high

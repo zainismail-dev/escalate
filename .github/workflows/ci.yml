@@ -45,10 +45,12 @@ jobs:
           tar xzf gl.tgz gitleaks && ./gitleaks git . --redact --exit-code 1
       - name: pip-audit (locked dependencies)
         run: |
-          # The Intel-macOS-only cryptography pin is a documented residual (docs/SECURITY_AUDIT.md).
-          uv export --frozen --no-hashes --no-emit-project --all-groups \
-            | grep -v "platform_machine == 'x86_64' and sys_platform == 'darwin'" > reqs.txt
-          uvx pip-audit -r reqs.txt --disable-pip --no-deps --strict
+          # Intel macOS gets cryptography 48.0.1 (no newer x86_64 wheel). Its 3 remaining
+          # advisories (X.509 name constraints / chain building, PKCS7) are in APIs Escalate never
+          # calls: accepted residual risk, listed by id (docs/SECURITY_AUDIT.md, A2).
+          uv export --frozen --no-hashes --no-emit-project --all-groups > reqs.txt
+          uvx pip-audit -r reqs.txt --disable-pip --no-deps --strict \
+            --ignore-vuln PYSEC-2026-3552 --ignore-vuln PYSEC-2026-3553 --ignore-vuln PYSEC-2026-3554
       - name: bandit
         run: uvx bandit -c pyproject.toml -r escalate ui -q
       - name: semgrep

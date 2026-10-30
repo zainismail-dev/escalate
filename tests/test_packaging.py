@@ -106,3 +106,15 @@ def test_ollama_is_not_published_and_is_pinned() -> None:
     image, _, tag = ollama["image"].partition(":")
     assert image == "ollama/ollama"
     assert tag and tag != "latest" and tag[0].isdigit()
+
+
+def test_locked_cryptography_is_at_least_48_0_1() -> None:
+    """Third review L2: Intel macOS was pinned to cryptography 46.0.3 (7 advisories); 48.0.1
+    has a universal2 wheel that installs there."""
+    import re
+
+    lock = (REPO / "uv.lock").read_text()
+    versions = re.findall(r'\[\[package\]\]\nname = "cryptography"\nversion = "([^"]+)"', lock)
+    assert versions
+    for v in versions:
+        assert tuple(int(x) for x in v.split(".")[:3]) >= (48, 0, 1), v
