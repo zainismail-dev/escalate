@@ -6,8 +6,10 @@ committed transaction, then resumes the graph. Approval itself is only ever done
 node checks the DB row.
 """
 
+import functools
 import sqlite3
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -46,7 +48,26 @@ class RunResult:
 
 _graph: CompiledStateGraph[CaseState] | None = None
 _scheduler: BaseScheduler | None = None
-_lock = threading.RLock()
+_lock = threading.RLock()  # around graph invocations
+_case_locks: dict[int, threading.RLock] = {}
+_case_locks_guard = threading.Lock()
+
+
+def case_lock(case_id: int) -> threading.RLock:
+    """One lock per case: "what is it waiting for?", the change and the resume happen as one
+    step, so two requests (a double click, parallel approves) can't both act on one pause."""
+    with _case_locks_guard:
+        return _case_locks.setdefault(case_id, threading.RLock())
+
+
+def _serialised[**P, R](fn: Callable[P, R]) -> Callable[P, R]:
+    @functools.wraps(fn)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        case_id = args[0] if args else kwargs["case_id"]
+        with case_lock(int(case_id)):  # type: ignore[call-overload]
+            return fn(*args, **kwargs)
+
+    return wrapper
 
 
 def configure(checkpoint_path: Path | str | None = None) -> CompiledStateGraph[CaseState]:
@@ -96,27 +117,32 @@ def _expect(case_id: int, kind: str) -> dict[str, Any]:
 # --- entry points -------------------------------------------------------------------
 
 
+@_serialised
 def start_case(case_id: int) -> RunResult:
     with session_scope() as s:
         log_event(s, case_id, "case_started", {})
     return _run(case_id, {"case_id": case_id})
 
 
+@_serialised
 def retry(case_id: int) -> RunResult:
     """Re-run the node that failed (e.g. SMTP was down)."""
     return _run(case_id, None)
 
 
+@_serialised
 def resume_with_answers(case_id: int, answers: dict[str, str]) -> RunResult:
     _expect(case_id, "questions")
     return _run(case_id, Command(resume=answers))
 
 
+@_serialised
 def acknowledge_checklist(case_id: int) -> RunResult:
     _expect(case_id, "urgent_checklist")
     return _run(case_id, Command(resume={"ack": True}))
 
 
+@_serialised
 def resume_with_decision(
     case_id: int,
     decision: str,
@@ -124,9 +150,12 @@ def resume_with_decision(
     edited_subject: str | None = None,
     reason: str = "",
     recipient: str | None = None,
+    message_id: int | None = None,
 ) -> RunResult:
     p = _expect(case_id, "approve_draft")
     msg_id = int(p["draft"]["message_id"])
+    if message_id is not None and message_id != msg_id:
+        raise RunnerError(f"message {message_id} is not the draft waiting for approval")
     warnings: list[str] | None = None
     with session_scope() as s:
         if decision == "approve":
@@ -145,6 +174,7 @@ def resume_with_decision(
     return result
 
 
+@_serialised
 def confirm_delivery(case_id: int, proof_evidence_id: int | None = None) -> RunResult:
     p = _expect(case_id, "confirm_delivery")
     with session_scope() as s:
@@ -155,6 +185,7 @@ def confirm_delivery(case_id: int, proof_evidence_id: int | None = None) -> RunR
     return _run(case_id, Command(resume={"confirmed": True}))
 
 
+@_serialised
 def resume_with_reply(case_id: int, text: str) -> RunResult:
     p = _expect(case_id, "waiting_reply")
     with session_scope() as s:
@@ -166,6 +197,7 @@ def resume_with_reply(case_id: int, text: str) -> RunResult:
     return _run(case_id, Command(resume={"text": text}))
 
 
+@_serialised
 def confirm_resolution(case_id: int, resolved: bool, verdict: str | None = None) -> RunResult:
     """The user's answer to a "resolved" verdict: close the case, or continue with `verdict`."""
     _expect(case_id, "confirm_resolution")
@@ -174,6 +206,7 @@ def confirm_resolution(case_id: int, resolved: bool, verdict: str | None = None)
     return _run(case_id, Command(resume={"resolved": resolved, "verdict": verdict}))
 
 
+@_serialised
 def resume_timeout(case_id: int, step_id: str) -> RunResult | None:
     """Scheduler wake-up. Ignored if the case moved on (reply logged, withdrawn, ...)."""
     p = pending(case_id)
@@ -187,6 +220,7 @@ def resume_timeout(case_id: int, step_id: str) -> RunResult | None:
     return _run(case_id, Command(resume={"text": None}))
 
 
+@_serialised
 def override_verdict(case_id: int, verdict: str) -> RunResult:
     """Replace the verdict on the last judged reply and replay the ladder from there.
 

@@ -88,6 +88,8 @@ def approve_message(
     if issues:
         raise UnsupportedFacts(issues)
     check_recipient(session, msg)
+    if msg.approved_at is not None or msg.status != "draft":
+        raise ApprovalError(f"message {msg.id} is already {msg.status}")
     if edited:
         msg.body, msg.subject = body, subject
         log_event(session, msg.case_id, "draft_edited", {"message_id": msg.id})

@@ -74,7 +74,12 @@ def approve(
     case_id = _pending_case(session, message_id, "approve_draft")
     return run_out(
         runner.resume_with_decision(
-            case_id, "approve", body.body, body.subject, recipient=body.recipient
+            case_id,
+            "approve",
+            body.body,
+            body.subject,
+            recipient=body.recipient,
+            message_id=message_id,
         )
     )
 
@@ -151,7 +156,9 @@ def reject(
     message_id: MessagePk, body: RejectIn, session: Session = Depends(get_session)
 ) -> RunOut:
     case_id = _pending_case(session, message_id, "approve_draft")
-    return run_out(runner.resume_with_decision(case_id, "reject", reason=body.reason))
+    return run_out(
+        runner.resume_with_decision(case_id, "reject", reason=body.reason, message_id=message_id)
+    )
 
 
 @router.post("/{message_id}/confirm-delivery", response_model=RunOut)

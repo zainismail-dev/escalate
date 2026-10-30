@@ -3,7 +3,7 @@ import { CheckCircle2, Columns2, Languages, Loader2, Pencil, Send, ShieldCheck, 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AgentProgress, lastEventId } from "@/components/agent-progress";
 import { useFactLabel } from "@/components/fact-chip";
 import { Letter } from "@/components/letter";
@@ -44,6 +44,8 @@ export function ReviewDraft({ id }: { id: string }) {
   const [compare, setCompare] = useState<string | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [dialog, setDialog] = useState<"approve" | "reject" | null>(null);
+  const approving = useRef(false);
+  const [approvingNow, setApprovingNow] = useState(false);
   // The address the user ticked "I checked" for: any change to the recipient un-ticks it.
   const [checkedRecipient, setCheckedRecipient] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -107,7 +109,14 @@ export function ReviewDraft({ id }: { id: string }) {
   }
 
   async function approve() {
-    const out = await act.run(() => api.approve(msg.id, msg.recipient));
+    // One approval per click: a ref (not state) so a fast double click can't send two requests.
+    if (approving.current) return;
+    approving.current = true;
+    setApprovingNow(true);
+    const out = await act.run(() => api.approve(msg.id, msg.recipient)).finally(() => {
+      approving.current = false;
+      setApprovingNow(false);
+    });
     if (out) {
       router.push(`/cases/${c!.id}`);
       return;
@@ -419,7 +428,7 @@ export function ReviewDraft({ id }: { id: string }) {
                 <Button variant="ghost" onClick={() => setDialog(null)}>
                   {tc("cancel")}
                 </Button>
-                <Button variant="lime" disabled={act.busy} onClick={approve} data-testid="confirm-approve">
+                <Button variant="lime" disabled={act.busy || approvingNow} onClick={approve} data-testid="confirm-approve">
                   {act.busy ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />}
                   {t("confirm.cta")}
                 </Button>
