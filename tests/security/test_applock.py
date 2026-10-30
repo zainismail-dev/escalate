@@ -180,3 +180,28 @@ def test_backoff_doubles_and_never_locks_out_other_clients(
         assert lock.login(PASSCODE, "127.0.0.1") is not None
     assert applock.backoff(30) == applock.BACKOFF_MAX
     get_settings.cache_clear()
+
+
+def test_owner_can_clear_the_backoff_locally(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: object
+) -> None:
+    """Third review L4: behind Docker's NAT every LAN device shares one address, so a guesser
+    delays the owner too. `make unlock` (run on the machine) clears the backoff."""
+    from freezegun import freeze_time
+
+    from escalate.api import applock
+
+    monkeypatch.setenv("APP_PASSCODE", PASSCODE)
+    monkeypatch.setenv("CHECKPOINT_DB", f"{tmp_path}/checkpoints.db")
+    get_settings.cache_clear()
+    lock = applock.AppLock()
+    nat = "172.17.0.1"  # Docker's gateway: every LAN client looks like this
+    with freeze_time("2026-10-30 09:00:00"):
+        for _ in range(applock.FAILS_PER_CLIENT):
+            lock.login("guess", nat)
+        with pytest.raises(applock.TooManyAttempts):
+            lock.login(PASSCODE, nat)
+        assert applock.main(["applock", "unlock"]) == 0
+        assert lock.login(PASSCODE, nat) is not None  # the owner is back in, no waiting
+        assert not applock.unlock_marker().exists()  # used once
+    get_settings.cache_clear()

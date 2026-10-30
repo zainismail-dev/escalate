@@ -2,7 +2,7 @@
 MODEL ?= llama3.1:8b
 
 .PHONY: setup up down logs test lint evals pull api demo-data web-install web-dev web-lint web-build web-e2e screenshots \
-	demo-fixtures demo-build demo-e2e demo-preview hooks security zap dev-ui-legacy
+	demo-fixtures demo-build demo-e2e demo-preview hooks security zap dev-ui-legacy unlock
 
 setup:            ## create .env (FERNET_KEY, model), build images, pull the model
 	./scripts/setup_env.sh "$(MODEL)"
@@ -84,6 +84,11 @@ demo-e2e:         ## Playwright against a running demo build (WEB_URL); no API n
 DEMO_URL ?= https://escalate-chi.vercel.app
 demo-preview:     ## Open Graph title, description and image resolve on the deployed demo
 	node web/scripts/check-link-preview.mjs $(DEMO_URL)
+
+unlock:           ## clear the app lock's wrong-passcode backoff (run on this machine)
+	@if [ -n "$$(docker compose ps -q api 2>/dev/null)" ]; then \
+	  docker compose exec api python -m escalate.api.applock unlock; \
+	else uv run python -m escalate.api.applock unlock; fi
 
 hooks:            ## install the pre-commit hooks (gitleaks, no .env/*.db, ruff)
 	uvx pre-commit install

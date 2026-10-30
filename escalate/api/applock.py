@@ -19,6 +19,7 @@ from collections import deque
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from http.cookies import SimpleCookie
+from pathlib import Path
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
@@ -78,11 +79,19 @@ class AppLock:
             self._hashes = {configured: _hasher.hash(configured)}
         return self._hashes[configured]
 
+    def _apply_unlock(self) -> None:
+        """`make unlock` (run on this machine) leaves a marker file: clear every backoff."""
+        marker = unlock_marker()
+        if marker.exists():
+            marker.unlink(missing_ok=True)
+            self._clients.clear()
+
     def _reserve(self, client: str, now: float) -> _Client:
         """Atomically claim one attempt before the (slow) argon2 check, so parallel requests
         can't all pass the limit check first. Limits are per client: a flood from one address
         never locks the owner out from another."""
         with self._lock:
+            self._apply_unlock()
             st = self._clients.setdefault(client, _Client())
             while st.fails and st.fails[0] <= now - FAIL_WINDOW:
                 st.fails.popleft()
@@ -178,10 +187,23 @@ class AppLockGuard:
         await send({"type": "http.response.body", "body": body})
 
 
+def unlock_marker() -> Path:
+    """Next to the checkpoint DB in the data folder: writable only by whoever runs Escalate."""
+    return Path(get_settings().checkpoint_db).parent / "applock-unlock"
+
+
 def main(argv: list[str]) -> int:
-    """`python -m escalate.api.applock hash`: print an argon2 hash to put in APP_PASSCODE."""
+    """`python -m escalate.api.applock hash`: print an argon2 hash to put in APP_PASSCODE.
+    `python -m escalate.api.applock unlock`: clear the wrong-passcode backoff (owner recovery,
+    e.g. when every LAN device shares one address behind Docker's NAT)."""
+    if argv[1:] == ["unlock"]:
+        marker = unlock_marker()
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.touch()
+        print(f"Backoff cleared on the next login attempt ({marker}).")
+        return 0
     if argv[1:] != ["hash"]:
-        print("usage: python -m escalate.api.applock hash", file=sys.stderr)
+        print("usage: python -m escalate.api.applock hash|unlock", file=sys.stderr)
         return 2
     import getpass
 

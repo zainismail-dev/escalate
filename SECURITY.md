@@ -83,7 +83,9 @@ those are handled without a login: the CSRF guard (allowed Origin + custom heade
 check against DNS rebinding, localhost-only ports, and the static public demo that has no API
 at all.
 
-What a login would add, an `APP_PASSCODE` adds when you want it: set it in `.env` and the app
+What a login would add, an `APP_PASSCODE` adds when you want it (wrong passcodes back off per
+client address; with `ALLOW_LAN=true` behind Docker all LAN devices may share one address, so
+run `make unlock` on this machine to clear the backoff): set it in `.env` and the app
 shows a lock screen (useful on a shared computer, or with `ALLOW_LAN=true`). It is not user
 accounts: there is one passcode, one user, and one set of cases.
 

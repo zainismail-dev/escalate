@@ -114,8 +114,12 @@ above.
 
 `APP_PASSCODE` (plain or an argon2 hash from `uv run python -m escalate.api.applock hash`)
 puts every route except `/health` and `/auth/*` behind a session cookie (`HttpOnly`,
-`SameSite=Strict`, `Secure` over https, 12 h, in memory). Five wrong passcodes per client (20
-in total) per 15 minutes lock login. Unset means no change. It keeps out other people on the same
+`SameSite=Strict`, `Secure` over https, 12 h, in memory). Each attempt is reserved before the
+argon2 check; per client address, 5 free attempts, then one at a time with exponential backoff
+(30 s, doubling, 15 min cap); there is no global lockout. Behind Docker's NAT (`ALLOW_LAN=true`
+with Docker) every LAN device can reach the API from the same address, so one device's wrong
+guesses delay the others: the owner clears the backoff with `make unlock` on the machine
+running Escalate. Unset means no change. It keeps out other people on the same
 computer or network. It is not user accounts. Tests: `tests/security/test_applock.py` and
 `test_routes.py`, which checks that every non-allow-listed route answers 401 when locked.
 
