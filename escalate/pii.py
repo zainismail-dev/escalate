@@ -19,9 +19,15 @@ _NATIONAL_IDS = [
     re.compile(r"\b[A-CEGHJ-PR-TW-Z]{2}\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]\b"),  # UK NI number
 ]
 _SECRET = re.compile(
-    r"(?i)\b(password|passcode|passwd|pin|otp|one[- ]time (?:code|password)|cvv|cvc)\b"
-    r"(\s*[:=#-]?\s*(?:is|was|code)?\s*[:=#-]?\s*)(\S+)"
+    r"(?i)(?<!\w)(password|passcode|passwd|pin|otp|one[- ]time (?:code|password)|cvv|cvc"
+    r"|mot de passe|contraseña|senha|passwort)(?!\w)"
+    r"(\s*[:=#-]?\s*(?:(?:is|was|code|est|es|é|ist)(?!\w))?\s*[:=#-]?\s*)(\S+)"
 )
+# Short forms are ordinary words ("pass the exam"): only with an explicit ":" or "=".
+_SHORT_SECRET = re.compile(r"(?i)\b(pw|pwd|pass)(\s*[:=]\s*)(\S+)")
+# UK bank details: "sort code 12-34-56", "account (number|no) 12345678".
+_SORT_CODE = re.compile(r"(?i)\b(sort[- ]?code)(\s*[:#]?\s*)(\d{2}[- ]?\d{2}[- ]?\d{2})\b")
+_UK_ACCOUNT = re.compile(r"(?i)\b(account(?:\s+(?:number|no\.?|num))?)(\s*[:#]?\s*)(\d{8})\b")
 
 
 def _luhn_ok(digits: str) -> bool:
@@ -52,6 +58,11 @@ def mask_pii(text: str) -> str:
     if not text:
         return text
     text = _SECRET.sub(lambda m: f"{m.group(1)}{m.group(2)}{MASK * 6}", text)
+    text = _SHORT_SECRET.sub(lambda m: f"{m.group(1)}{m.group(2)}{MASK * 6}", text)
+    text = _SORT_CODE.sub(
+        lambda m: f"{m.group(1)}{m.group(2)}{MASK * 2}-{MASK * 2}-{m.group(3)[-2:]}", text
+    )
+    text = _UK_ACCOUNT.sub(lambda m: f"{m.group(1)}{m.group(2)}{_keep_last4(m.group(3))}", text)
     text = _CARD.sub(_card, text)
     text = _IBAN.sub(lambda m: m.group(0)[:4] + " " + _keep_last4(m.group(0)), text)
     for rx in _NATIONAL_IDS:

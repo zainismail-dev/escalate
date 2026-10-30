@@ -113,6 +113,24 @@ def test_llm_gets_no_tools() -> None:
         ("NI AB 12 34 56 C", "AB 12 34", "456C"),
         ("my OTP is 482913", "482913", "OTP"),
         ("password: hunter2", "hunter2", "password"),
+        # Third review L3: short forms, other languages, UK bank details.
+        ("pw: hunter2", "hunter2", "pw:"),
+        ("pass: hunter2", "hunter2", "pass:"),
+        ("passwd: hunter2", "hunter2", "passwd:"),
+        ("pwd=hunter2", "hunter2", "pwd="),
+        ("mot de passe : hunter2", "hunter2", "mot de passe"),
+        ("Mon mot de passe est hunter2", "hunter2", "mot de passe"),
+        ("contraseña: hunter2", "hunter2", "contraseña"),
+        ("mi contraseña es hunter2", "hunter2", "contraseña"),
+        ("senha: hunter2", "hunter2", "senha"),
+        ("minha senha é hunter2", "hunter2", "senha"),
+        ("Passwort: hunter2", "hunter2", "Passwort"),
+        ("mein Passwort ist hunter2", "hunter2", "Passwort"),
+        ("sort code 12-34-56 account 12345678", "12-34", "5678"),
+        ("sort code 12-34-56 account 12345678", "12345678", "-56"),
+        ("Sort code: 123456, account number: 87654321", "87654321", "4321"),
+        ("Sort code: 123456, account number: 87654321", "123456", "56"),
+        ("sortcode 20-00-00 acc no 12345678 account no. 12345678", "20-00", "00"),
     ],
 )
 def test_mask_pii(raw: str, hidden: str, kept: str) -> None:
@@ -121,7 +139,16 @@ def test_mask_pii(raw: str, hidden: str, kept: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "safe", ["order BM-48213 on 2026-02-14", "tracking 7731990", "4111 1111 1111 1112", "pinned"]
+    "safe",
+    [
+        "order BM-48213 on 2026-02-14",
+        "tracking 7731990",
+        "4111 1111 1111 1112",
+        "pinned",
+        "I will pass the exam",  # "pass" without ":" or "=" is a word
+        "account 1234",  # not a UK account number (8 digits)
+        "passenger 12",
+    ],
 )
 def test_mask_pii_leaves_normal_values(safe: str) -> None:
     assert mask_pii(safe) == safe
