@@ -138,3 +138,15 @@ class Event(Base):
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
     case: Mapped[Case] = relationship(back_populates="events")
+
+
+class RecipientContact(Base):
+    """One approved letter to a recipient, kept only as hashes (anti-harassment counting).
+    No foreign key and no PII: it survives case deletion, so deleting cases can't reset the
+    limit, and it can't be turned back into an address (HMAC keyed by FERNET_KEY)."""
+
+    __tablename__ = "recipient_contacts"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    recipient_hash: Mapped[str] = mapped_column(String(64), index=True)
+    case_hash: Mapped[str] = mapped_column(String(64))
+    contacted_at: Mapped[datetime] = mapped_column(default=utcnow, index=True)

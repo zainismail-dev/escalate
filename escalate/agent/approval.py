@@ -7,7 +7,7 @@ from escalate.agent.review import blanks
 from escalate.db.events import log_event
 from escalate.db.models import Message, utcnow
 from escalate.pii import mask_pii
-from escalate.safety import check_recipient
+from escalate.safety import check_recipient, record_recipient
 
 
 class ApprovalError(Exception):
@@ -95,6 +95,7 @@ def approve_message(
         log_event(session, msg.case_id, "draft_edited", {"message_id": msg.id})
     msg.status = "approved"
     msg.approved_at = utcnow()
+    record_recipient(session, msg)
     session.flush()
     log_event(
         session,
