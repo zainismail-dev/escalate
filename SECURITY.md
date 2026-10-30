@@ -71,6 +71,18 @@ In short:
 
 Details: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md#the-second-independent-review-8-findings--info).
 
+## Third independent review
+
+| Finding | Defence | Regression test |
+| --- | --- | --- |
+| Parallel approves sent once but advanced the ladder (M1) | Per-case lock around check, approval and resume; each resume tied to its message (409 otherwise); the web button is single-shot | `tests/security/test_parallel_approve.py` |
+| Ollama exposed on the host / LAN, unpinned (L1) | Not published; pinned image | `tests/test_packaging.py` |
+| Old `cryptography` on Intel macOS (L2) | 48.0.1 there, 50.x elsewhere | `tests/test_packaging.py`, CI pip-audit |
+| Masking gaps (L3) | Short and non-English password labels, UK sort code/account | `tests/security/test_safety_rules.py` |
+| Owner delayed by a guesser behind Docker NAT (L4) | `make unlock` | `tests/security/test_applock.py` |
+| Harassment limit evaded by address variants or deleting cases (I1) | Normalised, hashed, deletion-proof count | `tests/security/test_recipient_limit.py` |
+| Root container, loose build context (I2) | Non-root user; `.dockerignore` patterns | `tests/test_packaging.py` |
+
 ## Why there's no login in v0.1
 
 Escalate v0.1 runs on **your own computer, for you alone**: the API listens on `127.0.0.1`,

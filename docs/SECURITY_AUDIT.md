@@ -1,7 +1,7 @@
 # Security audit: Escalate v0.1
 
-**Date:** 2026-10-29, updated after the second independent review (N1–N8) ·
-**Commit range:** up to the second-review fixes on `main` ·
+**Date:** 2026-10-29, updated after the second (N1–N8) and third (M1, L1–L4, I1–I2)
+independent reviews · **Commit range:** up to the third-review fixes on `main` ·
 **Status:** all High and Medium findings fixed; nothing open above Low.
 
 This file records what was checked, how, what was found, and what is left. The short user-facing
@@ -106,6 +106,20 @@ fails on the code before the fix.
 | INFO | `/openapi.json` served the full route map in production | Info | Fixed | Follows `API_DOCS` like `/docs`; `python -m escalate.api.schema` exports it for tools (ZAP) | `test_limits.py::test_api_docs_are_opt_in`, `test_info_items.py` |
 | INFO | A saved hostname that doesn't resolve gave no feedback | Info | Fixed | Saved with a warning shown on the settings page | `test_info_items.py` |
 | INFO | `WEB_ORIGIN`/`UI_ORIGIN` trust whatever runs on those local ports | Info | Documented | `.env.example` and SECURITY.md say so; `UI_ORIGIN` is empty by default (N1) | — |
+
+### The third independent review (no Critical/High; verdict "Ready")
+
+All fixed, one commit each; each regression test fails on the code before its fix.
+
+| # | Finding | Severity | Status | Fix | Regression test |
+| --- | --- | --- | --- | --- | --- |
+| M1 | Parallel approves: the "waiting for approval?" check ran outside the lock and the resume wasn't tied to the approval. 4 parallel `POST /messages/{id}/approve` gave 4 approval events and 1 send, then the extra resumes were judged "no reply" and the ladder jumped to the final notice | Medium | Fixed | A per-case lock makes check, approval and resume one step for every runner entry point; the resume carries the approved message id and is refused (409) unless that draft is the one pending; `approve_message` refuses a non-draft. Web: the confirm button is guarded until the response | `tests/security/test_parallel_approve.py` (1×200 + 3×409, one approval, one send, `waiting_reply`, no `reply_judged`) |
+| L1 | Ollama's 11434 published on the host (on the LAN with `ALLOW_LAN`); image unpinned | Low | Fixed | No published port (the API uses the compose network; `make pull` uses `exec`); `ollama/ollama:0.40.13`, updated by Dependabot's docker-compose ecosystem | `tests/test_packaging.py::test_ollama_is_not_published_and_is_pinned` |
+| L2 | Intel macOS on `cryptography` 46.0.3 | Low | Fixed | 48.0.1 (universal2 wheel) on Intel macOS, 50.x elsewhere; only PYSEC-2026-3552/3553/3554 remain there, accepted (see A2) | `tests/test_packaging.py::test_locked_cryptography_is_at_least_48_0_1`; CI pip-audit |
+| L3 | PII masking missed `pw:`, `pass:`, `passwd:`, `pwd:`, mot de passe, contraseña, senha, Passwort and UK sort code / account details | Low | Fixed | Added (short forms only with `:`/`=`); SECURITY.md lists exactly what is masked | `tests/security/test_safety_rules.py::test_mask_pii` (16 new cases) |
+| L4 | Passcode backoff behind Docker NAT: every LAN device can share one address, so a guesser delays the owner | Low | Fixed | `make unlock` (local) clears the backoff; documented; stale "20 in total" text removed | `tests/security/test_applock.py::test_owner_can_clear_the_backoff_locally` |
+| I1 | Anti-harassment limit compared recipients literally and reset when cases were deleted | Info | Fixed | Normalised recipients (lowercase, no `+tag`, Gmail dots); a keyed-hash record per approval (no PII, no FK) survives deletion | `tests/security/test_recipient_limit.py` |
+| I2 | `.dockerignore` missed WAL/journal/`.env.*` files; API container ran as root | Info | Fixed | Patterns added; non-root `escalate` user (uid 1000); CI checks `id -u` ≠ 0 | `tests/test_packaging.py::test_api_image_runs_as_non_root_and_ignores_local_data` |
 
 **Open: none above Low.** Every finding is fixed, a false positive or accepted with a reason
 above.
