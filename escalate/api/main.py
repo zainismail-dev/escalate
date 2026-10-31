@@ -26,7 +26,7 @@ from escalate.api.routes import auth, cases, messages, system
 from escalate.api.security import CSRF_HEADER, CsrfGuard, SecurityHeaders, split_list
 from escalate.channels import NotApproved, ProofRequired
 from escalate.channels.email_smtp import EmailConfigError
-from escalate.config import env_file_problems, get_settings
+from escalate.config import HostedConfigError, env_file_problems, get_settings, hosted_problems
 from escalate.db.models import Base
 from escalate.db.session import get_engine
 from escalate.evidence.store import EvidenceKeyMissing
@@ -87,6 +87,9 @@ def startup_warnings() -> list[str]:
 
 def create_app(startup: bool = True) -> FastAPI:
     install_log_filter()
+    problems = hosted_problems(get_settings())
+    if problems:
+        raise HostedConfigError(problems)  # DEPLOY_MODE=hosted with a missing or unsafe value
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
