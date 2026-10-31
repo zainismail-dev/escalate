@@ -34,9 +34,15 @@ _DATE_PATTERNS = [
         "mon_d_y",
     ),
 ]
-# An ID mixes letters and digits, e.g. BM-48213, QK55120, ML-7781-SB.
-_ID = re.compile(r"\b(?=[A-Za-z0-9-]*\d)(?=[A-Za-z0-9-]*[A-Za-z])[A-Za-z0-9]+(?:-[A-Za-z0-9]+)+\b")
-_NUMBER = re.compile(r"(?<![\w.-])\d[\d,.\s]*\d(?![\w-])|(?<![\w.-])\d(?![\w-])")
+# An ID mixes letters and digits, e.g. BM-48213, QK55120, ML-7781-SB; `_is_id` checks the mix.
+# Bounded (up to 17 parts of 64 characters; a longer one is matched in pieces), so a failed
+# attempt can't rescan the rest of the text.
+_ID = re.compile(r"\b[A-Za-z0-9]{1,64}(?:-[A-Za-z0-9]{1,64}){1,16}\b")
+# A run of digit groups ("45,000.00", "45 000"). Each group starts with a digit, so a run
+# matches one way only and nothing after it can fail (a trailing `(?![\w-])` made every start
+# rescan the run): `_numbers` checks what follows instead.
+_DIGIT_RUN = re.compile(r"(?<![\w.-])\d(?:[,.\s]*\d)*")
+_WORDISH = re.compile(r"[\w-]")
 
 
 def _month(name: str) -> int:
@@ -83,13 +89,40 @@ def norm_number(raw: str) -> str:
     return s.lstrip("0") or "0"
 
 
+def _is_id(m: re.Match[str]) -> bool:
+    v = m.group(0)
+    return any(c.isdigit() for c in v) and any(c.isalpha() for c in v)
+
+
+def _drop_last_group(run: str) -> str:
+    """'45 000' -> '45': the last digit group and the separators before it."""
+    i = len(run)
+    while i and run[i - 1].isdecimal():
+        i -= 1
+    while i and (run[i - 1] in ",." or run[i - 1].isspace()):
+        i -= 1
+    return run[:i]
+
+
+def _numbers(text: str) -> list[str]:
+    """Numbers not glued to a word or hyphen: in "45 000abc" the number is "45"."""
+    out = []
+    for m in _DIGIT_RUN.finditer(text):
+        run = m.group(0)
+        if _WORDISH.match(text, m.end()):
+            run = _drop_last_group(run)
+        if run:
+            out.append(run)
+    return out
+
+
 def find_numbers(text: str) -> set[str]:
-    text = _ID.sub(" ", _strip_dates(text))
-    return {norm_number(m.group(0)) for m in _NUMBER.finditer(text)}
+    text = _ID.sub(lambda m: " " if _is_id(m) else m.group(0), _strip_dates(text))
+    return {norm_number(n) for n in _numbers(text)}
 
 
 def find_ids(text: str) -> set[str]:
-    return {m.group(0).upper() for m in _ID.finditer(_strip_dates(text))}
+    return {m.group(0).upper() for m in _ID.finditer(_strip_dates(text)) if _is_id(m)}
 
 
 @dataclass

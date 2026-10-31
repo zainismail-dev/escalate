@@ -16,7 +16,9 @@ from escalate.config import Settings, get_settings
 from escalate.db.models import Message
 from escalate.netguard import check_host
 
-EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+# Domain labels can't contain the dot that separates them, so there is one way to split a
+# domain and a failed match can't backtrack polynomially. \Z: no trailing newline either.
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s.]+(?:\.[^@\s.]+)+\Z")
 SmtpFactory = Callable[[str, int], smtplib.SMTP]
 
 

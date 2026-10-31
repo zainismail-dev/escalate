@@ -15,7 +15,11 @@ from escalate.db.models import Case, Message
 from escalate.i18n.formatting import format_amount, format_date, format_money, locale_for
 from escalate.pii import mask_pii
 
-BLANK = re.compile(r"\[\[\s*([^\]\n]+?)\s*\]\]|_{4,}")
+# [[ what to fill in ]]: one line of text, with blank lines allowed around it. The text can't hold
+# a bracket, so a failed attempt stops at the next "[" (where the next attempt starts), and each
+# part is split from the next by a newline, so a long run of spaces is never re-split
+# (polynomial backtracking). `blanks` trims the spaces.
+BLANK = re.compile(r"\[\[(?:\s*\n)?([^\[\]\n]+)(?:\n\s*)?\]\]|_{4,}")
 _ISSUE = re.compile(r"^(date|ID|number) (\S+) is not in the case facts$")
 
 SegmentKind = Literal["text", "fact", "blank"]
@@ -45,7 +49,7 @@ class Problem:
 
 
 def blanks(text: str) -> list[str]:
-    return [m.group(1) or m.group(0) for m in BLANK.finditer(text)]
+    return [(m.group(1) or "").strip() or m.group(0) for m in BLANK.finditer(text)]
 
 
 def display_value(case: Case, key: str, value: str) -> str:

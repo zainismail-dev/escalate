@@ -18,16 +18,18 @@ _NATIONAL_IDS = [
     re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),  # US SSN
     re.compile(r"\b[A-CEGHJ-PR-TW-Z]{2}\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]\b"),  # UK NI number
 ]
+# Separators: each run of spaces follows a token, never another optional run of spaces, so a
+# long run of whitespace can't be split between several `\s*` (polynomial backtracking).
 _SECRET = re.compile(
     r"(?i)(?<!\w)(password|passcode|passwd|pin|otp|one[- ]time (?:code|password)|cvv|cvc"
     r"|mot de passe|contraseña|senha|passwort)(?!\w)"
-    r"(\s*[:=#-]?\s*(?:(?:is|was|code|est|es|é|ist)(?!\w))?\s*[:=#-]?\s*)(\S+)"
+    r"(\s*(?:[:=#-]\s*)?(?:(?:is|was|code|est|es|é|ist)(?!\w)\s*)?(?:[:=#-]\s*)?)(\S+)"
 )
 # Short forms are ordinary words ("pass the exam"): only with an explicit ":" or "=".
 _SHORT_SECRET = re.compile(r"(?i)\b(pw|pwd|pass)(\s*[:=]\s*)(\S+)")
 # UK bank details: "sort code 12-34-56", "account (number|no) 12345678".
-_SORT_CODE = re.compile(r"(?i)\b(sort[- ]?code)(\s*[:#]?\s*)(\d{2}[- ]?\d{2}[- ]?\d{2})\b")
-_UK_ACCOUNT = re.compile(r"(?i)\b(account(?:\s+(?:number|no\.?|num))?)(\s*[:#]?\s*)(\d{8})\b")
+_SORT_CODE = re.compile(r"(?i)\b(sort[- ]?code)(\s*(?:[:#]\s*)?)(\d{2}[- ]?\d{2}[- ]?\d{2})\b")
+_UK_ACCOUNT = re.compile(r"(?i)\b(account(?:\s+(?:number|no\.?|num))?)(\s*(?:[:#]\s*)?)(\d{8})\b")
 
 
 def _luhn_ok(digits: str) -> bool:
