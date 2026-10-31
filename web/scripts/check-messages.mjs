@@ -43,7 +43,7 @@ const DYNAMIC = {
   ladder: ["done", "current", "future", "skipped"],
   "why.level": ["company", "region", "country", "generic"],
   "why.reasons": ["first_step", "after_verdict", "skipped", "position", "channel", "channel_only", "wait", "proof", "deadline", "deadline_late", "playbook"],
-  "errors": ["model_offline.title", "model_offline.body", "offline_api.title", "offline_api.body", "fact_check.title", "rate_limited.title", "other.title", "other.body"],
+  "errors": ["model_offline.title", "model_offline.body", "offline_api.title", "offline_api.body", "ai_unavailable.title", "ai_unavailable.body", "fact_check.title", "rate_limited.title", "quota.title", "quota.body", "other.title", "other.body"],
   "review.checks": ["facts", "blanks", "tone", "disclaimer", "no_secrets"],
   "cases.cta": ["open", "approve_draft", "questions", "urgent_checklist", "confirm_delivery", "confirm_resolution"],
   "progress.steps": ["classify", "playbook", "facts", "draft", "check", "reply", "judge", "next"],

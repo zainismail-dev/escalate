@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useMessages, useTranslations } from "next-intl";
 import { useTransition } from "react";
 import { DemoBanner, DemoChrome } from "@/components/demo";
+import { AccountMenu, HostedGate, HostedNotices } from "@/components/hosted";
 import { LockGate } from "@/components/lock-screen";
 import { Logo } from "@/components/logo";
 import { RepoLink } from "@/components/repo-link";
@@ -12,6 +13,7 @@ import { ThemeToggle } from "@/components/theme";
 import { NativeSelect } from "@/components/ui/input";
 import { ENABLED_LOCALES, LOCALE_COOKIE } from "@/i18n/config";
 import { languageName } from "@/lib/format";
+import { HOSTED } from "@/lib/hosted";
 import { cn } from "@/lib/utils";
 
 export function UiLanguageSelect({ className, id = "ui-language" }: { className?: string; id?: string }) {
@@ -46,6 +48,7 @@ export function UiLanguageSelect({ className, id = "ui-language" }: { className?
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("nav");
+  const th = useTranslations("hosted");
   const tl = useTranslations("lang");
   const path = usePathname();
   const messages = useMessages() as { meta?: { translated?: boolean } };
@@ -91,8 +94,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <RepoLink compact className="rounded-lg px-2 py-2 text-xs text-text-2 hover:bg-raised hover:text-text" />
             {ENABLED_LOCALES.length > 1 && <UiLanguageSelect />}
             <ThemeToggle />
+            {HOSTED && <AccountMenu />}
           </div>
         </div>
+        {HOSTED && <HostedNotices />}
       </header>
       {messages.meta?.translated === false && (
         <div className="border-b border-line bg-info-bg px-4 py-2 text-center text-xs text-info" data-testid="translate-banner">
@@ -103,12 +108,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
       <main id="main" className={cn("flex-1", !landing && "mx-auto w-full max-w-6xl px-4 pb-28 pt-6 md:pb-12")}>
-        <LockGate>{children}</LockGate>
+        {HOSTED ? <HostedGate>{children}</HostedGate> : <LockGate>{children}</LockGate>}
       </main>
       {!landing && (
         <footer className="border-t border-line">
-          <div className="mx-auto max-w-6xl px-4 py-5 pb-24 text-xs text-muted md:pb-5">
+          <div className="mx-auto flex max-w-6xl flex-wrap gap-x-4 gap-y-2 px-4 py-5 pb-24 text-xs text-muted md:pb-5">
             <RepoLink />
+            {HOSTED && (
+              <>
+                <Link href="/privacy" className="underline-offset-2 hover:underline">
+                  {th("privacy")}
+                </Link>
+                <Link href="/terms" className="underline-offset-2 hover:underline">
+                  {th("terms")}
+                </Link>
+              </>
+            )}
           </div>
         </footer>
       )}

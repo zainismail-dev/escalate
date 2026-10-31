@@ -8,7 +8,11 @@
     "prebuild": "node scripts/gen-locales.mjs",
     "build": "next build",
     "build:demo": "NEXT_PUBLIC_DEMO_STATIC=true next build",
+    "build:hosted": "NEXT_PUBLIC_DEPLOY_MODE=hosted next build",
+    "postbuild:hosted": "node scripts/scan-bundle.mjs --hosted",
+    "build:vercel": "node scripts/vercel-build.mjs",
     "prebuild:demo": "node scripts/gen-locales.mjs",
+    "prebuild:hosted": "node scripts/gen-locales.mjs",
     "scan:bundle": "node scripts/scan-bundle.mjs",
     "predev": "node scripts/gen-locales.mjs",
     "dev": "next dev --port 3000",
@@ -25,6 +29,8 @@
     "node": ">=20.9.0"
   },
   "dependencies": {
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.118.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "1.63.0",

@@ -15,11 +15,22 @@ import type {
 } from "./types";
 
 import { API_URL } from "./api-url";
+import { accessToken } from "./auth";
 import { DEMO_LINK, DEMO_STATIC } from "./demo-mode";
+import { CONSENT_EVENT, HOSTED, SIGNED_OUT_EVENT, WAITLIST_EVENT, WAKING_EVENT } from "./hosted";
+import { withWakeRetries } from "./waking";
 
 export { API_URL };
 
-export type ApiErrorKind = "offline_api" | "model_offline" | "fact_check" | "rate_limited" | "demo" | "other";
+export type ApiErrorKind =
+  | "offline_api"
+  | "model_offline"
+  | "ai_unavailable"
+  | "fact_check"
+  | "rate_limited"
+  | "quota"
+  | "demo"
+  | "other";
 
 /** Status of a write the static demo refused (the demo dialog explains it). */
 const DEMO_BLOCKED = -2;
@@ -37,8 +48,10 @@ export class ApiError extends Error {
   get kind(): ApiErrorKind {
     if (this.status === DEMO_BLOCKED) return "demo";
     if (this.status === 0) return "offline_api";
-    if (this.status === 503 && !/pdf|pango|weasy/i.test(this.detail)) return "model_offline";
+    // Hosted: the server's AI provider, not a model on the user's machine.
+    if (this.status === 503 && !/pdf|pango|weasy/i.test(this.detail)) return HOSTED ? "ai_unavailable" : "model_offline";
     if (this.status === 422 && Array.isArray(this.body.issues)) return "fact_check";
+    if (this.body.quota) return "quota"; // hosted beta limits: the detail says which, kindly
     if (this.status === 429) return "rate_limited";
     return "other";
   }
@@ -73,28 +86,75 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     return demoRequest<T>(await import("escalate-demo-backend"), method, path, body);
   }
   let res: Response;
-  const headers: Record<string, string> = method === "GET" ? {} : { ...CSRF_HEADER };
-  if (body !== undefined && !(body instanceof FormData)) headers["Content-Type"] = "application/json";
   try {
-    res = await fetch(`${API_URL}${path}`, {
-      method,
-      headers,
-      body: body instanceof FormData ? body : body === undefined ? undefined : JSON.stringify(body),
-      cache: "no-store",
-      credentials: "include", // the optional app lock's httpOnly session cookie
-    });
+    res = await send(method, path, body);
   } catch {
     throw new ApiError(0, `Cannot reach the Escalate API at ${API_URL}`);
   }
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && data.locked && typeof window !== "undefined") window.dispatchEvent(new Event(LOCKED_EVENT));
+  if (HOSTED && typeof window !== "undefined") hostedSignals(res.status, data);
   if (!res.ok) {
     const detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail ?? data);
     throw new ApiError(res.status, detail, data);
   }
   return data as T;
 }
+
+async function send(method: string, path: string, body?: unknown): Promise<Response> {
+  const headers: Record<string, string> = method === "GET" ? {} : { ...CSRF_HEADER };
+  if (body !== undefined && !(body instanceof FormData)) headers["Content-Type"] = "application/json";
+  const init: RequestInit = {
+    method,
+    headers,
+    body: body instanceof FormData ? body : body === undefined ? undefined : JSON.stringify(body),
+    cache: "no-store",
+    credentials: "include", // the optional app lock's httpOnly session cookie
+  };
+  if (!HOSTED) return fetch(`${API_URL}${path}`, init);
+  // Hosted beta: the Supabase access token, and no cookies at all.
+  const token = await accessToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  init.credentials = "omit";
+  const waking = (on: boolean) => window.dispatchEvent(new CustomEvent(WAKING_EVENT, { detail: on }));
+  return withWakeRetries(() => fetch(`${API_URL}${path}`, init), waking);
+}
+
+/** Hosted: the API says signed out, waitlisted or consent needed: the gate redirects. */
+function hostedSignals(status: number, data: Record<string, unknown>) {
+  if (status === 401 && data.signed_in === false) window.dispatchEvent(new Event(SIGNED_OUT_EVENT));
+  if (status === 403 && data.waitlist) window.dispatchEvent(new Event(WAITLIST_EVENT));
+  if (status === 403 && data.consent_required) window.dispatchEvent(new Event(CONSENT_EVENT));
+}
+
+/** A file from the API (PDF, zip). Hosted downloads need the bearer token, so they are fetched
+ * and saved from memory instead of followed as plain links. */
+async function download(path: string, filename: string): Promise<void> {
+  const res = await send("GET", path).catch(() => {
+    throw new ApiError(0, `Cannot reach the Escalate API at ${API_URL}`);
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, typeof data.detail === "string" ? data.detail : "download failed", data);
+  }
+  const url = URL.createObjectURL(await res.blob());
+  const a = Object.assign(document.createElement("a"), { href: url, download: filename });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+export type Me = {
+  email: string;
+  invited: boolean;
+  consented: boolean;
+  open_cases: number;
+  max_open_cases: number;
+  ai_calls_today: number;
+  ai_calls_per_day: number;
+};
 
 export const api = {
   health: () => request<{ ok: boolean }>("GET", "/health"),
@@ -153,4 +213,11 @@ export const api = {
   testModel: () => request<{ ok: boolean; reply?: string; error?: string }>("POST", "/settings/llm-test"),
   deleteAll: () => request<void>("POST", "/privacy/delete-all", { confirm: true }),
   seedDemo: () => request<{ case_ids: string[] }>("POST", "/demo/seed"),
+  // Hosted beta only
+  me: () => request<Me>("GET", "/me"),
+  consent: () => request<Me>("POST", "/me/consent", { confirm: true }),
+  deleteAccount: () => request<void>("POST", "/me/delete", { confirm: "DELETE" }),
+  downloadAccountExport: () => download("/me/export", "escalate-export.zip"),
+  downloadCasePdf: (id: string) => download(`/cases/${id}/export.pdf`, `escalate-case-${id}.pdf`),
+  downloadLetterPdf: (messageId: string) => download(`/messages/${messageId}/printable.pdf`, `letter-${messageId}.pdf`),
 };
