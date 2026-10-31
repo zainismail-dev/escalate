@@ -22,6 +22,9 @@ os.environ["ESCALATE_SETTINGS_FILE"] = os.devnull
 # gets an empty in-memory database (and fails loudly) instead.
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["CHECKPOINT_DB"] = os.path.join(tempfile.mkdtemp(prefix="escalate-tests-"), "cp.db")
+# ...nor ./data/evidence: delete-all and case deletion remove folders named by case id, and the
+# in-memory test cases reuse ids 1, 2, 3...
+os.environ["EVIDENCE_DIR"] = tempfile.mkdtemp(prefix="escalate-tests-evidence-")
 
 # pandas (pulled in by pytesseract) crashes if first imported while time is frozen.
 freezegun.configure(extend_ignore_list=["pandas", "pytesseract"])
