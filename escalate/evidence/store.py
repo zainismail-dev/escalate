@@ -4,6 +4,9 @@ The stored name is random (never derived from the upload's name, so no path trav
 user's filename is kept for display only. Paths are rebuilt from the case id and that random
 name, and must resolve inside EVIDENCE_DIR (no symlinked folder out of it) before any read or
 delete.
+
+Hosted mode stores the same encrypted bytes in a private Supabase Storage bucket instead
+(escalate/evidence/storage.py); the API's disk there is ephemeral.
 """
 
 import hashlib
@@ -15,12 +18,14 @@ import unicodedata
 from pathlib import Path
 
 from cryptography.fernet import Fernet
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from escalate.config import Settings, get_settings
 from escalate.db.events import log_event
-from escalate.db.models import Evidence
+from escalate.db.models import Case, Evidence
 from escalate.evidence.ocr import ExtractResult, extract_text
+from escalate.evidence.storage import Storage, SupabaseStorage
 from escalate.pii import mask_pii
 
 KINDS = {
@@ -104,6 +109,48 @@ def _fernet(settings: Settings) -> Fernet:
     return Fernet(settings.fernet_key.encode())
 
 
+class LocalStorage:
+    """EVIDENCE_DIR/<case_id>/<random>.bin (local mode)."""
+
+    def __init__(self, settings: Settings) -> None:
+        self.settings = settings
+
+    def put(self, case_id: int, user_id: str | None, blob: bytes) -> str:
+        folder = case_dir(case_id, self.settings)
+        folder.mkdir(parents=True, exist_ok=True)
+        name = f"{secrets.token_hex(16)}.bin"
+        _inside(folder, name).write_bytes(blob)
+        return str(Path(self.settings.evidence_dir) / str(case_id) / name)  # reads use the name
+
+    def get(self, file_path: str, case_id: int, user_id: str | None) -> bytes:
+        ev = Evidence(case_id=case_id, file_path=file_path)
+        return stored_path(ev, self.settings).read_bytes()
+
+    def delete(self, file_paths: list[str], case_id: int, user_id: str | None) -> None:
+        delete_files(case_id, self.settings)
+
+    def delete_user(self, user_id: str) -> int:
+        return 0  # local mode has no accounts
+
+
+_storage_override: Storage | None = None
+
+
+def set_storage(storage: Storage | None) -> None:
+    """Tests swap in an in-memory store for hosted mode."""
+    global _storage_override
+    _storage_override = storage
+
+
+def get_storage(settings: Settings | None = None) -> Storage:
+    s = settings or get_settings()
+    if not s.hosted:
+        return LocalStorage(s)
+    if _storage_override is not None:
+        return _storage_override
+    return SupabaseStorage(s.supabase_url, s.supabase_service_role_key, s.supabase_storage_bucket)
+
+
 def save_upload(
     session: Session,
     case_id: int,
@@ -116,17 +163,16 @@ def save_upload(
     """Encrypt and store an upload, extract its text, and log `evidence_added`."""
     s = settings or get_settings()
     sha = hashlib.sha256(data).hexdigest()
-    folder = case_dir(case_id, s)
-    folder.mkdir(parents=True, exist_ok=True)
-    name = f"{secrets.token_hex(16)}.bin"
-    _inside(folder, name).write_bytes(_fernet(s).encrypt(data))
+    owner = _owner(session, case_id) if s.hosted else None
+    file_path = get_storage(s).put(case_id, owner, _fernet(s).encrypt(data))
 
     ev = Evidence(
         case_id=case_id,
         kind=kind_for(filename),
         filename=safe_filename(filename),
-        file_path=str(Path(s.evidence_dir) / str(case_id) / name),  # reads use the name only
+        file_path=file_path,
         sha256=sha,
+        user_id=owner,
     )
     session.add(ev)
     session.flush()
@@ -152,9 +198,30 @@ def save_upload(
     return ev
 
 
+def _owner(session: Session, case_id: int) -> str | None:
+    case = session.get(Case, case_id)
+    return case.user_id if case is not None else None
+
+
 def load_plain(evidence: Evidence, settings: Settings | None = None) -> bytes:
     s = settings or get_settings()
+    if s.hosted:  # the caller has checked that this evidence row is the user's
+        blob = get_storage(s).get(evidence.file_path, evidence.case_id, evidence.user_id)
+        return _fernet(s).decrypt(blob)
     return _fernet(s).decrypt(stored_path(evidence, s).read_bytes())
+
+
+def delete_case_files(session: Session, case_id: int, settings: Settings | None = None) -> None:
+    """Every stored file of a case: its folder (local) or its objects (hosted)."""
+    s = settings or get_settings()
+    if not s.hosted:
+        delete_files(case_id, s)
+        return
+    rows = session.execute(
+        select(Evidence.file_path, Evidence.user_id).where(Evidence.case_id == case_id)
+    ).all()
+    for owner in {u for _, u in rows}:
+        get_storage(s).delete([p for p, u in rows if u == owner], case_id, owner)
 
 
 def delete_all_files(settings: Settings | None = None) -> None:
