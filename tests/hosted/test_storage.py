@@ -116,7 +116,7 @@ def test_supabase_storage_requests() -> None:
     assert json.loads(sweep.content) == {"prefixes": [f"{A}/{'b' * 32}.bin"]}
     for req in rec.requests:
         assert req.headers["apikey"] == "service-key"
-        assert req.headers["authorization"] == "Bearer service-key"
+        assert req.headers["authorization"] == "Bearer service-key"  # a legacy JWT-style key
         assert req.url.host == "testproject.supabase.co"
 
 
@@ -147,3 +147,36 @@ def test_a_missing_bucket_is_created_private() -> None:
     create = rec.requests[-1]
     assert create.url.path == "/storage/v1/bucket"
     assert json.loads(create.content) == {"id": "evidence", "name": "evidence", "public": False}
+
+
+def test_new_secret_keys_go_in_apikey_only() -> None:
+    from escalate.hosted.supabase import service_headers
+
+    assert service_headers("sb_secret_abc") == {"apikey": "sb_secret_abc"}
+    legacy = service_headers("eyJhbGciOi.legacy.jwt")
+    assert legacy == {
+        "apikey": "eyJhbGciOi.legacy.jwt",
+        "Authorization": "Bearer eyJhbGciOi.legacy.jwt",
+    }
+
+
+def test_deleting_the_auth_user_uses_the_admin_api() -> None:
+    from escalate.hosted.supabase_admin import AdminError, SupabaseAdmin
+
+    seen: list[httpx.Request] = []
+
+    def answer(status: int) -> httpx.Client:
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return httpx.Response(status, json={"msg": "leaky detail"})
+
+        return httpx.Client(transport=httpx.MockTransport(handler))
+
+    SupabaseAdmin(SUPABASE_URL, "sb_secret_x", client=answer(200)).delete_user(A)
+    SupabaseAdmin(SUPABASE_URL, "sb_secret_x", client=answer(404)).delete_user(A)  # already gone
+    with pytest.raises(AdminError) as exc:
+        SupabaseAdmin(SUPABASE_URL, "sb_secret_x", client=answer(500)).delete_user(A)
+    assert "leaky" not in str(exc.value)
+    assert seen[0].method == "DELETE"
+    assert seen[0].url.path == f"/auth/v1/admin/users/{A}"
+    assert seen[0].headers["apikey"] == "sb_secret_x" and "authorization" not in seen[0].headers

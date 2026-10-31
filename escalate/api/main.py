@@ -7,7 +7,6 @@ import logging
 import uuid
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import Any
 
 import openai
@@ -45,22 +44,12 @@ from escalate.playbooks.loader import PlaybookError
 from escalate.safety import HarassmentPattern, NoEvidence, RateLimited
 from escalate.scheduler import jobs
 
-ROOT = Path(__file__).resolve().parents[2]
-
 
 def init_db() -> None:
     """Run Alembic migrations when available, else create tables directly."""
-    ini = ROOT / "alembic.ini"
-    if ini.is_file():
-        from alembic import command
-        from alembic.config import Config
+    from escalate.db.migrate import upgrade
 
-        cfg = Config(str(ini))
-        cfg.attributes["configure_logger"] = False  # keep uvicorn's logging (see migrations/env.py)
-        cfg.set_main_option("script_location", str(ROOT / "migrations"))
-        cfg.set_main_option("sqlalchemy.url", get_settings().database_url)
-        command.upgrade(cfg, "head")
-    else:
+    if not upgrade(get_settings().database_url):
         Base.metadata.create_all(get_engine())
 
 

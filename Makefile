@@ -2,7 +2,8 @@
 MODEL ?= llama3.1:8b
 
 .PHONY: setup up down logs test lint evals pull api demo-data web-install web-dev web-lint web-build web-e2e screenshots \
-	demo-fixtures demo-build demo-e2e demo-preview hooks security zap dev-ui-legacy unlock
+	demo-fixtures demo-build demo-e2e demo-preview hooks security zap dev-ui-legacy unlock \
+	invite uninvite invites migrate-hosted web-build-hosted
 
 setup:            ## create .env (FERNET_KEY, model), build images, pull the model
 	./scripts/setup_env.sh "$(MODEL)"
@@ -118,3 +119,21 @@ dev-ui-legacy:    ## UNSUPPORTED: the retired Streamlit dev UI on 127.0.0.1:8501
 	@echo "#  XSRF protection on)."
 	@echo "################################################################################"
 	uv run streamlit run ui/app.py
+
+# --- hosted beta (docs/DEPLOY_BETA.md) ----------------------------------------------------------
+# These run on your computer against the hosted database. Without DATABASE_URL set to it, they
+# ask for the connection string with hidden input (it never lands in your shell history).
+
+invite:           ## hosted beta: let someone in: make invite EMAIL=someone@example.com
+	@test -n "$(EMAIL)" || { echo "usage: make invite EMAIL=someone@example.com"; exit 1; }
+	uv run python -m escalate.admin invite "$(EMAIL)"
+
+uninvite:         ## hosted beta: make uninvite EMAIL=someone@example.com
+	@test -n "$(EMAIL)" || { echo "usage: make uninvite EMAIL=someone@example.com"; exit 1; }
+	uv run python -m escalate.admin uninvite "$(EMAIL)"
+
+invites:          ## hosted beta: list invited emails
+	uv run python -m escalate.admin invites
+
+migrate-hosted:   ## hosted beta: create or upgrade the tables (the API also does it at startup)
+	uv run python -m escalate.admin migrate

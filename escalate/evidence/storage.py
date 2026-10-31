@@ -14,6 +14,8 @@ from typing import Protocol
 
 import httpx
 
+from escalate.hosted.supabase import service_headers
+
 
 class StorageError(RuntimeError):
     """The storage service refused or failed (no details: they may echo keys)."""
@@ -68,7 +70,7 @@ class SupabaseStorage:
     ) -> None:
         self.base = f"{url.rstrip('/')}/storage/v1"
         self.bucket = bucket
-        self.headers = {"apikey": service_key, "Authorization": f"Bearer {service_key}"}
+        self.headers = service_headers(service_key)
         self.client = client or httpx.Client(timeout=60, follow_redirects=False)
 
     def _call(

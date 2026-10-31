@@ -5,6 +5,7 @@ from typing import Protocol
 import httpx
 
 from escalate.config import get_settings
+from escalate.hosted.supabase import service_headers
 
 
 class AdminError(RuntimeError):
@@ -18,7 +19,7 @@ class Admin(Protocol):
 class SupabaseAdmin:
     def __init__(self, url: str, service_key: str, client: httpx.Client | None = None) -> None:
         self.base = f"{url.rstrip('/')}/auth/v1/admin"
-        self.headers = {"apikey": service_key, "Authorization": f"Bearer {service_key}"}
+        self.headers = service_headers(service_key)
         self.client = client or httpx.Client(timeout=20, follow_redirects=False)
 
     def delete_user(self, user_id: str) -> None:
