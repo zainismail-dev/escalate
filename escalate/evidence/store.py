@@ -7,6 +7,7 @@ delete.
 """
 
 import hashlib
+import os
 import re
 import secrets
 import shutil
@@ -60,28 +61,34 @@ def safe_filename(name: str) -> str:
     return base or "upload"
 
 
-def _inside(base: Path, path: Path) -> Path:
-    """`path`, if it resolves (symlinks followed) inside `base`; otherwise raise."""
-    if not path.resolve().is_relative_to(base.resolve()):
-        raise UnsafeEvidencePath(f"{path} is outside {base}")
-    return path
+def _inside(base: str | Path, *parts: str) -> Path:
+    """base/parts with symlinks resolved, if that stays strictly inside base; otherwise raise.
+    Callers use only the returned path."""
+    root = os.path.realpath(base)
+    full = os.path.realpath(os.path.join(root, *parts))
+    if not full.startswith(root + os.sep):
+        raise UnsafeEvidencePath(f"{os.path.join(base, *parts)} is outside {base}")
+    return Path(full)
+
+
+def _case_id(case_id: int) -> str:
+    if isinstance(case_id, bool) or not isinstance(case_id, int) or case_id < 0:
+        raise UnsafeEvidencePath(f"not a case id: {case_id!r}")
+    return str(case_id)
 
 
 def case_dir(case_id: int, settings: Settings) -> Path:
     """EVIDENCE_DIR/<case_id>, built from the integer id only."""
-    if isinstance(case_id, bool) or not isinstance(case_id, int) or case_id < 0:
-        raise UnsafeEvidencePath(f"not a case id: {case_id!r}")
-    root = Path(settings.evidence_dir)
-    return _inside(root, root / str(case_id))
+    return _inside(settings.evidence_dir, _case_id(case_id))
 
 
 def stored_path(evidence: Evidence, settings: Settings) -> Path:
-    """Where an evidence file lives: its case folder plus its random stored name."""
-    name = Path(evidence.file_path).name
+    """Where an evidence file lives: its case folder plus its random stored name (the rest of
+    the saved file_path is ignored)."""
+    name = os.path.basename(evidence.file_path)
     if not STORED_NAME.fullmatch(name):
         raise UnsafeEvidencePath(f"evidence {evidence.id}: not a stored file name")
-    folder = case_dir(evidence.case_id, settings)
-    return _inside(folder, folder / name)
+    return _inside(case_dir(evidence.case_id, settings), name)  # not another case's file
 
 
 def kind_for(filename: str) -> str:
@@ -111,14 +118,14 @@ def save_upload(
     sha = hashlib.sha256(data).hexdigest()
     folder = case_dir(case_id, s)
     folder.mkdir(parents=True, exist_ok=True)
-    path = _inside(folder, folder / f"{secrets.token_hex(16)}.bin")
-    path.write_bytes(_fernet(s).encrypt(data))
+    name = f"{secrets.token_hex(16)}.bin"
+    _inside(folder, name).write_bytes(_fernet(s).encrypt(data))
 
     ev = Evidence(
         case_id=case_id,
         kind=kind_for(filename),
         filename=safe_filename(filename),
-        file_path=str(path),
+        file_path=str(Path(s.evidence_dir) / str(case_id) / name),  # reads use the name only
         sha256=sha,
     )
     session.add(ev)

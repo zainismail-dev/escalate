@@ -2,6 +2,7 @@
 (integer case ids, random stored names, the country packs on disk) and must resolve inside
 their base folder, symlinks included, before anything is read or deleted."""
 
+import os
 from pathlib import Path
 
 import pytest
@@ -150,3 +151,46 @@ def test_checklist_symlinked_pack_out_of_playbooks_is_refused(
     (playbooks / "yy").symlink_to(tmp_path / "outside", target_is_directory=True)
     with pytest.raises(UnsafeChecklistPath):
         load_checklist("YY", playbooks)
+
+
+def test_case_folder_linked_to_the_evidence_root_is_refused(settings: Settings) -> None:
+    """Strictly inside: a case folder that resolves to EVIDENCE_DIR itself would let delete_files
+    empty the root."""
+    root = settings.evidence_dir
+    root.mkdir(parents=True)
+    (root / "keep.bin").write_bytes(b"x")
+    (root / "7").symlink_to(root, target_is_directory=True)
+    with pytest.raises(UnsafeEvidencePath):
+        delete_files(7, settings)
+    assert (root / "keep.bin").exists()
+
+
+def test_case_folder_linked_to_a_sibling_with_the_same_prefix_is_refused(
+    settings: Settings, tmp_path: Path
+) -> None:
+    sibling = tmp_path / "evidence-old" / "7"  # "…/evidence-old" starts with "…/evidence"
+    sibling.mkdir(parents=True)
+    (sibling / "keep.bin").write_bytes(b"x")
+    settings.evidence_dir.mkdir(parents=True)
+    (settings.evidence_dir / "7").symlink_to(sibling, target_is_directory=True)
+    with pytest.raises(UnsafeEvidencePath):
+        delete_files(7, settings)
+    assert (sibling / "keep.bin").exists()
+
+
+def test_stored_file_linked_to_another_cases_file_is_refused(
+    db: Session, stored: Evidence, settings: Settings
+) -> None:
+    other = save_upload(db, stored.case_id, "o.txt", b"other", settings, extract=False)
+    folder = settings.evidence_dir / "99"
+    folder.mkdir()
+    link = folder / os.path.basename(other.file_path)
+    link.symlink_to(Path(other.file_path).resolve())
+    other.case_id = 99
+    with pytest.raises(UnsafeEvidencePath):
+        load_plain(other, settings)
+
+
+def test_paths_handed_out_are_already_resolved(stored: Evidence, settings: Settings) -> None:
+    real = os.path.realpath(settings.evidence_dir)
+    assert str(case_dir(stored.case_id, settings)) == os.path.join(real, str(stored.case_id))
