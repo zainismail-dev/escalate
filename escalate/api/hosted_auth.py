@@ -76,5 +76,5 @@ class HostedAuth:
             # A JWKS refresh is a network call: off the event loop.
             return await anyio.to_thread.run_sync(partial(verify, token, get_settings(), self.jwks))
         except AuthError as exc:
-            log.info("refused a token: %s", exc)
+            log.info("sign-in refused: %s", exc)  # the reason only, never the JWT
             return None
