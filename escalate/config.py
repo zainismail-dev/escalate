@@ -194,7 +194,8 @@ class Settings(BaseSettings):
 
 
 MIN_TICK_SECRET = 32
-LOCAL_HOSTS = ("localhost", "127.0.0.1", "0.0.0.0", "[::1]")  # nosec B104: names, not a bind
+# Host names an origin or host setting must not be (not addresses to bind).
+LOCAL_HOSTS = ("localhost", "127.0.0.1", "0.0.0.0", "[::1]")  # nosec B104
 
 
 def _is_https(url: str, local_ok: bool = False) -> bool:

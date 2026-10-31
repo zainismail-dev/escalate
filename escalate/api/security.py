@@ -48,13 +48,15 @@ def csrf_problem(
 
 
 class CsrfGuard:
-    """Pure ASGI middleware (runs before routing, so it also covers multipart uploads)."""
+    """Pure ASGI middleware (runs before routing, so it also covers multipart uploads).
+    `exempt`: path prefixes with their own authentication (hosted mode's /internal/ tick)."""
 
-    def __init__(self, app: ASGIApp) -> None:
+    def __init__(self, app: ASGIApp, exempt: tuple[str, ...] = ()) -> None:
         self.app = app
+        self.exempt = exempt
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] == "http":
+        if scope["type"] == "http" and not (self.exempt and scope["path"].startswith(self.exempt)):
             headers = {
                 k.decode("latin-1").lower(): v.decode("latin-1") for k, v in scope["headers"]
             }

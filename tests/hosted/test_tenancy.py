@@ -73,3 +73,13 @@ def test_local_mode_rows_have_no_owner_and_queries_are_unfiltered(db: Session) -
     db.commit()
     assert case.user_id is None and case.events[0].user_id is None
     assert db.scalars(select(Case)).all() == [case]
+
+
+def test_hosted_lookups_without_a_user_fail_closed(hosted_db: Engine) -> None:
+    import pytest
+
+    from escalate.db import repo
+
+    _case_with_children(A)
+    with db_session.session_scope() as s, pytest.raises(repo.NoCurrentUser):
+        repo.case_ids(s)

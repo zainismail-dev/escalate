@@ -3,12 +3,16 @@
 from collections.abc import Iterator
 from typing import Annotated, Any
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from escalate.config import get_settings
+from escalate.db import repo
 from escalate.db.models import Case, Message
 from escalate.db.session import session_factory
+from escalate.hosted.accounts import require_member
+from escalate.hosted.jwt import Identity
 
 
 def get_session() -> Iterator[Session]:
@@ -24,32 +28,48 @@ def get_session() -> Iterator[Session]:
 
 
 def get_case(session: Session, case_id: int) -> Case:
-    case = session.get(Case, case_id)
+    case = repo.get_case(session, case_id)
     if case is None:
         raise HTTPException(404, f"case {case_id} not found")
     return case
 
 
 def get_message(session: Session, message_id: int) -> Message:
-    msg = session.get(Message, message_id)
+    msg = repo.get_message(session, message_id)
     if msg is None:
         raise HTTPException(404, f"message {message_id} not found")
     return msg
 
 
 # The API only accepts unguessable public ids (UUIDs) in paths; routes get the internal id.
+# Hosted mode: only the signed-in user's ids resolve; anyone else's is a 404 like a wrong id.
 def case_pk(case_id: str, session: Session = Depends(get_session)) -> int:
-    pk = session.scalar(select(Case.id).where(Case.public_id == case_id))
+    pk = repo.case_pk(session, case_id)
     if pk is None:
         raise HTTPException(404, "case not found")
     return pk
 
 
 def message_pk(message_id: str, session: Session = Depends(get_session)) -> int:
-    pk = session.scalar(select(Message.id).where(Message.public_id == message_id))
+    pk = repo.message_pk(session, message_id)
     if pk is None:
         raise HTTPException(404, "message not found")
     return pk
+
+
+def identity(request: Request) -> Identity:
+    """Hosted mode: the signed-in user (escalate/api/hosted_auth.py has verified the token)."""
+    ident = getattr(request.state, "identity", None)
+    if not isinstance(ident, Identity):
+        raise HTTPException(401, "sign in required")
+    return ident
+
+
+def member(request: Request, session: Session = Depends(get_session)) -> None:
+    """Case and message routes. Hosted mode: invited users who have given consent only (403
+    waitlist / consent_required otherwise). Local mode: nothing to check."""
+    if get_settings().hosted:
+        require_member(session, identity(request))
 
 
 CasePk = Annotated[int, Depends(case_pk)]

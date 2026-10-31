@@ -7,7 +7,6 @@ import openai
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from escalate import __version__
@@ -16,7 +15,7 @@ from escalate.agent.checklist import Checklist, load_checklist
 from escalate.api.deps import get_session, public_case_id
 from escalate.api.schemas import ConfirmIn, DemoOut, HealthOut, SettingsIn, SettingsOut
 from escalate.config import SECRET_FIELDS, encrypt_secret, get_settings, settings_file
-from escalate.db.models import Case
+from escalate.db import repo
 from escalate.db.session import scrub as db_scrub
 from escalate.db.session import session_scope
 from escalate.evidence.store import delete_all_files
@@ -27,6 +26,9 @@ from escalate.llm.privacy import is_cloud
 from escalate.netguard import UnsafeEndpoint, check_host, check_url, resolves, url_host
 
 router = APIRouter(tags=["system"])
+# Local mode only: the hosted beta doesn't register these (404). The AI provider and email are
+# the server's there, there's no demo data, and deleting is per account (/me/delete).
+local_router = APIRouter(tags=["system"])
 
 
 @router.get("/health", response_model=HealthOut)
@@ -45,7 +47,7 @@ class LlmTestOut(BaseModel):
     error: str | None = None
 
 
-@router.post("/settings/llm-test", response_model=LlmTestOut)
+@local_router.post("/settings/llm-test", response_model=LlmTestOut)
 def llm_test() -> LlmTestOut:
     try:
         reply = get_llm().complete("Reply with the single word: pong", slot="fast")
@@ -92,13 +94,13 @@ def settings_out() -> SettingsOut:
     )
 
 
-@router.get("/settings", response_model=SettingsOut)
+@local_router.get("/settings", response_model=SettingsOut)
 def read_settings() -> SettingsOut:
     """Current settings. Secrets are never returned, only whether they are set."""
     return settings_out()
 
 
-@router.put("/settings", response_model=SettingsOut)
+@local_router.put("/settings", response_model=SettingsOut)
 def save_settings(body: SettingsIn) -> SettingsOut:
     """Save to the settings file (it wins over `.env`). Omitted fields are unchanged; an empty
     string clears a value."""
@@ -161,11 +163,11 @@ def save_settings(body: SettingsIn) -> SettingsOut:
     return out
 
 
-@router.post("/privacy/delete-all", status_code=204)
+@local_router.post("/privacy/delete-all", status_code=204)
 def delete_all(body: ConfirmIn, session: Session = Depends(get_session)) -> Response:
     """Delete every case: evidence files, drafts, timeline and scheduled reminders.
     Body must be {"confirm": true}."""
-    ids = list(session.scalars(select(Case.id)))
+    ids = repo.case_ids(session)
     session.close()
     for cid in ids:
         runner.delete_case(cid)
@@ -176,7 +178,7 @@ def delete_all(body: ConfirmIn, session: Session = Depends(get_session)) -> Resp
     return Response(status_code=204)
 
 
-@router.post("/demo/seed", response_model=DemoOut, status_code=201)
+@local_router.post("/demo/seed", response_model=DemoOut, status_code=201)
 def demo_seed() -> DemoOut:
     """Four fictional cases in four countries, for trying the app. Nothing is sent."""
     if not get_settings().allow_demo_seed:
