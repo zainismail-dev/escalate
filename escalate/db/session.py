@@ -7,13 +7,41 @@ from typing import Any
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
+import escalate.db.tenancy  # noqa: F401  (registers the per-user query filter)
 from escalate.config import get_settings
 
 _engine: Engine | None = None
 _factory: sessionmaker[Session] | None = None
 
 
+def sqlalchemy_url(url: str) -> str:
+    """Supabase shows `postgresql://...`: use the psycopg 3 driver for it."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url.removeprefix(prefix)
+    return url
+
+
+def pg_schema(url: str) -> str | None:
+    """Hosted Postgres keeps every table in a private schema (DB_SCHEMA, default "escalate")."""
+    s = get_settings()
+    return s.db_schema if s.hosted and url.startswith(("postgres", "postgresql")) else None
+
+
 def make_engine(url: str) -> Engine:
+    schema = pg_schema(url)
+    if schema is not None:
+        # Small pool (free tier: ~512 MB RAM, a pooler with few connections). No server-side
+        # prepared statements, so a transaction-mode pooler can't break queries either.
+        pg = create_engine(
+            sqlalchemy_url(url),
+            pool_size=3,
+            max_overflow=2,
+            pool_pre_ping=True,
+            pool_recycle=300,
+            connect_args={"prepare_threshold": None},
+        )
+        return pg.execution_options(schema_translate_map={None: schema})
     kwargs: dict[str, Any] = {}
     if url.startswith("sqlite"):
         kwargs["connect_args"] = {"check_same_thread": False}

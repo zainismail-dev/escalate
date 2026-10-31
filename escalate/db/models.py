@@ -1,13 +1,13 @@
 """SQLAlchemy models (section 5). Countries, regions, languages and currencies are ISO codes."""
 
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, Numeric, String, Text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import JSON, ForeignKey, Numeric, String, Text, UniqueConstraint
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column, relationship
 
 
 def utcnow() -> datetime:
@@ -16,6 +16,15 @@ def utcnow() -> datetime:
 
 
 class Base(DeclarativeBase): ...
+
+
+class Owned:
+    """A row that belongs to one user. Hosted mode: the Supabase auth user id (`sub`), set on
+    every row and filtered on every query (escalate/db/tenancy.py). Local mode: always NULL."""
+
+    @declared_attr
+    def user_id(cls) -> Mapped[str | None]:
+        return mapped_column(String(64), index=True)
 
 
 class CaseStatus(StrEnum):
@@ -36,7 +45,7 @@ def new_public_id() -> str:
     return str(uuid.uuid4())
 
 
-class Case(Base):
+class Case(Owned, Base):
     __tablename__ = "cases"
     id: Mapped[int] = mapped_column(primary_key=True)
     public_id: Mapped[str] = mapped_column(
@@ -78,7 +87,7 @@ class Case(Base):
         return {f.key: f.value for f in self.facts}
 
 
-class CaseFact(Base):
+class CaseFact(Owned, Base):
     __tablename__ = "case_facts"
     id: Mapped[int] = mapped_column(primary_key=True)
     case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"), index=True)
@@ -91,7 +100,7 @@ class CaseFact(Base):
     case: Mapped[Case] = relationship(back_populates="facts")
 
 
-class Evidence(Base):
+class Evidence(Owned, Base):
     __tablename__ = "evidence"
     id: Mapped[int] = mapped_column(primary_key=True)
     case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"), index=True)
@@ -106,7 +115,7 @@ class Evidence(Base):
     case: Mapped[Case] = relationship(back_populates="evidence")
 
 
-class Message(Base):
+class Message(Owned, Base):
     __tablename__ = "messages"
     id: Mapped[int] = mapped_column(primary_key=True)
     public_id: Mapped[str] = mapped_column(
@@ -130,7 +139,7 @@ class Message(Base):
     case: Mapped[Case] = relationship(back_populates="messages")
 
 
-class Event(Base):
+class Event(Owned, Base):
     __tablename__ = "events"  # append-only audit log
     id: Mapped[int] = mapped_column(primary_key=True)
     case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"), index=True)
@@ -140,7 +149,7 @@ class Event(Base):
     case: Mapped[Case] = relationship(back_populates="events")
 
 
-class RecipientContact(Base):
+class RecipientContact(Owned, Base):
     """One approved letter to a recipient, kept only as hashes (anti-harassment counting).
     No foreign key and no PII: it survives case deletion, so deleting cases can't reset the
     limit, and it can't be turned back into an address (HMAC keyed by FERNET_KEY)."""
@@ -150,3 +159,43 @@ class RecipientContact(Base):
     recipient_hash: Mapped[str] = mapped_column(String(64), index=True)
     case_hash: Mapped[str] = mapped_column(String(64))
     contacted_at: Mapped[datetime] = mapped_column(default=utcnow, index=True)
+
+
+class User(Base):
+    """Hosted mode: a signed-in Supabase user (created on first request)."""
+
+    __tablename__ = "users"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)  # Supabase auth user id
+    email: Mapped[str] = mapped_column(String(320))
+    consented_at: Mapped[datetime | None]  # the first-run consent (AI processing, beta, ...)
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+
+
+class UserSettings(Owned, Base):
+    """Hosted mode: what a user may change (the AI provider and email are the server's)."""
+
+    __tablename__ = "user_settings"
+    __table_args__ = (UniqueConstraint("user_id", name="uq_user_settings_user_id"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    default_country: Mapped[str | None] = mapped_column(String(2))
+    default_language: Mapped[str | None] = mapped_column(String(35))
+
+
+class Invite(Base):
+    """Hosted mode: who may use the beta (`make invite EMAIL=...`). Everyone else: waitlist."""
+
+    __tablename__ = "invites"
+    email: Mapped[str] = mapped_column(String(320), primary_key=True)  # lower-case
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+
+
+GLOBAL_USAGE = "*"  # the ai_usage row counting every user's calls
+
+
+class AiUsage(Base):
+    """Hosted mode: AI calls per user per UTC day, and all users together (user_id "*")."""
+
+    __tablename__ = "ai_usage"
+    user_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    day: Mapped[date] = mapped_column(primary_key=True)
+    calls: Mapped[int] = mapped_column(default=0)
