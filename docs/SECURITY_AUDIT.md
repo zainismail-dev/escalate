@@ -124,6 +124,21 @@ All fixed, one commit each; each regression test fails on the code before its fi
 **Open: none above Low.** Every finding is fixed, a false positive or accepted with a reason
 above.
 
+### CodeQL (GitHub code scanning, default setup)
+
+Ten High alerts on `main`, all fixed in code (none suppressed); each regression test fails or
+times out on the code before the fix. The one alert in `tests/security/test_llm_redirect.py`
+was dismissed by the maintainer as "used in tests".
+
+| Rule | Where | Problem | Fix | Regression test |
+| --- | --- | --- | --- | --- |
+| py/polynomial-redos ×3 | `pii.py` `_SECRET`, `_SORT_CODE`, `_UK_ACCOUNT` | Optional separators between several `\s*` runs: `password` + 400 spaces took 27 s (≈ n⁴); sort code / account ≈ n² | Every whitespace run follows a token (`\s*(?:[:=#-]\s*)?…`), same language and same masks | `tests/security/test_redos.py` (100k chars < 100 ms; masks unchanged) |
+| py/polynomial-redos | `agent/review.py` `BLANK` | `\s*` around a lazy `[^\]]+?`: `[[` + 1,000 spaces took 0.9 s (≈ n³) | Text can't hold a bracket; newlines only around it (`\[\[(?:\s*\n)?([^\[\]\n]+)(?:\n\s*)?\]\]`); same spans | `test_redos.py::test_blank_pattern_is_linear`, `test_blanks_unchanged` |
+| py/polynomial-redos | `api/routes/messages.py` (`EMAIL_RE`) | `[^@\s]+\.[^@\s]+$`: dots matched both sides (≈ n²) | Domain labels exclude the dot; `\Z` instead of `$`. Now also rejects `a@b..c`, `a@.b`, `a@b.c.` and a trailing newline | `test_redos.py::test_email_pattern_*` |
+| py/polynomial-redos | `agent/fact_check.py` (`_ID`, `_NUMBER`) | ID lookaheads rescanned the whole token from every `-`: `a-a-a-…` ≈ n² | `_ID` bounded (17 parts × 64 chars, longer IDs matched in pieces), letter+digit mix checked in code; numbers matched as digit runs, trailing-word check in code. Differential fuzzing (200k inputs) against the old patterns: identical except where the old lookahead tagged digits-only or letters-only tokens as IDs | `test_redos.py::test_id_extraction_is_linear`, `test_numbers_and_ids_unchanged` |
+| py/path-injection ×2 | `evidence/store.py` `delete_files` | Folder built from `str(case_id)`; a symlinked case folder was followed | `case_dir()` takes integer ids only; reads rebuild the path from the case id + the random `[0-9a-f]{32}.bin` name; every path must `resolve()` inside `EVIDENCE_DIR` or `UnsafeEvidencePath` is raised | `tests/security/test_path_injection.py` (`../`, absolute, encoded, symlinked folder and file) |
+| py/path-injection ×2 | `agent/checklist.py` | Country code joined into the path | The folder is looked up among the `[a-z]{2}` packs on disk, then must resolve inside `playbooks/` (`UnsafeChecklistPath`) | `test_path_injection.py::test_checklist_*` |
+
 ## The optional app lock
 
 `APP_PASSCODE` (plain or an argon2 hash from `uv run python -m escalate.api.applock hash`)
