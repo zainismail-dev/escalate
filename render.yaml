@@ -1,0 +1,64 @@
+# Escalate hosted beta API on Render's free plan (docs/DEPLOY_BETA.md).
+# Values marked `sync: false` are secrets: Render asks for them when you create the Blueprint.
+# Never commit them, and never paste them into a chat or an issue.
+services:
+  - type: web
+    name: escalate-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # One worker (512 MB RAM). Render's proxy is the only client: trust its X-Forwarded-* headers.
+    dockerCommand: uvicorn escalate.api.main:app --host 0.0.0.0 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips=* --no-server-header
+    healthCheckPath: /health
+    autoDeploy: false # deploy on purpose (Manual Deploy), not on every push
+    envVars:
+      - key: DEPLOY_MODE
+        value: hosted
+      - key: PORT
+        value: "8000"
+      # Supabase: Project Settings > Database > Connection string > Session pooler (port 5432)
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL # https://<project-ref>.supabase.co
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY # Project Settings > API Keys > secret key (server only)
+        sync: false
+      - key: SUPABASE_JWT_ALG # ES256 for an ECC (P-256) signing key, RS256 for RSA
+        value: ES256
+      - key: SUPABASE_STORAGE_BUCKET
+        value: evidence
+      # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+      - key: FERNET_KEY
+        sync: false
+      # Groq (OpenAI-compatible). Users can't change the provider in hosted mode.
+      - key: LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: LLM_API_KEY
+        sync: false
+      - key: MODEL_SMART
+        value: llama-3.3-70b-versatile
+      - key: MODEL_FAST
+        value: llama-3.1-8b-instant
+      - key: CLOUD_PRIVACY_WARNING
+        value: "false"
+      # The beta web app (Vercel project escalate-beta) and this API's own host name
+      - key: WEB_ORIGIN # https://escalate-beta.vercel.app (no trailing slash)
+        sync: false
+      - key: ALLOWED_HOSTS # escalate-api.onrender.com (yours may differ)
+        sync: false
+      - key: TICK_SECRET # long random value; the same one goes into GitHub secret TICK_SECRET
+        generateValue: true
+      - key: MAX_OPEN_CASES
+        value: "3"
+      - key: AI_CALLS_PER_DAY
+        value: "40"
+      - key: GLOBAL_AI_CALLS_PER_DAY
+        value: "1000"
+      - key: OCR_LANGS
+        value: eng
+      - key: ALLOW_DEMO_SEED
+        value: "false"
+      - key: API_DOCS
+        value: "false"

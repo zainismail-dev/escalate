@@ -32,6 +32,46 @@ jobs:
       - run: uv run python -m escalate.playbooks.validate playbooks/
       - run: uv run pytest -q
 
+  hosted:
+    # The hosted beta (DEPLOY_MODE=hosted) on a real Postgres: fake Supabase JWKS/JWTs, mocked Groq
+    # (FakeLLM) and storage. The full suite runs too: local-mode tests stay in local mode.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres # a throwaway CI database, not a secret
+          POSTGRES_DB: escalate_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s
+          --health-retries 20
+    env:
+      DEPLOY_MODE: hosted
+      TEST_POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/escalate_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr libpango-1.0-0 libpangoft2-1.0-0
+      - run: uv sync
+      - name: Supabase's API roles (so the RLS and REVOKE checks have something to check)
+        run: psql "$TEST_POSTGRES_URL" -c "CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN;"
+      - name: migrations up, down and up again in the private schema
+        env:
+          DATABASE_URL: ${{ env.TEST_POSTGRES_URL }}
+        run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+          psql "$TEST_POSTGRES_URL" -tAc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'" | grep -qx 0
+          psql "$TEST_POSTGRES_URL" -tAc "SELECT count(*) FROM pg_tables WHERE schemaname = 'escalate' AND NOT rowsecurity" | grep -qx 0
+          psql "$TEST_POSTGRES_URL" -tAc "SELECT has_schema_privilege('anon', 'escalate', 'USAGE')" | grep -qx f
+      - name: IDOR suite and hosted route inventory (Postgres)
+        run: uv run pytest -q tests/hosted/test_idor.py tests/hosted/test_routes.py
+      - name: full suite (hosted tests on Postgres)
+        run: uv run pytest -q
+
   security:
     runs-on: ubuntu-latest
     steps:
