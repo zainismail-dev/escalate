@@ -15,11 +15,13 @@ from escalate.db.models import Case, Message
 from escalate.i18n.formatting import format_amount, format_date, format_money, locale_for
 from escalate.pii import mask_pii
 
-# [[ what to fill in ]]: one line of text, with blank lines allowed around it. The text can't hold
-# a bracket, so a failed attempt stops at the next "[" (where the next attempt starts), and each
-# part is split from the next by a newline, so a long run of spaces is never re-split
-# (polynomial backtracking). `blanks` trims the spaces.
-BLANK = re.compile(r"\[\[(?:\s*\n)?([^\[\]\n]+)(?:\n\s*)?\]\]|_{4,}")
+# Longer than any letter the API accepts (50,000): beyond this the text isn't scanned, and the
+# unscanned part counts as a blank, so it can't be approved unchecked.
+MAX_SCAN = 200_000
+TOO_LONG = "the text is too long to check for blanks"
+# One quantifier each, nothing after it: a match can't backtrack.
+_OPENERS = re.compile(r"\[+")
+_UNDERSCORES = re.compile(r"_+")
 _ISSUE = re.compile(r"^(date|ID|number) (\S+) is not in the case facts$")
 
 SegmentKind = Literal["text", "fact", "blank"]
@@ -48,8 +50,65 @@ class Problem:
     expected: list[str]  # fact keys of the same kind
 
 
+def _bracket_blank(text: str, start: int, close: int) -> str | None:
+    """The label of `[[...]]` from `start` to the "]]" at `close`, or None if it isn't a blank:
+    one line holding all the text, with blank lines allowed around it."""
+    inner = text[start + 2 : close]
+    lines = inner.split("\n")
+    filled = [line for line in lines if line.strip()]
+    if len(filled) > 1 or not any(lines):
+        return None
+    label = filled[0].strip() if filled else ""
+    return label or text[start : close + 2]
+
+
+def _next(text: str, token: str, at: int) -> int:
+    found = text.find(token, at)
+    return len(text) if found == -1 else found
+
+
+def blank_spans(text: str) -> list[tuple[int, int, str]]:
+    """Blanks as (start, end, label): `[[label]]` or a run of 4+ underscores, leftmost first.
+
+    String search, no backtracking regex: every position below only moves forward, so the scan
+    is linear however the text is built (CodeQL py/polynomial-redos)."""
+    scan = text[:MAX_SCAN]
+    n = len(scan)
+    out: list[tuple[int, int, str]] = []
+    i = 0
+    b = u = opener = closer = -1  # the next "[[", "____", "[" and "]" (n: none left)
+    while i < n:
+        if b < i:
+            b = _next(scan, "[[", i)
+        if u < i:
+            u = _next(scan, "____", i)
+        if u < b:
+            end = _UNDERSCORES.match(scan, u).end()  # type: ignore[union-attr]
+            out.append((u, end, scan[u:end]))
+            i = end
+            continue
+        if b == n:
+            break
+        # In "[[[x]]" only the last "[[" can open a blank: the text after the others is a "[".
+        b = _OPENERS.match(scan, b).end() - 2  # type: ignore[union-attr]
+        if opener < b + 2:
+            opener = _next(scan, "[", b + 2)
+        if closer < b + 2:
+            closer = _next(scan, "]", b + 2)
+        stop = min(opener, closer)  # the text holds no bracket
+        label = _bracket_blank(scan, b, stop) if scan.startswith("]]", stop) else None
+        if label is None:
+            i = b + 1
+            continue
+        out.append((b, stop + 2, label))
+        i = stop + 2
+    if len(text) > MAX_SCAN:
+        out.append((MAX_SCAN, len(text), TOO_LONG))
+    return out
+
+
 def blanks(text: str) -> list[str]:
-    return [(m.group(1) or "").strip() or m.group(0) for m in BLANK.finditer(text)]
+    return [label for _, _, label in blank_spans(text)]
 
 
 def display_value(case: Case, key: str, value: str) -> str:
@@ -87,7 +146,7 @@ def _is_iso_date(v: str) -> bool:
 def segments(text: str, displays: dict[str, list[str]]) -> list[Segment]:
     """Split `text` into plain text, verified facts and blanks (longest match first)."""
     spans: list[tuple[int, int, SegmentKind, str | None]] = [
-        (m.start(), m.end(), "blank", None) for m in BLANK.finditer(text)
+        (start, end, "blank", None) for start, end, _ in blank_spans(text)
     ]
     needles = sorted(
         ((v, k) for k, vs in displays.items() for v in vs if len(v) >= 3),

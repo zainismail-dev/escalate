@@ -13,7 +13,7 @@ import pytest
 
 from escalate import pii
 from escalate.agent.fact_check import code_check, find_dates, find_ids, find_numbers
-from escalate.agent.review import BLANK, blanks
+from escalate.agent.review import MAX_SCAN, TOO_LONG, blank_spans, blanks
 from escalate.channels.email_smtp import EMAIL_RE
 
 N = 100_000
@@ -59,11 +59,28 @@ def test_mask_pii_is_linear() -> None:
 
 @pytest.mark.parametrize(
     "text",
-    ["[[" + " " * N, "[[ x" + " " * N, "[[" + "\n" * N + "x", "[[x\n" + " " * N, "[[" * (N // 2)],
-    ids=["spaces", "text-spaces", "newlines", "trailing", "openers"],
+    [
+        "[[" + " " * N,
+        "[[ x" + " " * N,
+        "[[" + "\n" * N + "x",
+        "[[x\n" + " " * N,
+        "[[" * (N // 2),
+        "[[x" * (N // 3),
+        "[[a" * (N // 3) + "____",
+        "[[" + " \n" * (N // 2) + "]]",
+    ],
+    ids=["spaces", "text-spaces", "newlines", "trailing", "openers", "starts", "late-run", "lines"],
 )
-def test_blank_pattern_is_linear(text: str) -> None:
-    assert _fastest(_finds(BLANK, text)) < BUDGET_S
+def test_blank_scan_is_linear(text: str) -> None:
+    assert _fastest(lambda: blank_spans(text)) < BUDGET_S
+
+
+def test_text_past_the_scan_cap_counts_as_a_blank() -> None:
+    """Nothing past the cap is approved unchecked: a blank hidden there still blocks approval."""
+    text = "x" * MAX_SCAN + " [[sign]]"
+    assert blanks(text) == [TOO_LONG]
+    assert blank_spans(text) == [(MAX_SCAN, len(text), TOO_LONG)]
+    assert blanks("x" * MAX_SCAN) == []
 
 
 @pytest.mark.parametrize(
@@ -117,8 +134,8 @@ def test_blanks_unchanged() -> None:
     assert blanks("[[x\n]] and [[\n  your phone ]]") == ["x", "your phone"]
     assert blanks("[[\n]] [[a\nb]] [[]]") == []
     assert blanks("[[[name]]]") == ["name"]
-    spans = [m.span() for m in BLANK.finditer("Hi [[ sign ]].")]
-    assert spans == [(3, 13)]
+    assert blank_spans("Hi [[ sign ]]. ____") == [(3, 13, "sign"), (15, 19, "____")]
+    assert blanks("[[ ]] [[ \n\t]]") == ["[[ ]]", "[[ \n\t]]"]
 
 
 def test_numbers_and_ids_unchanged() -> None:
