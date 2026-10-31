@@ -138,6 +138,15 @@ jobs:
       - run: npm run build
       - name: scan the bundle (no secrets, no demo data)
         run: node scripts/scan-bundle.mjs
+      - name: hosted beta build (fails if a secret-like build value reaches the bundle)
+        env:
+          NEXT_PUBLIC_API_URL: https://api.escalate.test
+          NEXT_PUBLIC_SUPABASE_URL: https://ci-project.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-public-anon-placeholder
+          # Canaries: server-only values that must never show up in the browser bundle.
+          SUPABASE_SERVICE_ROLE_KEY: ci-canary-service-role-value
+          FERNET_KEY: ci-canary-fernet-value-0123456789
+        run: npm run build:hosted
 
   web-e2e:
     runs-on: ubuntu-latest

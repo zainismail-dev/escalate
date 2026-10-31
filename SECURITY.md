@@ -101,8 +101,56 @@ run `make unlock` on this machine to clear the backoff): set it in `.env` and th
 shows a lock screen (useful on a shared computer, or with `ALLOW_LAN=true`). It is not user
 accounts: there is one passcode, one user, and one set of cases.
 
-A hosted, multi-user version (Phase 2) needs real accounts and per-user isolation first; the
-list is in [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md#must-dos-before-phase-2-hosted--multi-user).
+The hosted, multi-user beta (Phase 2) has real accounts and per-user isolation: see
+[Hosted beta](#hosted-beta) below.
+
+## Hosted beta
+
+`DEPLOY_MODE=hosted` (deploy guide: [docs/DEPLOY_BETA.md](docs/DEPLOY_BETA.md)) runs Escalate for
+a small number of invited users on Vercel (web), Render (API, Frankfurt), Supabase (Postgres,
+Auth and Storage, Frankfurt) and Groq (AI, zero data retention). Local mode is unchanged.
+
+**Assets:** users' case text, facts, letters and evidence files; their Google identity; the
+server secrets (`DATABASE_URL`, Supabase secret key, `FERNET_KEY`, Groq key, `TICK_SECRET`).
+
+**Attackers considered:** anyone on the internet; a signed-in user (invited or not) trying to
+reach another user's data; a malicious page in the user's browser; a leaked or forged token;
+someone abusing the free AI budget; someone using Escalate to harass a recipient.
+
+| Threat | Control | Test |
+| --- | --- | --- |
+| Reading or changing another user's data (IDOR) | `user_id` on every owned row; routes resolve ids only through the scoped repository (`escalate/db/repo.py`); while a user is current, every ORM query is filtered to their rows (`escalate/db/tenancy.py`); another user's id gets the same 404 as a missing one | `tests/hosted/test_idor.py` (two users, every route), `tests/hosted/test_tenancy.py`, route inventory `tests/hosted/test_routes.py` |
+| Forged, expired or misused tokens | Supabase JWT checked on every request: JWKS over https (cached; unknown key ids refetch at most once a minute), pinned ES256/RS256 (never HS256/none), issuer, audience `authenticated`, exp/iat/nbf, signed-in non-anonymous user; 401 otherwise. No API sessions or cookies | `tests/hosted/test_auth.py` (21 bad-token cases) |
+| Strangers using the beta | Invite list (`make invite`); others get 403 `waitlist` on every case route and nothing about them is stored; consent before first use | `tests/hosted/test_routes.py`, `tests/hosted/test_accounts.py` |
+| Supabase's public Data API reaching the tables | Tables in a private schema that the Data API doesn't expose; RLS enabled on every table with no policies; `anon`/`authenticated` have no rights on the schema | `tests/hosted/test_migrations.py`, CI `hosted` job checks |
+| Evidence files read by someone else | Fernet-encrypted before upload; private bucket (startup refuses a public one); server-generated keys `<user id>/<random>.bin`; the key's owner is checked before every read; downloads only through the API | `tests/hosted/test_storage.py` |
+| Secrets reaching the browser | Only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are public; `build:hosted` fails if any secret-like build value, a Supabase secret or `service_role` key, or a secret-looking `NEXT_PUBLIC_` variable is in the bundle | `web/tests/scan.test.mts`, CI `web` job |
+| Escalate sending email as the user | The approval gate is unchanged, and in hosted mode the platform never sends: SMTP and Gmail API refuse, user-set SMTP/LLM settings don't exist (404); the user sends from their own mailbox and confirms (`sent_by: user`) | `tests/hosted/test_sending.py` |
+| Abuse of the free AI and of recipients | 3 open cases per user, 40 AI calls per user per day, a global daily budget, per-user rate limits; the existing harassment limit applies per user | `tests/hosted/test_quota.py` |
+| Hidden admin surfaces | `/docs`, `/openapi.json`, demo seed, global delete-all, model test and the app lock aren't registered (404); `/internal/tick` needs a ≥32-character secret, compared in constant time, 404 otherwise | `tests/hosted/test_routes.py`, `tests/hosted/test_tick.py` |
+| Misconfiguration | The API refuses to start in hosted mode on a missing or unsafe value (SQLite, http origins, short tick secret, demo mode), naming the variable only | `tests/hosted/test_config.py` |
+| Cross-site requests | CORS and the Origin check allow only `WEB_ORIGIN`; bearer tokens (no cookies) plus the existing CSRF header; CSP with nonces on the web app | `tests/hosted/test_auth.py` |
+
+**Users' rights:** Settings → *Export my data* (JSON, case PDFs and the original files) and
+*Delete my account* (type `DELETE`: every row, evidence object, agent checkpoint and the Supabase
+sign-in, via the admin API with the server-side secret key).
+
+**Known limits of the beta** (the remaining items of the
+[Phase 2 must-do list](docs/SECURITY_AUDIT.md#must-dos-before-phase-2-hosted--multi-user)):
+
+- Server secrets are environment variables on Render, not a KMS. `FERNET_KEY` is one key for all
+  users (no per-user keys) and can't be rotated without re-encrypting evidence.
+- Case text and facts in Postgres are masked, not application-encrypted; Supabase encrypts its
+  disks and backups. Deleted data stays in the providers' backups until they expire.
+- Rate limits are in memory on one API instance (AI quotas and open-case limits are in the
+  database). Render runs one instance on the free plan.
+- Account security (MFA, recovery) is Google's. Access tokens stay valid until they expire
+  (about an hour) after sign-out or account deletion; a deleted account's token only reaches
+  the waitlist, because its invite is gone.
+- Deleting an account also deletes its hashed recipient counts, so a re-invited user starts
+  the harassment limit again.
+- No external penetration test of the hosted system yet. Keep the beta invite-only until there
+  has been one.
 
 ## Known limits (v0.1)
 
