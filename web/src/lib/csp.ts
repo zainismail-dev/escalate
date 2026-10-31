@@ -1,9 +1,12 @@
 import { API_URL } from "./api-url";
 import { DEMO_STATIC } from "./demo-mode";
+import { HOSTED, SUPABASE_URL } from "./hosted";
 
-/** The page may talk to itself and, unless it is the static demo, the Escalate API. */
+/** The page may talk to itself and, unless it is the static demo, the Escalate API (and, in the
+ * hosted beta, Supabase Auth). */
 export function contentSecurityPolicy(nonce: string, { dev = false, https = false } = {}): string {
-  const connect = ["'self'", ...(DEMO_STATIC ? [] : [new URL(API_URL).origin]), ...(dev ? ["ws:"] : [])];
+  const supabase = HOSTED && SUPABASE_URL ? [new URL(SUPABASE_URL).origin] : [];
+  const connect = ["'self'", ...(DEMO_STATIC ? [] : [new URL(API_URL).origin]), ...supabase, ...(dev ? ["ws:"] : [])];
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,

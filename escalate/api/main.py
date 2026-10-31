@@ -7,11 +7,10 @@ import logging
 import uuid
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import Any
 
 import openai
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -21,39 +20,36 @@ from escalate import __version__
 from escalate.agent import runner
 from escalate.agent.approval import ApprovalError, RecipientNotConfirmed, UnsupportedFacts
 from escalate.api.applock import AppLock, AppLockGuard
+from escalate.api.deps import member
+from escalate.api.hosted_auth import HostedAuth
 from escalate.api.limits import RequestLimits
-from escalate.api.routes import auth, cases, messages, system
+from escalate.api.routes import auth, cases, hosted_settings, internal, me, messages, system
+from escalate.api.routes.cases import OpenCaseLimit
 from escalate.api.security import CSRF_HEADER, CsrfGuard, SecurityHeaders, split_list
 from escalate.channels import NotApproved, ProofRequired
 from escalate.channels.email_smtp import EmailConfigError
-from escalate.config import env_file_problems, get_settings
+from escalate.config import HostedConfigError, env_file_problems, get_settings, hosted_problems
 from escalate.db.models import Base
 from escalate.db.session import get_engine
+from escalate.evidence.storage import StorageError
 from escalate.evidence.store import EvidenceKeyMissing
 from escalate.export.pdf import PdfUnavailable
+from escalate.hosted.accounts import ConsentRequired, Waitlisted
+from escalate.hosted.supabase_admin import AdminError
 from escalate.llm.client import LLMNotConfigured
+from escalate.llm.quota import AiBusy, AiDailyLimit
 from escalate.netguard import UnsafeEndpoint
 from escalate.pii import install_log_filter
 from escalate.playbooks.loader import PlaybookError
 from escalate.safety import HarassmentPattern, NoEvidence, RateLimited
 from escalate.scheduler import jobs
 
-ROOT = Path(__file__).resolve().parents[2]
-
 
 def init_db() -> None:
     """Run Alembic migrations when available, else create tables directly."""
-    ini = ROOT / "alembic.ini"
-    if ini.is_file():
-        from alembic import command
-        from alembic.config import Config
+    from escalate.db.migrate import upgrade
 
-        cfg = Config(str(ini))
-        cfg.attributes["configure_logger"] = False  # keep uvicorn's logging (see migrations/env.py)
-        cfg.set_main_option("script_location", str(ROOT / "migrations"))
-        cfg.set_main_option("sqlalchemy.url", get_settings().database_url)
-        command.upgrade(cfg, "head")
-    else:
+    if not upgrade(get_settings().database_url):
         Base.metadata.create_all(get_engine())
 
 
@@ -85,8 +81,26 @@ def startup_warnings() -> list[str]:
     return warnings
 
 
+def hosted_startup() -> None:
+    """Hosted mode: lock down the checkpoint tables too, and refuse a public evidence bucket."""
+    from escalate.db.hosted import lock_down
+    from escalate.evidence.storage import SupabaseStorage
+    from escalate.evidence.store import get_storage
+
+    s = get_settings()
+    with get_engine().begin() as conn:
+        lock_down(conn, s.db_schema)
+    storage = get_storage(s)
+    if isinstance(storage, SupabaseStorage):
+        storage.ensure_private_bucket()
+
+
 def create_app(startup: bool = True) -> FastAPI:
     install_log_filter()
+    problems = hosted_problems(get_settings())
+    if problems:
+        raise HostedConfigError(problems)  # DEPLOY_MODE=hosted with a missing or unsafe value
+    hosted = get_settings().hosted
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
@@ -96,15 +110,18 @@ def create_app(startup: bool = True) -> FastAPI:
                 log.warning(w)
             init_db()
             runner.configure()
-            sched = _start_scheduler()
+            if hosted:
+                hosted_startup()  # no in-process scheduler: POST /internal/tick (hourly cron)
+            else:
+                sched = _start_scheduler()
         yield
         if sched is not None:
             runner.set_scheduler(None)
             sched.shutdown(wait=False)
 
     # Swagger UI / ReDoc pages load scripts from a CDN, and the schema maps every route:
-    # development only (API_DOCS=true, which `make api` sets).
-    docs = get_settings().api_docs
+    # development only (API_DOCS=true, which `make api` sets). Never in hosted mode.
+    docs = get_settings().api_docs and not hosted
     app = FastAPI(
         title="Escalate",
         version=__version__,
@@ -114,25 +131,42 @@ def create_app(startup: bool = True) -> FastAPI:
         redoc_url="/redoc" if docs else None,
     )
     # Middleware runs outermost-last: Host check, then CORS (answers preflights), then CSRF,
-    # then the optional app lock, then rate and body-size limits.
+    # then the optional app lock (hosted: the Supabase token check), then rate and body-size
+    # limits (hosted: per user).
     settings = get_settings()
-    app.state.lock = AppLock()
     app.add_middleware(RequestLimits)
-    app.add_middleware(AppLockGuard, lock=app.state.lock)
-    app.add_middleware(CsrfGuard)
+    if hosted:
+        app.add_middleware(HostedAuth)
+        app.add_middleware(CsrfGuard, exempt=(internal.router.prefix + "/",))
+    else:
+        app.state.lock = AppLock()
+        app.add_middleware(AppLockGuard, lock=app.state.lock)
+        app.add_middleware(CsrfGuard)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=split_list(settings.web_origin),  # the web app calls the API from the browser
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-        allow_headers=["Content-Type", CSRF_HEADER],
-        allow_credentials=True,  # the app lock's session cookie (explicit origins only)
+        allow_headers=["Content-Type", CSRF_HEADER, *(["Authorization"] if hosted else [])],
+        # Local: the app lock's session cookie (explicit origins only). Hosted: bearer tokens,
+        # no cookies at all.
+        allow_credentials=not hosted,
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=split_list(settings.allowed_hosts))
     app.add_middleware(SecurityHeaders)  # outermost: also on refusals from the guards above
-    app.include_router(auth.router)
-    app.include_router(cases.router)
-    app.include_router(messages.router)
-    app.include_router(system.router)
+    if hosted:
+        members = [Depends(member)]  # invited, consented users only (403 waitlist otherwise)
+        app.include_router(cases.router, dependencies=members)
+        app.include_router(messages.router, dependencies=members)
+        app.include_router(hosted_settings.router, dependencies=members)
+        app.include_router(me.router)
+        app.include_router(internal.router)
+        app.include_router(system.router)
+    else:
+        app.include_router(auth.router)
+        app.include_router(cases.router)
+        app.include_router(messages.router)
+        app.include_router(system.router)
+        app.include_router(system.local_router)
 
     errors: list[tuple[type[Exception], int, Callable[[Exception], dict[str, Any]] | None]] = [
         (UnsupportedFacts, 422, lambda e: {"issues": e.issues}),  # type: ignore[attr-defined]
@@ -152,6 +186,14 @@ def create_app(startup: bool = True) -> FastAPI:
         (LLMNotConfigured, 503, None),
         (UnsafeEndpoint, 400, None),
         (openai.APIConnectionError, 503, lambda e: {"hint": "is the LLM server running?"}),
+        # Hosted beta
+        (Waitlisted, 403, lambda e: {"waitlist": True}),
+        (ConsentRequired, 403, lambda e: {"consent_required": True}),
+        (OpenCaseLimit, 409, lambda e: {"quota": "open_cases"}),
+        (AiDailyLimit, 429, lambda e: {"quota": "user"}),
+        (AiBusy, 429, lambda e: {"quota": "global"}),
+        (StorageError, 502, None),
+        (AdminError, 502, None),
     ]
     for exc_type, code, extra in errors:
 

@@ -28,7 +28,14 @@ class DemoEmailChannel:
         return SendResult(delivered=True, external_id=f"demo-{msg.id}", note="demo: not sent")
 
 
+HOSTED_EMAIL_NOTE = (
+    "Open the letter in your own email app (or copy it), send it yourself, then confirm here."
+)
+
+
 def _email() -> Channel:
+    if get_settings().hosted:  # the user sends it from their own mailbox, then confirms
+        return UserDeliveredChannel("email", HOSTED_EMAIL_NOTE)
     if get_settings().demo_mode:
         return DemoEmailChannel()
     if get_settings().email_mode == "gmail_api":
@@ -53,7 +60,8 @@ _overrides: dict[str, Channel] = {}
 
 
 def get_channel(name: str) -> Channel:
-    if name in _overrides and not (name == "email" and get_settings().demo_mode):
+    s = get_settings()
+    if name in _overrides and not (name == "email" and (s.demo_mode or s.hosted)):
         return _overrides[name]
     try:
         return _REGISTRY[name]()
@@ -74,12 +82,10 @@ def _mark_sent(session: Session, msg: Message, result: SendResult, how: str) -> 
     msg.sent_at = utcnow()
     msg.external_id = result.external_id
     session.flush()
-    log_event(
-        session,
-        msg.case_id,
-        "message_sent",
-        {"message_id": msg.id, "step": msg.step_id, "channel": msg.channel, "how": how},
-    )
+    payload = {"message_id": msg.id, "step": msg.step_id, "channel": msg.channel, "how": how}
+    if get_settings().hosted:
+        payload["sent_by"] = "user" if how in ("user_confirmed", "info") else "platform"
+    log_event(session, msg.case_id, "message_sent", payload)
 
 
 def send_message(

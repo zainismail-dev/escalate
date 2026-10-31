@@ -15,6 +15,10 @@ from escalate.db.models import Base
 # Never read the developer's .env either (e.g. DEMO_MODE=true there would change test results).
 Settings.model_config["env_file"] = None
 
+# Tests pick their mode: local unless a test (tests/hosted) switches to hosted itself. The CI
+# "hosted" job sets DEPLOY_MODE=hosted for its own steps; it must not change the local tests.
+os.environ.pop("DEPLOY_MODE", None)
+
 # Never read a developer's saved web settings (data/settings.json) in tests.
 os.environ["ESCALATE_SETTINGS_FILE"] = os.devnull
 

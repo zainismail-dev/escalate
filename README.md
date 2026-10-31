@@ -132,6 +132,25 @@ flowchart LR
   asks for passwords, PINs or OTPs. You get a warning when your AI model runs in the cloud.
 - **Not legal advice.** Letters and PDF case files say so. See [SECURITY.md](SECURITY.md).
 
+## Hosted beta (invite-only)
+
+Escalate is self-hosted first. For people who can't run it themselves there is an optional
+hosted mode (`DEPLOY_MODE=hosted`), built on free tiers: Vercel (web), Render (API, Frankfurt),
+Supabase (Postgres, Google sign-in and encrypted file storage, Frankfurt) and Groq (AI, zero
+data retention). In hosted mode:
+
+- people sign in with Google; only invited emails get in (`make invite EMAIL=...`), everyone
+  else sees a waitlist;
+- every user's cases, letters and evidence are theirs alone (one scoped data layer, 404 for
+  anyone else's id, an IDOR test suite over every route);
+- the AI provider is fixed by the server, with daily limits per user and overall;
+- **Escalate never sends email**: after approving, the user opens the letter in their own email
+  app (or copies it, or downloads the PDF) and clicks "I've sent it";
+- users can export all their data or delete their account.
+
+Local mode (the default) is unchanged: SQLite, Ollama, no login. Deploy guide:
+[docs/DEPLOY_BETA.md](docs/DEPLOY_BETA.md). Threat model: [SECURITY.md](SECURITY.md) ("Hosted beta").
+
 ## Supported countries
 
 | Country | Refund refused | Subscription | Scam checklist | Status |

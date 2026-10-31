@@ -12,7 +12,9 @@ Vercel's free Hobby plan is enough.
    which sets:
    - Framework preset: **Next.js**
    - Install command: `npm ci`
-   - Build command: **`npm run build:demo`** (sets `NEXT_PUBLIC_DEMO_STATIC=true`)
+   - Build command: **`npm run build:vercel`**, which runs `npm run build:demo` (sets
+     `NEXT_PUBLIC_DEMO_STATIC=true`). Only a project with `NEXT_PUBLIC_DEPLOY_MODE=hosted` builds
+     the hosted beta instead ([DEPLOY_BETA.md](DEPLOY_BETA.md)).
    Leave *Output Directory* empty (Next.js default).
 4. **Environment variables:** none are needed. Do **not** add `NEXT_PUBLIC_API_URL` or any
    secret: the demo talks to no server, and anything `NEXT_PUBLIC_*` ends up in the browser.

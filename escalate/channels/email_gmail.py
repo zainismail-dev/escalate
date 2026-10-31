@@ -13,7 +13,7 @@ from cryptography.fernet import Fernet
 
 from escalate.channels.base import Attachment, SendResult
 from escalate.channels.email_smtp import EmailConfigError, build_mime
-from escalate.channels.gate import require_approval
+from escalate.channels.gate import refuse_when_hosted, require_approval
 from escalate.config import Settings, get_settings
 from escalate.db.models import Message
 
@@ -58,6 +58,7 @@ class GmailApiChannel:
 
     def send(self, msg: Message, attachments: list[Attachment]) -> SendResult:
         require_approval(msg)
+        refuse_when_hosted()
         mime = build_mime(msg, self.sender, attachments)
         raw = base64.urlsafe_b64encode(mime.as_bytes()).decode()
         service = self.service_factory(self.settings)

@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { FactChip, useFactLabel } from "@/components/fact-chip";
 import { EscalationLadder } from "@/components/ladder";
+import { FileLink } from "@/components/hosted";
 import { NextMove } from "@/components/next-move";
 import { ErrorState, PageSkeleton } from "@/components/states";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Label } from "@/components/ui/input";
 import { WhyPanel } from "@/components/why-panel";
 import { api } from "@/lib/api";
+import { HOSTED } from "@/lib/hosted";
 import { displayFact } from "@/lib/facts";
 import { caseLocale, formatDate, formatDateTime } from "@/lib/format";
 import type { CaseDetail } from "@/lib/types";
@@ -130,7 +132,7 @@ export function CaseDashboard({ id }: { id: string }) {
 
       <div className="grid gap-6 lg:grid-cols-[1.25fr_1fr]">
         <div className="space-y-6">
-          <NextMove c={c} onDeliveryUpload={() => setConfirm("delivery")} />
+          <NextMove c={c} onDeliveryUpload={() => setConfirm("delivery")} onSent={() => void reload()} />
           <Deadlines c={c} locale={locale} />
           <Card>
             <CardHeader>
@@ -165,9 +167,9 @@ export function CaseDashboard({ id }: { id: string }) {
                       <Mail className="size-4 text-muted" aria-hidden />
                       <span className="min-w-0 flex-1 truncate font-semibold">{m.subject || m.step_id}</span>
                       <span className="label-mono text-muted">{formatDateTime(m.sent_at, locale)}</span>
-                      <a className="text-xs font-semibold text-info underline-offset-2 hover:underline" href={api.printableUrl(m.id)}>
+                      <FileLink className="text-xs font-semibold text-info underline-offset-2 hover:underline" href={api.printableUrl(m.id)} hosted={HOSTED} download={() => api.downloadLetterPdf(m.id)}>
                         {t("pdf")}
-                      </a>
+                      </FileLink>
                     </li>
                   ))}
                 </ul>
@@ -209,10 +211,10 @@ export function CaseDashboard({ id }: { id: string }) {
           </Card>
           <div className="flex flex-wrap gap-2">
             <Button asChild>
-              <a href={api.exportUrl(c.id)}>
+              <FileLink href={api.exportUrl(c.id)} hosted={HOSTED} download={() => api.downloadCasePdf(c.id)}>
                 <FileDown aria-hidden />
                 {t("export")}
-              </a>
+              </FileLink>
             </Button>
             {!["withdrawn", "resolved"].includes(c.status) && (
               <Button variant="ghost" onClick={() => setConfirm("withdraw")}>

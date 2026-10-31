@@ -1,0 +1,32 @@
+name: tick
+# Hosted beta: wake the API every hour so follow-ups and deadline warnings run
+# (docs/DEPLOY_BETA.md). Needs repository secrets TICK_URL and TICK_SECRET; without them this
+# workflow does nothing and succeeds.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: tick
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: POST /internal/tick
+        env:
+          TICK_URL: ${{ secrets.TICK_URL }}
+          TICK_SECRET: ${{ secrets.TICK_SECRET }}
+        run: |
+          if [ -z "$TICK_URL" ] || [ -z "$TICK_SECRET" ]; then
+            echo "TICK_URL / TICK_SECRET are not set: nothing to do."
+            exit 0
+          fi
+          # The free API sleeps when idle: retry while it wakes up (about a minute).
+          curl -fsS --retry 6 --retry-delay 20 --retry-all-errors --max-time 600 \
+            -X POST -H "X-Tick-Secret: $TICK_SECRET" "$TICK_URL" -o /dev/null -w "HTTP %{http_code}\n"

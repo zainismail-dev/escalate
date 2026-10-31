@@ -232,6 +232,14 @@
     "other": {
       "title": "Something went wrong",
       "body": "The request failed. Details below."
+    },
+    "ai_unavailable": {
+      "title": "The AI service isn't answering",
+      "body": "Nothing was sent. The beta's AI provider is not responding right now; try again in a few minutes."
+    },
+    "quota": {
+      "title": "Beta limit reached",
+      "body": "The beta has daily limits so it stays free for everyone. Nothing was sent."
     }
   },
   "blocked": {
@@ -956,5 +964,116 @@
     "sampleFilled": "Sample details are filled in. Change anything you like: nothing is saved.",
     "useSample": "Use the sample receipt",
     "viewCode": "View code on GitHub"
+  },
+  "hosted": {
+    "checking": "Checking your sign-in…",
+    "waking": "Waking the server… the free beta sleeps when nobody uses it. This can take up to a minute.",
+    "downloadFailed": "The download failed: {detail}",
+    "dismiss": "Dismiss",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "signin": {
+      "title": "Sign in to the Escalate beta",
+      "body": "The hosted beta is invite-only. Sign in with the Google account your invite was sent to.",
+      "google": "Continue with Google",
+      "busy": "Opening Google…",
+      "deleted": "Your account and all its data have been deleted.",
+      "failed": "Sign-in didn't work. Please try again.",
+      "notConfigured": "Sign-in is not configured for this deployment.",
+      "agree": "By signing in you accept the beta terms and privacy policy."
+    },
+    "callback": {
+      "working": "Signing you in…",
+      "failed": "Sign-in didn't complete.",
+      "retry": "Try again"
+    },
+    "waitlist": {
+      "title": "You're on the waitlist",
+      "body": "Thanks for your interest. The beta is invite-only for now, and {email} isn't on the invite list yet. We'll let you know when there's room.",
+      "noData": "Nothing about you is stored while you wait, apart from your Google sign-in at Supabase. You can sign out now."
+    },
+    "welcome": {
+      "title": "Before you start",
+      "intro": "Please read and accept these points. They are what makes a free, hosted beta possible.",
+      "ai": "Your case text and evidence are processed by an AI service (Groq) to draft letters. The beta uses Groq with zero data retention: it doesn't keep or train on your data.",
+      "legal": "Escalate is not a lawyer and its letters are not legal advice. You check and approve every letter before anything happens.",
+      "own": "Please use only your own case and your own evidence, and don't upload other people's private documents.",
+      "beta": "This is a beta: it may change, break or be reset, and it has daily limits (3 open cases, 40 AI requests a day). Keep your own copies of anything important.",
+      "send": "Escalate never sends email for you here: after you approve a letter, you send it from your own email app.",
+      "accept": "I understand and agree",
+      "read": "Read the privacy policy and terms"
+    },
+    "send": {
+      "intro": "Send this approved letter yourself, from your own email, to {recipient}. Escalate never sends email in the beta.",
+      "open": "Open in my email app",
+      "copy": "Copy letter",
+      "copied": "Copied",
+      "pdf": "Download PDF",
+      "tooLong": "This letter is too long to open in an email app directly: copy it (or attach the PDF) and paste it into your email.",
+      "confirmHint": "Once you have sent it, confirm here so Escalate can track the reply deadline.",
+      "sent": "I've sent it"
+    },
+    "account": {
+      "title": "Your account",
+      "signedInAs": "Signed in as {email}",
+      "openCases": "Open cases: {n} of {max}",
+      "aiCalls": "AI requests today: {n} of {max}",
+      "where": "Your data is stored in the EU (Frankfurt). Evidence files are encrypted before they are stored.",
+      "export": "Export my data",
+      "privacy": "Privacy policy",
+      "terms": "Terms",
+      "deleteTitle": "Delete my account",
+      "deleteBody": "Deletes every case, letter, evidence file, reminder and your sign-in. This cannot be undone.",
+      "deleteCta": "Delete my account",
+      "confirmTitle": "Delete your account and all your data?",
+      "confirmBody": "Everything is deleted for good: cases, letters, evidence, timeline, settings and your sign-in.",
+      "typeDelete": "Type DELETE to confirm"
+    },
+    "legal": {
+      "updated": "Last updated: {date}",
+      "operator": "the operator of this beta",
+      "noContact": "(contact address not set)",
+      "template": "This is a template for an invite-only beta. The operator must review it and fill in their details before inviting anyone."
+    },
+    "privacyPage": {
+      "title": "Privacy policy",
+      "intro": "This policy explains what the Escalate hosted beta does with your data. Escalate is open-source software; this beta is run by {operator}.",
+      "whatTitle": "What we store",
+      "what": "Your Google account email and user id (for sign-in); your cases: the description you write, facts, letters, replies you log and the timeline; evidence files you upload (encrypted before storage); your settings; and daily usage counts for the beta limits.",
+      "whyTitle": "Why",
+      "why": "Only to run your complaint: drafting letters, tracking deadlines and reminding you. No ads, no tracking, no selling or sharing data for marketing.",
+      "aiTitle": "AI processing",
+      "ai": "To draft and check letters, your case text and the text read from your evidence are sent to Groq. The beta uses Groq with zero data retention: Groq doesn't store or train on it.",
+      "processorsTitle": "Service providers (processors)",
+      "processors": "Vercel (the web app), Render (the API server, EU Frankfurt), Supabase (sign-in, database and encrypted file storage, EU Frankfurt) and Groq (AI processing, zero data retention). Google is used for sign-in only.",
+      "regionTitle": "Where",
+      "region": "The database, file storage and API run in the EU (Frankfurt, Germany). The web pages are served by Vercel's global network.",
+      "retentionTitle": "How long",
+      "retention": "Until you delete a case or your account. The beta may be reset with notice. Deleting your account removes your data and sign-in at once; backups held by the providers expire on their own schedule.",
+      "rightsTitle": "Your rights",
+      "rights": "Settings → Your account: export all your data (a zip of JSON, PDFs and your files) or delete your account and everything in it. For anything else, contact {contact}.",
+      "securityTitle": "Security",
+      "security": "Encrypted connections, evidence encrypted at rest, every request checked against your sign-in, and no access to other users' data. Never enter passwords, PINs or one-time codes into a case.",
+      "contactTitle": "Contact",
+      "contact": "{operator}: {contact}"
+    },
+    "termsPage": {
+      "title": "Beta terms",
+      "intro": "These terms apply to the invite-only Escalate hosted beta run by {operator}.",
+      "whatTitle": "What Escalate is",
+      "what": "A tool that helps you write and track complaint letters. It is not a law firm and does not give legal advice. You check, edit and approve every letter, and you send it yourself.",
+      "useTitle": "Fair use",
+      "use": "Use it only for your own genuine complaints and your own documents. Don't use it to harass anyone, to make false claims, or to try to reach other users' data. Accounts that break these terms are removed.",
+      "betaTitle": "Beta, free, with limits",
+      "beta": "The beta is free and provided as is, without guarantees. It can change, break, be paused or reset. Daily limits apply (open cases, AI requests). Keep your own copies of important letters and evidence.",
+      "liabilityTitle": "Responsibility",
+      "liability": "You are responsible for what you send and to whom. To the extent the law allows, the operator is not liable for losses from using the beta.",
+      "endTitle": "Ending",
+      "end": "You can delete your account at any time in Settings. The operator may end the beta or remove invites; you'll be able to export your data first where possible.",
+      "contactTitle": "Contact",
+      "contact": "{operator}: {contact}"
+    }
   }
 }

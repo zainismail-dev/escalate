@@ -75,6 +75,9 @@ class RequestLimits:
             return
         headers = {k.decode("latin-1").lower(): v.decode("latin-1") for k, v in scope["headers"]}
         client = (scope.get("client") or ("unknown", 0))[0]
+        identity = scope.get("state", {}).get("identity")
+        if identity is not None:  # hosted mode: limits are per signed-in user
+            client = f"user:{identity.user_id}"
         problem = self.rate_problem(scope["method"], scope["path"], client)
         if problem:
             await _reply(send, 429, problem, [(b"retry-after", b"60")])

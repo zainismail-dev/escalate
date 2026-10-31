@@ -17,10 +17,15 @@ const SECURITY_HEADERS = [
 // same exports takes its place (see src/demo/disabled.ts).
 const DEMO = process.env.NEXT_PUBLIC_DEMO_STATIC === "true";
 const DEMO_BACKEND = DEMO ? "./src/demo/backend.ts" : "./src/demo/disabled.ts";
+// The hosted beta's own pages (sign-in, waitlist, consent, privacy, terms) are `page.hosted.tsx`:
+// only the hosted build serves them, so self-hosted and demo builds have exactly their old routes.
+const HOSTED = process.env.NEXT_PUBLIC_DEPLOY_MODE === "hosted" && !DEMO;
+const SUPABASE_CLIENT = HOSTED ? "./src/lib/supabase-client.ts" : "./src/lib/supabase-disabled.ts";
 
 const config: NextConfig = {
   output: "standalone", // small Docker image: `node server.js`
-  turbopack: { resolveAlias: { "escalate-demo-backend": DEMO_BACKEND } },
+  turbopack: { resolveAlias: { "escalate-demo-backend": DEMO_BACKEND, "escalate-supabase": SUPABASE_CLIENT } },
+  ...(HOSTED ? { pageExtensions: ["hosted.tsx", "tsx", "ts", "jsx", "js"] } : {}),
   poweredByHeader: false,
   // No telemetry, analytics or third-party requests at runtime: fonts are self-hosted by next/font.
   async headers() {

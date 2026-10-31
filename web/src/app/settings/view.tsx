@@ -13,8 +13,10 @@ import { FieldHint, Input, Label, NativeSelect } from "@/components/ui/input";
 import { ENABLED_LOCALES } from "@/i18n/config";
 import { api } from "@/lib/api";
 import { countryName } from "@/lib/format";
+import { HOSTED } from "@/lib/hosted";
 import type { Settings } from "@/lib/types";
 import { useAction, useApi } from "@/lib/use-api";
+import { AccountSection } from "./account";
 
 /** OpenAI-compatible endpoints (the same ones .env.example lists). Any other URL works too. */
 const MODEL_SOURCES = [
@@ -436,10 +438,20 @@ export function SettingsView() {
         <h1 className="mt-1 font-display text-3xl">{t("title")}</h1>
         <p className="mt-1 text-text-2">{t("intro")}</p>
       </div>
-      <ModelSection s={s} onSaved={setS} />
-      <EmailSection s={s} onSaved={setS} />
-      <RegionSection s={s} onSaved={setS} />
-      <PrivacySection s={s} />
+      {HOSTED ? (
+        // Hosted beta: the AI provider and email are the server's; deleting is per account.
+        <>
+          <RegionSection s={s} onSaved={setS} />
+          <AccountSection />
+        </>
+      ) : (
+        <>
+          <ModelSection s={s} onSaved={setS} />
+          <EmailSection s={s} onSaved={setS} />
+          <RegionSection s={s} onSaved={setS} />
+          <PrivacySection s={s} />
+        </>
+      )}
     </div>
   );
 }

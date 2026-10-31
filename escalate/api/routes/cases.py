@@ -5,7 +5,6 @@ from functools import partial
 import anyio
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import Response
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from escalate.agent import runner
@@ -13,7 +12,14 @@ from escalate.agent.deadlines import deadline_status
 from escalate.agent.review import display_value
 from escalate.agent.titles import display_title
 from escalate.api import views
-from escalate.api.deps import CasePk, get_case, get_session, public_case_id, public_pending
+from escalate.api.deps import (
+    CasePk,
+    get_case,
+    get_session,
+    identity,
+    public_case_id,
+    public_pending,
+)
 from escalate.api.schemas import (
     AnswersIn,
     CaseCreate,
@@ -37,13 +43,15 @@ from escalate.api.schemas import (
     WithdrawIn,
 )
 from escalate.config import Settings, get_settings
+from escalate.db import repo
 from escalate.db.events import log_event
-from escalate.db.models import Case, CaseStatus, Event, Message, utcnow
+from escalate.db.models import Case, CaseStatus, utcnow
 from escalate.db.session import session_scope
 from escalate.evidence import ocr
 from escalate.evidence.ocr import ExtractResult
 from escalate.evidence.sniff import UploadRejected, check_upload
 from escalate.evidence.store import safe_filename, save_upload
+from escalate.hosted.accounts import user_settings
 from escalate.i18n.countries import currency_for, default_letter_language, is_rtl
 from escalate.i18n.formatting import format_amount, locale_for
 from escalate.pii import mask_pii
@@ -52,6 +60,10 @@ from escalate.playbooks.models import Playbook
 from escalate.safety import new_case_limiter, require_evidence
 
 router = APIRouter(prefix="/cases", tags=["cases"])
+
+
+class OpenCaseLimit(Exception):
+    """Hosted beta: MAX_OPEN_CASES per user."""
 
 
 def run_out(r: runner.RunResult) -> RunOut:
@@ -122,7 +134,7 @@ def case_detail(session: Session, case: Case) -> CaseDetail:
     detail.waiting_for = raw.get("type") if raw else None
     detail.text_direction = "rtl" if is_rtl(case.language) else "ltr"
     if detail.pending and detail.pending.get("type") == "approve_draft":
-        msg = session.get(Message, raw["draft"]["message_id"]) if raw else None
+        msg = repo.case_message(session, case.id, raw["draft"]["message_id"]) if raw else None
         detail.pending_draft = MessageOut.model_validate(msg) if msg else None
     pb = _playbook(case)
     if pb is not None:
@@ -142,15 +154,28 @@ def create_case(
 ) -> CaseDetail:
     settings = get_settings()
     client = request.client.host if request.client else "local"
+    default_country, default_language = settings.default_country, None
+    user_id = None
+    if settings.hosted:
+        user_id = client = identity(request).user_id  # limits are per user, not per address
+        if repo.open_case_count(session) >= settings.max_open_cases:
+            raise OpenCaseLimit(
+                f"the beta allows {settings.max_open_cases} open cases at a time: resolve, "
+                "withdraw or delete one first"
+            )
+        prefs = user_settings(session, user_id)
+        default_country = prefs.default_country or default_country
+        default_language = prefs.default_language
     new_case_limiter.check(client, settings.max_new_cases_per_hour)
-    country = body.country or settings.default_country
+    country = body.country or default_country
     case = Case(
         description=mask_pii(body.description.strip()),
         country=country,
         region=body.region,
-        language=body.language or default_letter_language(),
+        language=body.language or default_language or default_letter_language(),
         company=body.company,
         currency=currency_for(country),
+        user_id=user_id,
     )
     if case.region and case.country and not case.region.startswith(case.country + "-"):
         raise HTTPException(422, f"region {case.region} is not in country {case.country}")
@@ -168,7 +193,7 @@ def list_cases(
     q: str | None = Query(default=None, max_length=200),
     session: Session = Depends(get_session),
 ) -> list[CaseSummary]:
-    query = select(Case).order_by(Case.id.desc())
+    query = repo.cases().order_by(Case.id.desc())
     if status:
         query = query.where(Case.status == status)
     if country:
@@ -270,8 +295,7 @@ def retry(case_id: CasePk, session: Session = Depends(get_session)) -> RunOut:
 @router.get("/{case_id}/timeline", response_model=list[EventOut])
 def timeline(case_id: CasePk, session: Session = Depends(get_session)) -> list[EventOut]:
     get_case(session, case_id)
-    q = select(Event).where(Event.case_id == case_id).order_by(Event.created_at, Event.id)
-    return [EventOut.model_validate(e) for e in session.scalars(q)]
+    return [EventOut.model_validate(e) for e in repo.events(session, case_id)]
 
 
 @router.post("/{case_id}/replies", response_model=ReplyOut)
@@ -281,12 +305,8 @@ def log_reply(case_id: CasePk, body: ReplyIn, session: Session = Depends(get_ses
     r = runner.resume_with_reply(case_id, body.text)
     out = ReplyOut(**run_out(r).model_dump())
     with session.begin():
-        q = (
-            select(Event)
-            .where(Event.case_id == case_id, Event.type == "reply_judged")
-            .order_by(Event.id.desc())
-        )
-        ev = session.scalars(q).first()
+        judged = repo.events(session, case_id, "reply_judged")
+        ev = judged[0] if judged else None
         if ev is not None:
             p = ev.payload
             out.verdict, out.reason = p.get("verdict"), p.get("reason")

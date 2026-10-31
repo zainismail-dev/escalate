@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -46,6 +47,8 @@ class _SavedSettings(PydanticBaseSettingsSource):
         return None, field_name, False  # unused: __call__ returns everything at once
 
     def __call__(self) -> dict[str, Any]:
+        if os.environ.get("DEPLOY_MODE", "").strip().lower() == "hosted":
+            return {}  # hosted beta: the server's environment only, users can't change it
         path = settings_file()
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
@@ -117,6 +120,20 @@ class Settings(BaseSettings):
     demo_upload_mb: int = 5
     demo_retention_hours: int = 24
 
+    # Hosted, invite-only beta (docs/DEPLOY_BETA.md). "local" (the default) is everything above,
+    # unchanged: SQLite, Ollama, no login. "hosted" needs the values checked by hosted_problems().
+    deploy_mode: Literal["local", "hosted"] = "local"
+    supabase_url: str = ""  # https://<project>.supabase.co
+    supabase_service_role_key: str = ""  # server only: Storage and deleting auth users
+    supabase_jwt_alg: Literal["ES256", "RS256"] = "ES256"  # pinned; never HS256 or "none"
+    supabase_storage_bucket: str = "evidence"
+    jwks_cache_seconds: int = 600
+    db_schema: str = "escalate"  # hosted Postgres: a private schema the Data API doesn't expose
+    tick_secret: str = ""  # X-Tick-Secret for POST /internal/tick (GitHub Actions cron)
+    max_open_cases: int = 3  # per user
+    ai_calls_per_day: int = 40  # per user
+    global_ai_calls_per_day: int = 1000  # all users together; then "the AI is busy today"
+
     @classmethod
     def settings_customise_sources(
         cls,
@@ -144,6 +161,13 @@ class Settings(BaseSettings):
             min(self.max_upload_mb, self.demo_upload_mb) if self.demo_mode else self.max_upload_mb
         )
 
+    @field_validator("db_schema")
+    @classmethod
+    def _plain_schema_name(cls, v: str) -> str:
+        if not re.fullmatch(r"[a-z_][a-z0-9_]{0,62}", v):
+            raise ValueError("DB_SCHEMA must be a plain lower-case Postgres name")
+        return v
+
     @field_validator("default_country", mode="before")
     @classmethod
     def _blank_country_is_none(cls, v: object) -> object:
@@ -155,6 +179,70 @@ class Settings(BaseSettings):
     @property
     def model_fast_or_smart(self) -> str:
         return self.model_fast or self.model_smart
+
+    @property
+    def hosted(self) -> bool:
+        return self.deploy_mode == "hosted"
+
+    @property
+    def supabase_issuer(self) -> str:
+        return f"{self.supabase_url.rstrip('/')}/auth/v1"
+
+    @property
+    def jwks_url(self) -> str:
+        return f"{self.supabase_issuer}/.well-known/jwks.json"
+
+
+MIN_TICK_SECRET = 32
+# Host names an origin or host setting must not be (not addresses to bind).
+LOCAL_HOSTS = ("localhost", "127.0.0.1", "0.0.0.0", "[::1]")  # nosec B104
+
+
+def _is_https(url: str, local_ok: bool = False) -> bool:
+    if not url.startswith("https://"):
+        return False
+    host = url.removeprefix("https://").split("/", 1)[0].split(":", 1)[0]
+    return local_ok or host not in LOCAL_HOSTS
+
+
+def hosted_problems(s: Settings) -> list[str]:
+    """Why DEPLOY_MODE=hosted must refuse to start (names only, never values). Empty = ok."""
+    if not s.hosted:
+        return []
+    problems = []
+    if not s.database_url.startswith(("postgresql", "postgres")):
+        problems.append("DATABASE_URL must be Postgres in hosted mode (SQLite is local only)")
+    try:
+        Fernet(s.fernet_key.encode())
+    except ValueError:
+        problems.append("FERNET_KEY is missing or not a Fernet key")
+    if not _is_https(s.supabase_url):
+        problems.append("SUPABASE_URL must be your project's https:// URL")
+    if not s.supabase_service_role_key:
+        problems.append("SUPABASE_SERVICE_ROLE_KEY is missing")
+    if not _is_https(s.llm_base_url):
+        problems.append("LLM_BASE_URL must be the hosted provider's https:// URL")
+    if not s.llm_api_key or s.llm_api_key == "ollama":
+        problems.append("LLM_API_KEY is missing")
+    if not s.model_smart:
+        problems.append("MODEL_SMART is missing")
+    origins = [o.strip() for o in s.web_origin.split(",") if o.strip()]
+    if not origins or not all(_is_https(o) for o in origins):
+        problems.append("WEB_ORIGIN must be the beta web app's https:// origin(s)")
+    hosts = [h.strip() for h in s.allowed_hosts.split(",") if h.strip()]
+    if not hosts or all(h in LOCAL_HOSTS for h in hosts):
+        problems.append("ALLOWED_HOSTS must include the API's public host name")
+    if len(s.tick_secret) < MIN_TICK_SECRET:
+        problems.append(f"TICK_SECRET must be at least {MIN_TICK_SECRET} random characters")
+    if s.demo_mode:
+        problems.append("DEMO_MODE must be off in hosted mode")
+    return problems
+
+
+class HostedConfigError(RuntimeError):
+    def __init__(self, problems: list[str]) -> None:
+        super().__init__("DEPLOY_MODE=hosted refuses to start:\n  - " + "\n  - ".join(problems))
+        self.problems = problems
 
 
 def env_file_problems(path: Path = Path(".env")) -> list[str]:

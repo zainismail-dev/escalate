@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, type ApiError, API_URL } from "@/lib/api";
+import { HOSTED } from "@/lib/hosted";
 import type { Problem, ReviewFact } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ export function DemoButton({ onDone, variant = "lime" }: { onDone?: (ids: string
   const t = useTranslations("common");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  if (HOSTED) return null; // no demo data in the hosted beta
   return (
     <span className="inline-flex flex-col items-center gap-1">
       <Button
@@ -70,7 +72,7 @@ export function ErrorState({ error, onRetry, className }: { error: ApiError; onR
   const t = useTranslations("errors");
   const kind = error.kind;
   if (kind === "demo") return null; // the demo dialog already says why
-  const Icon = kind === "model_offline" || kind === "offline_api" ? CloudOff : AlertTriangle;
+  const Icon = ["model_offline", "offline_api", "ai_unavailable"].includes(kind) ? CloudOff : AlertTriangle;
   const title = t(`${kind}.title`);
   return (
     <div role="alert" className={cn("rounded-2xl border border-danger/40 bg-danger-bg p-5", className)} data-testid={`error-${kind}`}>
@@ -81,13 +83,14 @@ export function ErrorState({ error, onRetry, className }: { error: ApiError; onR
           <p className="mt-1 text-sm text-text-2">
             {t(`${kind}.body`, { url: API_URL })}
           </p>
-          {(kind === "model_offline" || kind === "offline_api") && (
+          {["model_offline", "offline_api", "ai_unavailable", "quota"].includes(kind) && (
             <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-card px-2.5 py-1 text-xs font-semibold text-success">
               <ShieldCheck className="size-3.5" aria-hidden />
               {t("nothingSent")}
             </p>
           )}
           {kind === "other" && <p className="mt-2 break-words font-mono text-xs text-muted">{error.detail}</p>}
+          {kind === "quota" && <p className="mt-2 text-sm font-semibold text-text">{error.detail}</p>}
           <div className="mt-3 flex flex-wrap gap-2">
             {onRetry && (
               <Button size="sm" variant="ink" onClick={onRetry}>
@@ -95,7 +98,7 @@ export function ErrorState({ error, onRetry, className }: { error: ApiError; onR
                 {t("retry")}
               </Button>
             )}
-            {kind === "model_offline" && (
+            {kind === "model_offline" && !HOSTED && (
               <Button size="sm" asChild>
                 <Link href="/settings">{t("checkSettings")}</Link>
               </Button>

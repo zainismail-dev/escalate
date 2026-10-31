@@ -21,7 +21,7 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 
 from escalate.agent.approval import approve_message, edit_message, reject_message
-from escalate.agent.graph import CaseState, compile_graph
+from escalate.agent.graph import CaseState, compile_graph, compile_with, postgres_checkpointer
 from escalate.agent.judge_reply import record_reply
 from escalate.channels import confirm_delivery as confirm_delivery_svc
 from escalate.config import get_settings
@@ -71,8 +71,13 @@ def _serialised[**P, R](fn: Callable[P, R]) -> Callable[P, R]:
 
 
 def configure(checkpoint_path: Path | str | None = None) -> CompiledStateGraph[CaseState]:
+    """SQLite checkpoints (CHECKPOINT_DB, or `checkpoint_path`); hosted mode: Postgres."""
     global _graph
-    _graph = compile_graph(checkpoint_path or get_settings().checkpoint_db)
+    s = get_settings()
+    if checkpoint_path is None and s.hosted:
+        _graph = compile_with(postgres_checkpointer(s.database_url, s.db_schema))
+    else:
+        _graph = compile_graph(checkpoint_path or s.checkpoint_db)
     return _graph
 
 
@@ -275,12 +280,13 @@ def withdraw(case_id: int, reason: str = "") -> None:
 
 def delete_case(case_id: int) -> None:
     """One-click deletion: scheduler jobs, graph checkpoint, evidence files, then DB rows."""
-    from escalate.evidence.store import delete_files
+    from escalate.evidence.store import delete_case_files
 
     if _scheduler is not None:
         jobs.cancel_case_jobs(_scheduler, case_id)
     delete_thread(case_id)
-    delete_files(case_id)
+    with session_scope() as s:
+        delete_case_files(s, case_id)
     with session_scope() as s:
         case = s.get(Case, case_id)
         if case is None:
