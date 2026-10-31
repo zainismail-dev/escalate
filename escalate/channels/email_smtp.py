@@ -11,7 +11,7 @@ from email.message import EmailMessage
 from email.utils import make_msgid
 
 from escalate.channels.base import Attachment, SendResult
-from escalate.channels.gate import require_approval
+from escalate.channels.gate import refuse_when_hosted, require_approval
 from escalate.config import Settings, get_settings
 from escalate.db.models import Message
 from escalate.netguard import check_host
@@ -72,6 +72,7 @@ class SmtpChannel:
 
     def send(self, msg: Message, attachments: list[Attachment]) -> SendResult:
         require_approval(msg)
+        refuse_when_hosted()
         user, password = self.settings.smtp_user, self.settings.smtp_app_password
         if not user or not password:
             raise EmailConfigError("set SMTP_USER and SMTP_APP_PASSWORD in .env to send email")

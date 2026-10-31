@@ -13,6 +13,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -361,6 +362,35 @@ def build_graph() -> StateGraph[CaseState]:
     )
     g.add_conditional_edges("pick_next", lambda s: "draft" if s.get("step_id") else END)
     return g
+
+
+def postgres_checkpointer(url: str, schema: str) -> BaseCheckpointSaver[Any]:
+    """Hosted mode: checkpoints in the app's Postgres, in its private schema (two pooled
+    connections at most: free-tier RAM and pooler limits)."""
+    from langgraph.checkpoint.postgres import PostgresSaver
+    from psycopg import Connection
+    from psycopg.rows import dict_row
+    from psycopg.sql import SQL, Identifier
+    from psycopg_pool import ConnectionPool
+
+    def in_schema(conn: Connection[Any]) -> None:
+        conn.execute(SQL("SET search_path TO {}").format(Identifier(schema)))
+
+    pool: ConnectionPool[Connection[Any]] = ConnectionPool(
+        conninfo=url.replace("postgresql+psycopg://", "postgresql://", 1),
+        min_size=1,
+        max_size=2,
+        kwargs={"autocommit": True, "prepare_threshold": None, "row_factory": dict_row},
+        configure=in_schema,
+        open=True,
+    )
+    saver = PostgresSaver(pool)
+    saver.setup()  # creates or migrates its tables (in `schema`)
+    return saver
+
+
+def compile_with(checkpointer: BaseCheckpointSaver[Any]) -> CompiledStateGraph[CaseState]:
+    return build_graph().compile(checkpointer=checkpointer)
 
 
 def compile_graph(checkpoint_path: Path | str) -> CompiledStateGraph[CaseState]:
