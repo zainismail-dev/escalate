@@ -1,7 +1,9 @@
 """Evidence files: hashed, Fernet-encrypted at rest under EVIDENCE_DIR/<case_id>/<random>.bin.
 
 The stored name is random (never derived from the upload's name, so no path traversal); the
-user's filename is kept for display only.
+user's filename is kept for display only. Paths are rebuilt from the case id and that random
+name, and must resolve inside EVIDENCE_DIR (no symlinked folder out of it) before any read or
+delete.
 """
 
 import hashlib
@@ -40,7 +42,12 @@ class EvidenceKeyMissing(RuntimeError):
     pass
 
 
+class UnsafeEvidencePath(ValueError):
+    """An evidence path that isn't a stored name inside EVIDENCE_DIR/<case_id>/."""
+
+
 MAX_FILENAME = 120
+STORED_NAME = re.compile(r"[0-9a-f]{32}\.bin")
 
 
 def safe_filename(name: str) -> str:
@@ -51,6 +58,30 @@ def safe_filename(name: str) -> str:
         stem, suffix = Path(base).stem, Path(base).suffix[:10]
         base = stem[: MAX_FILENAME - len(suffix)] + suffix
     return base or "upload"
+
+
+def _inside(base: Path, path: Path) -> Path:
+    """`path`, if it resolves (symlinks followed) inside `base`; otherwise raise."""
+    if not path.resolve().is_relative_to(base.resolve()):
+        raise UnsafeEvidencePath(f"{path} is outside {base}")
+    return path
+
+
+def case_dir(case_id: int, settings: Settings) -> Path:
+    """EVIDENCE_DIR/<case_id>, built from the integer id only."""
+    if isinstance(case_id, bool) or not isinstance(case_id, int) or case_id < 0:
+        raise UnsafeEvidencePath(f"not a case id: {case_id!r}")
+    root = Path(settings.evidence_dir)
+    return _inside(root, root / str(case_id))
+
+
+def stored_path(evidence: Evidence, settings: Settings) -> Path:
+    """Where an evidence file lives: its case folder plus its random stored name."""
+    name = Path(evidence.file_path).name
+    if not STORED_NAME.fullmatch(name):
+        raise UnsafeEvidencePath(f"evidence {evidence.id}: not a stored file name")
+    folder = case_dir(evidence.case_id, settings)
+    return _inside(folder, folder / name)
 
 
 def kind_for(filename: str) -> str:
@@ -78,8 +109,9 @@ def save_upload(
     """Encrypt and store an upload, extract its text, and log `evidence_added`."""
     s = settings or get_settings()
     sha = hashlib.sha256(data).hexdigest()
-    path = Path(s.evidence_dir) / str(int(case_id)) / f"{secrets.token_hex(16)}.bin"
-    path.parent.mkdir(parents=True, exist_ok=True)
+    folder = case_dir(case_id, s)
+    folder.mkdir(parents=True, exist_ok=True)
+    path = _inside(folder, folder / f"{secrets.token_hex(16)}.bin")
     path.write_bytes(_fernet(s).encrypt(data))
 
     ev = Evidence(
@@ -115,7 +147,7 @@ def save_upload(
 
 def load_plain(evidence: Evidence, settings: Settings | None = None) -> bytes:
     s = settings or get_settings()
-    return _fernet(s).decrypt(Path(evidence.file_path).read_bytes())
+    return _fernet(s).decrypt(stored_path(evidence, s).read_bytes())
 
 
 def delete_all_files(settings: Settings | None = None) -> None:
@@ -129,9 +161,8 @@ def delete_all_files(settings: Settings | None = None) -> None:
 
 def delete_files(case_id: int, settings: Settings | None = None) -> None:
     """Remove every stored evidence file for a case."""
-    s = settings or get_settings()
-    folder = Path(s.evidence_dir) / str(case_id)
+    folder = case_dir(case_id, settings or get_settings())
     if folder.is_dir():
         for f in folder.iterdir():
-            f.unlink()
+            f.unlink()  # a symlink inside is removed, never followed
         folder.rmdir()
