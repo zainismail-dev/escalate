@@ -10,7 +10,7 @@ What you end up with:
 | --- | --- | --- |
 | Web app `escalate-beta` | Vercel | global |
 | API | Render (Docker web service) | Frankfurt |
-| Database, sign-in, evidence files | Supabase | Frankfurt (EU Central) |
+| Database, sign-in, evidence files | Supabase | Ireland (EU West, `eu-west-1`) |
 | AI | Groq (zero data retention) | — |
 | Hourly reminders | GitHub Actions (`tick` workflow) | — |
 
@@ -57,7 +57,7 @@ Keep a note (in your password manager) as you go. You will collect these values:
    - Database password: click **Generate a password**, then **copy it into your password
      manager now** (value **D**). Tip: if you type your own, use only letters and digits (special
      characters need URL-encoding in the connection string).
-   - Region: **Central EU (Frankfurt)**.
+   - Region: **West EU (Ireland)**.
    - Click **Create new project** and wait about two minutes.
 3. **Project URL and keys:** left sidebar → **Project Settings** (gear) → **API Keys**.
    - Copy the **Project URL** (also shown under *Data API*) → value **A**.
@@ -112,9 +112,12 @@ Keep a note (in your password manager) as you go. You will collect these values:
    Retention** (for the whole organization). The beta's privacy policy says Groq keeps no data:
    don't skip this.
 3. **API Keys → Create API Key** → name `escalate-beta` → copy it → value **H** (shown once).
-4. Models: the Render blueprint uses `llama-3.3-70b-versatile` (smart) and
-   `llama-3.1-8b-instant` (fast). Check they are still listed under **Docs → Models**; if Groq
-   retired one, pick a current large and small model and use their ids in step 4.
+4. Models: the Render blueprint uses `openai/gpt-oss-120b` (smart) and `openai/gpt-oss-20b`
+   (fast). Groq shut down `llama-3.3-70b-versatile` and `llama-3.1-8b-instant` on 16 Aug 2026.
+   Check these two are still listed under **Docs → Models**; if Groq retired one, pick a current
+   large and small model and use their ids in step 4. If a model id is wrong or retired, users see
+   "The AI service is misconfigured" and the Render log has one line starting
+   `AI service misconfigured:` with the HTTP status, error code and model.
 
 ## 4. The API on Render
 

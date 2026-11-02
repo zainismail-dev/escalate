@@ -3,6 +3,26 @@
 All notable changes to Escalate. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Hosted beta models are `openai/gpt-oss-120b` and `openai/gpt-oss-20b` (Groq retired llama-3.x).
+- Letters name the product, what the trader said, the remedy with its amount, the days to reply
+  with the date, and the pack's legal basis (UK: Consumer Rights Act 2015). Dates are always the
+  locale's long format. Packs can declare `legal_basis`; the UK pack now requires `product`.
+- A model's bad JSON is retried once (it was twice), more strictly.
+
+### Fixed
+- Fact check: "14-day" is a number and a word, not an unknown ID; the days to reply are in the
+  trusted letter; the model check sees that letter too; non-breaking hyphens and narrow spaces
+  count as ordinary ones. Rejections log reason categories, never content.
+- Failed AI calls no longer count against the daily limits.
+- A permanent AI error (unknown model, bad key) fails once with "The AI service is misconfigured".
+- Unexpected errors carry CORS headers, so the browser no longer reads them as "can't reach the
+  server" and the hosted app no longer repeats the request up to 11 times.
+- Hosted copy (server wake-up, "Encrypted on our server", Supabase in Ireland); the timeline
+  collapses retries and shows local times; ladder step names are capitalised.
+
 ## [0.1.0] - 2026-10-28
 
 First public release.
