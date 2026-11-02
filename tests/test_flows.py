@@ -73,7 +73,7 @@ def test_subscription_cancel_flow(agent_env: AgentEnv) -> None:  # noqa: F811
         env.scheduler.tick()
         draft = runner.pending(cid)["draft"]  # type: ignore[index]
         assert "Final notice" in draft["subject"]
-        assert "GBP 29.99 on 2026-06-01" in draft["body"]  # the charges are listed
+        assert "GBP 29.99 on 1 June 2026" in draft["body"]  # the charges, dates spelled out
         approve_pending(cid)
 
         # no reply in 14 days -> card dispute, which needs the card issuer first

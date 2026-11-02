@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from escalate.agent import runner
-from escalate.agent.draft import draft_step
+from escalate.agent.draft import draft_step, template_text
 from escalate.agent.fact_check import code_check
 from escalate.api.main import create_app
 from escalate.channels import get_channel, send_message
@@ -173,9 +173,7 @@ def test_events_case_text_and_drafts_are_masked(db: Session) -> None:
     msg = draft_step(db, case, pb, pb.steps[0], use_llm=False)
     assert CARD not in msg.body and "•••• 1111" in msg.body
     # a masked value is still a known fact for the fact check
-    assert code_check(msg.body, case.fact_dict()) == [] or all(
-        i.startswith("date") for i in code_check(msg.body, case.fact_dict())
-    )
+    assert code_check(msg.body, case.fact_dict(), template_text(case, pb, pb.steps[0])) == []
 
 
 def test_evidence_text_is_masked(db: Session, settings: object) -> None:

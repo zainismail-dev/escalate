@@ -1,14 +1,18 @@
 """Draft a step's message: fill the template with facts, then let the smart model polish it."""
 
 import json
+import logging
+import re
 from datetime import date
 
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from escalate.agent.fact_check import plain_typography
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Message
+from escalate.i18n.formatting import format_date, locale_for
 from escalate.llm import LLM, get_llm
 from escalate.llm.prompts import render_prompt
 from escalate.llm.structured import StructuredOutputError, ask_json
@@ -17,6 +21,9 @@ from escalate.playbooks.models import Playbook, Step
 from escalate.templates_engine import Rendered, disclaimer, render_step
 
 OPEN_DRAFT = ("draft",)
+
+log = logging.getLogger("uvicorn.error")
+_ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
 
 
 class DraftOut(BaseModel):
@@ -36,6 +43,11 @@ def history(case: Case, limit: int = 6) -> str:
     return "\n".join(lines)
 
 
+def spell_out_dates(text: str, locale: str) -> str:
+    """A letter never shows 2026-10-01: always the locale's long format ("1 October 2026")."""
+    return _ISO_DATE.sub(lambda m: format_date(m.group(0), locale), text)
+
+
 def polish(
     llm: LLM,
     case: Case,
@@ -47,12 +59,14 @@ def polish(
     fb = ""
     if feedback:
         fb = "Fix these problems from the last draft:\n" + "\n".join(f"- {x}" for x in feedback)
+    locale = locale_for(case.language, case.country)
+    readable = {k: spell_out_dates(v, locale) for k, v in facts.items()}
     prompt = render_prompt(
         "draft",
         step_name=step.title,
         recipient_role=step.recipient_role or "the company",
         template_rendered=f"\nSUBJECT: {rendered.subject}\n{rendered.body}\n",
-        facts_json=json.dumps(facts, ensure_ascii=False),
+        facts_json=json.dumps(readable, ensure_ascii=False),
         history=history(case),
         language=case.language,
         feedback=fb,
@@ -60,7 +74,8 @@ def polish(
     out = ask_json(llm, prompt, DraftOut, slot="smart")
     if not out.body.strip():
         return rendered
-    return Rendered(out.subject.strip() or rendered.subject, out.body.strip() + "\n")
+    subject = plain_typography(out.subject.strip()) or rendered.subject
+    return Rendered(subject, plain_typography(out.body.strip()) + "\n")
 
 
 def draft_step(
@@ -83,8 +98,12 @@ def draft_step(
     if use_llm:
         try:
             final = polish(llm or get_llm(), case, step, rendered, facts, feedback)
-        except StructuredOutputError:
+        except StructuredOutputError as exc:
             final = rendered  # the filled template is already facts-only
+            log.warning("draft: using the template for case %s: %s", case.id, exc.category)
+            log_event(session, case.id, "draft_template_used", {"reason": exc.category})
+    locale = locale_for(case.language, case.country)
+    final = Rendered(spell_out_dates(final.subject, locale), spell_out_dates(final.body, locale))
     note = disclaimer(case.language, pb.generic)
     body = final.body if note in final.body else f"{final.body.rstrip()}\n\n{note}\n"
 
@@ -122,4 +141,6 @@ def template_text(
     r = render_step(
         pb, step, case.fact_dict(), case.language, today=today, late=late, country=case.country
     )
+    locale = locale_for(case.language, case.country)
+    r = Rendered(spell_out_dates(r.subject, locale), spell_out_dates(r.body, locale))
     return f"{r.subject}\n{r.body}\n{disclaimer(case.language, pb.generic)}"

@@ -2,7 +2,7 @@ Subject: Next step: small-claims or consumer court ({{ seller_name }}, order {{ 
 
 {{ buyer_name }}, your written demand, final notice and authority complaint have not resolved this case.
 
-Your claim in one line: {{ seller_name }} has not provided "{{ remedy_wanted }}" for order {{ order_id }} ({{ order_date }}, {{ amount | money(currency) }}). The problem: {{ defect_description }}
+Your claim in one line: {{ seller_name }} has not provided "{{ remedy_wanted }}" for order {{ order_id }} ({{ order_date | date }}, {{ amount | money(currency) }}). The problem: {{ defect_description }}
 
 What to do next:
 1. Find the small-claims or consumer court that covers where you live or where the seller is. Your government's official website or a local consumer-rights group can tell you.

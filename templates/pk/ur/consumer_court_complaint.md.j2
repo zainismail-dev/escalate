@@ -9,12 +9,12 @@ Subject: کنزیومر شکایت: {{ buyer_name }} بنام {{ seller_name }}
 
 شکایت کنندہ مؤدبانہ عرض کرتا ہے:
 
-1۔ شکایت کنندہ نے {{ order_date }} کو مدعا علیہ سے آرڈر نمبر {{ order_id }} کے تحت خریداری کی اور {{ amount | money(currency) }} ادا کیے۔
+1۔ شکایت کنندہ نے {{ order_date | date }} کو مدعا علیہ سے آرڈر نمبر {{ order_id }} کے تحت خریداری کی اور {{ amount | money(currency) }} ادا کیے۔
 2۔ چیز/سروس ناقص تھی: {{ defect_description }}
-{% if return_shipped_on %}3۔ شکایت کنندہ نے {{ return_shipped_on }} کو سامان مدعا علیہ کو واپس بھیج دیا{% if return_tracking %} (ٹریکنگ نمبر {{ return_tracking }}){% endif %}۔
-{% endif %}{% if last_promise_on %}4۔ {{ last_promise_on }} کو مدعا علیہ نے کہا{% if last_promise_text %}: "{{ last_promise_text }}"{% else %} کہ معاملہ حل ہو جائے گا{% endif %}، مگر ایسا نہیں کیا۔
+{% if return_shipped_on %}3۔ شکایت کنندہ نے {{ return_shipped_on | date }} کو سامان مدعا علیہ کو واپس بھیج دیا{% if return_tracking %} (ٹریکنگ نمبر {{ return_tracking }}){% endif %}۔
+{% endif %}{% if last_promise_on %}4۔ {{ last_promise_on | date }} کو مدعا علیہ نے کہا{% if last_promise_text %}: "{{ last_promise_text }}"{% else %} کہ معاملہ حل ہو جائے گا{% endif %}، مگر ایسا نہیں کیا۔
 {% endif %}5۔ شکایت کنندہ نے مدعا علیہ سے تحریری طور پر یہ مانگا: {{ remedy_wanted }}۔
-6۔ شکایت کنندہ نے مدعا علیہ کو قانونی نوٹس بھیجا{% if notice_delivered_on %}، جو {{ notice_delivered_on }} کو موصول ہوا{% endif %}، اور مطالبہ پورا کرنے کے لیے پندرہ (15) دن دیے۔ مدعا علیہ نے ایسا نہیں کیا۔
+6۔ شکایت کنندہ نے مدعا علیہ کو قانونی نوٹس بھیجا{% if notice_delivered_on %}، جو {{ notice_delivered_on | date }} کو موصول ہوا{% endif %}، اور مطالبہ پورا کرنے کے لیے پندرہ (15) دن دیے۔ مدعا علیہ نے ایسا نہیں کیا۔
 
 استدعا
 

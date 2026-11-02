@@ -4,7 +4,7 @@ To: {{ card_issuer }}
 
 I dispute charges taken by {{ company_name }}{% if card_last4 %} on my card ending {{ card_last4 }}{% endif %}.
 
-1. I asked {{ company_name }} to cancel my subscription (account {{ account_id }}) on {{ cancel_requested_on }}.
+1. I asked {{ company_name }} to cancel my subscription (account {{ account_id }}) on {{ cancel_requested_on | date }}.
 2. They did not cancel it and kept charging me.{% if charges_after_cancel %} The disputed charges are:
 {{ charges_after_cancel }}{% elif amount and currency %} Each charge was {{ amount | money(currency) }}.{% endif %}
 3. I wrote to {{ company_name }} twice, including a final notice, and the problem is not resolved.

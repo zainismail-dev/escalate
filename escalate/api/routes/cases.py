@@ -109,7 +109,7 @@ def case_summary(case: Case) -> CaseSummary:
         out.deadline_warning = any(d.warn or d.late for d in status)
         dues += [d.days_left for d in status if d.days_left is not None]
         if case.current_step:
-            out.step_name = pb.step(case.current_step).title
+            out.step_name = pb.step(case.current_step).label
     open_case = case.status not in (CaseStatus.RESOLVED, CaseStatus.WITHDRAWN)
     out.days_left = min(dues) if dues and open_case else None
     return out
@@ -144,7 +144,7 @@ def case_detail(session: Session, case: Case) -> CaseDetail:
         detail.reasons = [ReasonOut(**r) for r in views.reasons(pb, case)]
         detail.sources = [SourceOut(title=x.title, url=x.url) for x in pb.sources]
         if case.current_step:
-            detail.step_name = pb.step(case.current_step).title
+            detail.step_name = pb.step(case.current_step).label
     return detail
 
 

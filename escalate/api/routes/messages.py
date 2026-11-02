@@ -230,7 +230,7 @@ def review(message_id: MessagePk, session: Session = Depends(get_session)) -> Re
         problems=[ProblemOut(**vars(p)) for p in rv.problems(issues, case.fact_dict())],
         can_approve=waiting and all(c.ok for c in checks if c.id in blocking),
         template_languages=template_languages(tdir, step.template) if step else [],
-        step_name=step.title if step else None,
+        step_name=step.label if step else None,
         recipient_check=recipient_check(msg),
     )
 

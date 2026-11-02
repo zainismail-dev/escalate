@@ -40,6 +40,11 @@ class Step(BaseModel):
     def title(self) -> str:
         return self.name or self.id.split("_", 1)[-1].replace("_", " ")
 
+    @property
+    def label(self) -> str:
+        """The title as a heading for people to read; `title` goes mid-sentence (the prompts)."""
+        return self.title[:1].upper() + self.title[1:]
+
     def applies(self, facts: dict[str, str]) -> bool:
         """Evaluate `when` ("<fact> is set" / "<fact> is not set")."""
         if not self.when:
@@ -70,6 +75,7 @@ class Playbook(BaseModel):
     last_verified: date
     required_facts: list[str]
     optional_facts: list[str] = Field(default_factory=list)
+    legal_basis: str | None = None  # a template: the pack's own law, rendered as {{ legal_basis }}
     deadlines: list[Deadline] = Field(default_factory=list)
     steps: list[Step]
     sources: list[Source]

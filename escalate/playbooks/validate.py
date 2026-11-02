@@ -24,7 +24,18 @@ STALE_AFTER = timedelta(days=365)
 # CLAUDE.md rule 5: never ask users for passwords, PINs or one-time codes.
 FORBIDDEN_FACT = re.compile(r"(password|passcode|(^|_)pin($|_)|otp|cvv|cvc|secret|one_time)", re.I)
 # Variables every template may use besides the playbook's facts (see escalate/templates_engine).
-TEMPLATE_CONTEXT = {"today", "reply_by", "language", "locale", "generic", "case_ref", "late"}
+TEMPLATE_CONTEXT = {
+    "today",
+    "reply_by",
+    "wait_days",
+    "days_to_complaint",
+    "legal_basis",
+    "language",
+    "locale",
+    "generic",
+    "case_ref",
+    "late",
+}
 
 
 @dataclass
@@ -77,7 +88,7 @@ def check_playbook(pb: Playbook, templates_dir: Path, report: Report, today: dat
         for key in [*step.requires, step.recipient_fact]:
             if key and key not in facts:
                 report.error(where, f"step {step.id}: undeclared fact {key!r}")
-        for ref in filter(None, [step.template, step.adds_if_late]):
+        for ref in filter(None, [step.template, step.adds_if_late, pb.legal_basis]):
             langs = template_languages(templates_dir, ref)
             if not langs:
                 report.error(where, f"step {step.id}: missing template {ref}")
