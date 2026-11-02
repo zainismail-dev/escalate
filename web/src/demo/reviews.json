@@ -260,7 +260,7 @@
       "source": "evidence",
       "source_filename": "northline-receipt.txt"
     },
-    "step_name": "Written demand to the seller",
+    "step_name": "written demand to the seller",
     "subject_segments": [
       {
         "key": null,
@@ -504,7 +504,7 @@
       "source": "evidence",
       "source_filename": "pulsefit-cancellation-email.txt"
     },
-    "step_name": "Cancellation request",
+    "step_name": "cancellation request",
     "subject_segments": [
       {
         "key": null,

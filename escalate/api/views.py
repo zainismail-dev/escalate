@@ -61,7 +61,7 @@ def reasons(pb: Playbook, case: Case) -> list[dict[str, Any]]:
         last = judged[-1]
         prev = last.payload.get("step")
         if prev and prev != step.id:
-            prev_name = pb.step(prev).label if prev in {s.id for s in pb.steps} else prev
+            prev_name = pb.step(prev).title if prev in {s.id for s in pb.steps} else prev
             verdict = "no_reply" if last.type == "wait_expired" else last.payload.get("verdict")
             out.append(
                 {

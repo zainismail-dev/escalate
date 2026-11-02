@@ -42,7 +42,7 @@ class Step(BaseModel):
 
     @property
     def label(self) -> str:
-        """The title as a heading for people to read; `title` goes mid-sentence (the prompts)."""
+        """The title as a ladder rung shows it. `title` is the one for mid-sentence use."""
         return self.title[:1].upper() + self.title[1:]
 
     def applies(self, facts: dict[str, str]) -> bool:

@@ -209,7 +209,7 @@
       }
     ],
     "status": "awaiting_approval",
-    "step_name": "Cancellation request",
+    "step_name": "cancellation request",
     "text_direction": "ltr",
     "title": "Gym still charging after cancelling",
     "waiting_for": "approve_draft"
@@ -439,7 +439,7 @@
       }
     ],
     "status": "waiting_reply",
-    "step_name": "Written demand to the seller",
+    "step_name": "written demand to the seller",
     "text_direction": "ltr",
     "title": "Broken LED TV — refund refused",
     "waiting_for": "waiting_reply"
@@ -818,7 +818,7 @@
       }
     ],
     "status": "awaiting_approval",
-    "step_name": "Written demand to the seller",
+    "step_name": "written demand to the seller",
     "text_direction": "ltr",
     "title": "Laptop refund refused",
     "waiting_for": "approve_draft"

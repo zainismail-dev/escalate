@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from sqlalchemy.orm import Session
 
 from escalate.playbooks import loader
 from escalate.playbooks.models import Step
@@ -194,3 +195,14 @@ def test_stale_last_verified_only_warns(tree: Path) -> None:
 def test_cli_exit_code(tree: Path) -> None:
     _edit(_pk(tree), version="one")
     assert validate_main([str(tree / "playbooks")]) == 1
+
+
+def test_ladder_labels_are_capitalised_but_sentences_keep_the_plain_title(db: Session) -> None:
+    from escalate.api import views
+    from tests.factories import led_case
+
+    pb = loader.get_playbook("gb-general-refund-refused")
+    rungs = views.ladder(pb, led_case(db, country="GB"))
+    assert rungs[0]["name"] == "Written complaint to the trader"
+    assert all(r["name"][0].isupper() for r in rungs)
+    assert pb.steps[0].title == "written complaint to the trader"
