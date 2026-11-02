@@ -21,7 +21,7 @@ from escalate.db.session import session_scope
 from escalate.evidence.store import delete_all_files
 from escalate.i18n.countries import CountryOut, coverage, default_letter_language
 from escalate.llm import get_llm, set_llm
-from escalate.llm.client import LLMNotConfigured
+from escalate.llm.client import LLMMisconfigured, LLMNotConfigured
 from escalate.llm.privacy import is_cloud
 from escalate.netguard import UnsafeEndpoint, check_host, check_url, resolves, url_host
 
@@ -60,6 +60,8 @@ def llm_test_error(exc: Exception) -> str:
     """What went wrong, without the endpoint's response body (it could be an internal page)."""
     if isinstance(exc, openai.APIStatusError):
         return f"the endpoint answered HTTP {exc.status_code}"
+    if isinstance(exc, LLMMisconfigured):
+        return f"the endpoint answered HTTP {exc.status}"
     if isinstance(exc, openai.APIConnectionError):
         return "connection failed"
     if isinstance(exc, (LLMNotConfigured, UnsafeEndpoint)):

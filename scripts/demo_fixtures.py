@@ -58,10 +58,10 @@ class _ReplyJudge:
     def __init__(self, inner: Any) -> None:
         self.inner = inner
 
-    def complete(self, prompt: str, slot: Any = "smart") -> str:
+    def complete(self, prompt: str, slot: Any = "smart", json_mode: bool = False) -> str:
         if "A company replied" in prompt:
             return json.dumps(REPLY_VERDICT)
-        return str(self.inner.complete(prompt, slot))
+        return str(self.inner.complete(prompt, slot, json_mode))
 
 
 def _ok(r: Any) -> Any:

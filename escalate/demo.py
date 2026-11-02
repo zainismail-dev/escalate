@@ -171,7 +171,7 @@ class DemoLLM:
     def _case(self, prompt: str) -> DemoCase:
         return next((c for c in self.cases if c.marker in prompt), self.cases[0])
 
-    def complete(self, prompt: str, slot: Slot = "smart") -> str:
+    def complete(self, prompt: str, slot: Slot = "smart", json_mode: bool = False) -> str:
         if "You extract facts" in prompt:
             ev = re.search(r"\[evidence_id=(\d+)\]", prompt)
             eid = int(ev.group(1)) if ev else None

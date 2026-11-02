@@ -36,20 +36,22 @@ def test_extract_json_from_surrounding_prose() -> None:
 
 
 def test_ask_json_retries_with_validation_error() -> None:
-    llm = FakeLLM(script=["not json at all", {"name": "x"}, {"name": "x", "amount": 5}])
+    llm = FakeLLM(script=[{"name": "x"}, {"name": "x", "amount": 5}])
     result = ask_json(llm, "PROMPT", Answer, slot="fast")
     assert result == Answer(name="x", amount=5)
-    assert len(llm.calls) == 3
+    assert len(llm.calls) == 2
     assert all(slot == "fast" for _, slot in llm.calls)
-    assert "amount" in llm.calls[2][0]  # the validation error is appended
-    assert llm.calls[2][0].startswith("PROMPT")
+    assert "amount" in llm.calls[1][0]  # the validation error is appended
+    assert llm.calls[1][0].startswith("PROMPT")
+    assert "ONLY one valid JSON object" in llm.calls[1][0]  # and the instruction is stricter
 
 
-def test_ask_json_gives_up_after_two_retries() -> None:
-    llm = FakeLLM(script=["nope", "nope", "nope", {"name": "late", "amount": 1}])
-    with pytest.raises(StructuredOutputError):
+def test_ask_json_retries_once_then_gives_up() -> None:
+    llm = FakeLLM(script=["nope", "nope", {"name": "late", "amount": 1}])
+    with pytest.raises(StructuredOutputError) as err:
         ask_json(llm, "P", Answer)
-    assert len(llm.calls) == 3
+    assert len(llm.calls) == 2
+    assert err.value.category == "invalid_json"
 
 
 # --- client and 429 backoff --------------------------------------------------

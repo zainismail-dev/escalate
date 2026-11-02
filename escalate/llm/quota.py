@@ -1,10 +1,11 @@
 """Hosted mode: AI calls per user per day (AI_CALLS_PER_DAY) and for everyone together
-(GLOBAL_AI_CALLS_PER_DAY). Counted in the database before each call, so restarts and several
-API processes agree; a refused call is not counted."""
+(GLOBAL_AI_CALLS_PER_DAY). Reserved in the database before each call, so restarts and several
+API processes agree and parallel calls can't overshoot. Only successful completions stay counted:
+a refused call is not counted, and a failed one (error, 4xx/5xx, timeout) is given back."""
 
 from datetime import date
 
-from sqlalchemy import Insert
+from sqlalchemy import Insert, update
 from sqlalchemy.dialects import postgresql, sqlite
 from sqlalchemy.orm import Session
 
@@ -38,8 +39,9 @@ def _upsert(session: Session, user_id: str, day: date) -> int:
     return int(session.execute(stmt).scalar_one())
 
 
-def charge(user_id: str | None, settings: Settings | None = None) -> None:
-    """Count one AI call, or raise (and count nothing) when a limit is reached."""
+def charge(user_id: str | None, settings: Settings | None = None) -> date:
+    """Count one AI call and return the day it counts on, or raise (and count nothing) when a
+    limit is reached."""
     s = settings or get_settings()
     day = utcnow().date()
     with session_scope() as session:  # rolled back when a limit is hit
@@ -49,6 +51,18 @@ def charge(user_id: str | None, settings: Settings | None = None) -> None:
             raise AiDailyLimit(
                 f"You've used today's {s.ai_calls_per_day} AI requests. Try again tomorrow."
             )
+    return day
+
+
+def refund(user_id: str | None, day: date) -> None:
+    """Give back a charge whose call failed (on the day it was charged, even past midnight)."""
+    owners = [GLOBAL_USAGE, *([user_id] if user_id is not None else [])]
+    with session_scope() as session:
+        session.execute(
+            update(AiUsage)
+            .where(AiUsage.user_id.in_(owners), AiUsage.day == day, AiUsage.calls > 0)
+            .values(calls=AiUsage.calls - 1)
+        )
 
 
 def calls_today(session: Session, user_id: str) -> int:
@@ -57,11 +71,17 @@ def calls_today(session: Session, user_id: str) -> int:
 
 
 class MeteredLLM:
-    """Wraps the model: every call is charged to the current user first."""
+    """Wraps the model: every call is charged to the current user first, and given back if it
+    fails."""
 
     def __init__(self, inner: LLM) -> None:
         self.inner = inner
 
-    def complete(self, prompt: str, slot: Slot = "smart") -> str:
-        charge(current_user_id())
-        return self.inner.complete(prompt, slot=slot)
+    def complete(self, prompt: str, slot: Slot = "smart", json_mode: bool = False) -> str:
+        user_id = current_user_id()
+        day = charge(user_id)
+        try:
+            return self.inner.complete(prompt, slot=slot, json_mode=json_mode)
+        except Exception:
+            refund(user_id, day)
+            raise
