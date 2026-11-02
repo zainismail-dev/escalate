@@ -30,7 +30,7 @@ class FakeLLM:
         self.handler = handler
         self.calls: list[tuple[str, Slot]] = []
 
-    def complete(self, prompt: str, slot: Slot = "smart") -> str:
+    def complete(self, prompt: str, slot: Slot = "smart", json_mode: bool = False) -> str:
         self.calls.append((prompt, slot))
         reply = self._pick(prompt, slot)
         if isinstance(reply, Exception):

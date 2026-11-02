@@ -1,8 +1,12 @@
 // Hosted beta helpers: mailto links and the "Waking the server…" retries.
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readFileSync } from "node:fs";
+import { errorBodyKey } from "../src/lib/hosted-copy.ts";
 import { letterText, mailtoHref } from "../src/lib/mailto.ts";
 import { WAKE_DELAYS_MS, isWakingResponse, withWakeRetries } from "../src/lib/waking.ts";
+
+const en = JSON.parse(readFileSync(new URL("../messages/en.json", import.meta.url), "utf8"));
 
 test("mailto carries recipient, subject and body with CRLF line breaks", () => {
   const { href, bodyIncluded } = mailtoHref("support@shop.example", "Refund: order #12 & more", "Dear Sir,\nPlease refund.");
@@ -60,4 +64,46 @@ test("gives up after about 90 seconds", async () => {
   const r = await withWakeRetries(async () => res(504), () => {}, async () => {});
   assert.equal(r.status, 504);
   await assert.rejects(withWakeRetries(async () => Promise.reject(new TypeError("down")), () => {}, async () => {}));
+});
+
+test("a write that fails while the API is up is not sent again (the 12× Agent started)", async () => {
+  let attempts = 0;
+  const failing = async () => {
+    attempts++;
+    throw new TypeError("Failed to fetch");
+  };
+  await assert.rejects(withWakeRetries(failing, () => {}, async () => {}, async () => true));
+  assert.equal(attempts, 1);
+});
+
+test("a write that fails while the API is asleep is retried until it wakes", async () => {
+  let attempts = 0;
+  const wakes = async () => {
+    if (++attempts < 3) throw new TypeError("Failed to fetch");
+    return res(200);
+  };
+  const out = await withWakeRetries(wakes, () => {}, async () => {}, async () => false);
+  assert.equal(out.status, 200);
+  assert.equal(attempts, 3);
+});
+
+test("hosted errors use their own wording; local ones keep theirs", () => {
+  assert.equal(errorBodyKey("offline_api", true), "offline_api.hostedBody");
+  assert.equal(errorBodyKey("offline_api", false), "offline_api.body");
+  assert.equal(errorBodyKey("ai_misconfigured", true), "ai_misconfigured.hostedBody");
+  assert.equal(errorBodyKey("ai_unavailable", true), "ai_unavailable.body");
+});
+
+test("hosted copy: no local commands, encrypted on our server, the right EU regions", () => {
+  assert.equal(en.errors.offline_api.hostedBody, "The server is waking up or unavailable — try again in a minute.");
+  assert.doesNotMatch(en.errors.offline_api.hostedBody, /make up|uvicorn/);
+  assert.match(en.wizard.dropHintHosted, /Encrypted on our server/);
+  assert.equal(en.dashboard.encryptedHosted, "Encrypted on our server.");
+  const { processors, region } = en.hosted.privacyPage;
+  for (const text of [processors, region]) {
+    assert.match(text, /Supabase[^.]*Ireland/);
+    assert.match(text, /Render[^.]*Frankfurt/);
+    assert.doesNotMatch(text, /Supabase[^.,]*Frankfurt/);
+  }
+  assert.match(en.hosted.account.where, /Ireland/);
 });

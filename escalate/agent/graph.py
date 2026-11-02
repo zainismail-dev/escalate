@@ -8,6 +8,7 @@ Sending is only possible in `send`, which goes through `escalate.channels.send_m
 refuses unless the DB row has `approved_at` set (CLAUDE.md rule 1).
 """
 
+import logging
 import sqlite3
 from datetime import timedelta
 from pathlib import Path
@@ -35,6 +36,8 @@ from escalate.llm.structured import StructuredOutputError
 from escalate.playbooks.loader import get_playbook
 from escalate.playbooks.models import Playbook, Step
 from escalate.templates_engine import MissingFacts, missing_for_step
+
+log = logging.getLogger("uvicorn.error")
 
 MAX_QUESTIONS = 5
 MAX_DRAFT_ATTEMPTS = 3  # after this, the plain facts-only template is used
@@ -155,6 +158,9 @@ def draft(state: CaseState) -> CaseState:
     template_only = attempts >= MAX_DRAFT_ATTEMPTS
     with session_scope() as s:
         case = _case(s, state)
+        if template_only:
+            log.warning("draft: using the template for case %s: attempts_exhausted", case.id)
+            log_event(s, case.id, "draft_template_used", {"reason": "attempts_exhausted"})
         pb = get_playbook(state["playbook_id"])
         step = pb.step(state["step_id"])
         ensure_title(s, case)  # e.g. after the user answered missing-fact questions
@@ -194,14 +200,24 @@ def fact_check(state: CaseState) -> CaseState:
             case.fact_dict(),
             reference=reference,
             use_model=not state.get("template_only", False),
+            # A model's rewrite, not the template itself or the user's own edit.
+            keep_values=not state.get("template_only") and state.get("decision") != "edit",
         )
         attempts = state.get("attempts", 0) + (0 if result.ok else 1)
+        # Reason categories only: the issues themselves quote the case.
         log_event(
             s,
             case.id,
             "fact_checked",
-            {"message_id": msg.id, "ok": result.ok, "issues": result.issues},
+            {"message_id": msg.id, "ok": result.ok, "categories": result.categories},
         )
+        if not result.ok:
+            log.warning(
+                "fact check rejected a draft: case %s attempt %d: %s",
+                case.id,
+                attempts,
+                ",".join(result.categories),
+            )
         if result.ok:
             case.status = CaseStatus.AWAITING_APPROVAL
         return {"fact_ok": result.ok, "issues": result.issues, "attempts": attempts}

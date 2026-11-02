@@ -4,7 +4,7 @@ Dear {{ company_name }},
 
 This is my final notice about account {{ account_id }}{% if plan_name %} ({{ plan_name }}){% endif %}.
 
-I asked you to cancel on {{ cancel_requested_on }} and asked again in writing. You have not confirmed the cancellation.
+I asked you to cancel on {{ cancel_requested_on | date }} and asked again in writing. You have not confirmed the cancellation.
 {% if charges_after_cancel %}
 Charges taken after I asked to cancel:
 {{ charges_after_cancel }}

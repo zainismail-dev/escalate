@@ -2,7 +2,7 @@ Subject: Next step: small claims court ({{ seller_name }}, order {{ order_id }})
 
 {{ buyer_name }}, your demands and your complaint to the attorney general have not resolved this case.
 
-Your claim in one line: {{ seller_name }} has not provided "{{ remedy_wanted }}" for order {{ order_id }} ({{ order_date }}, {{ amount | money(currency) }}).
+Your claim in one line: {{ seller_name }} has not provided "{{ remedy_wanted }}" for order {{ order_id }} ({{ order_date | date }}, {{ amount | money(currency) }}).
 
 What to do next:
 1. Find the small claims court for the county where you live or where the seller does business. Each state sets its own rules and dollar limits.

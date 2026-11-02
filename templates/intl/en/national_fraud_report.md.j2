@@ -1,8 +1,8 @@
-Subject: Fraud report: {{ amount | money(currency) }} paid on {{ paid_on }}
+Subject: Fraud report: {{ amount | money(currency) }} paid on {{ paid_on | date }}
 
 To: {{ reporting_body }}
 
-1. On {{ paid_on }} I paid {{ amount | money(currency) }} by {{ payment_method }}{% if transaction_id %} (transaction reference {{ transaction_id }}){% endif %}{% if scammer_name %} to {{ scammer_name }}{% endif %}.
+1. On {{ paid_on | date }} I paid {{ amount | money(currency) }} by {{ payment_method }}{% if transaction_id %} (transaction reference {{ transaction_id }}){% endif %}{% if scammer_name %} to {{ scammer_name }}{% endif %}.
 2. What happened: {{ scam_description }}
 {% if scammer_contact %}3. Contact details used by the scammer: {{ scammer_contact }}
 {% endif %}

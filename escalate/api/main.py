@@ -15,6 +15,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from escalate import __version__
 from escalate.agent import runner
@@ -36,7 +37,7 @@ from escalate.evidence.store import EvidenceKeyMissing
 from escalate.export.pdf import PdfUnavailable
 from escalate.hosted.accounts import ConsentRequired, Waitlisted
 from escalate.hosted.supabase_admin import AdminError
-from escalate.llm.client import LLMNotConfigured
+from escalate.llm.client import LLMBadOutput, LLMMisconfigured, LLMNotConfigured
 from escalate.llm.quota import AiBusy, AiDailyLimit
 from escalate.netguard import UnsafeEndpoint
 from escalate.pii import install_log_filter
@@ -134,6 +135,7 @@ def create_app(startup: bool = True) -> FastAPI:
     # then the optional app lock (hosted: the Supabase token check), then rate and body-size
     # limits (hosted: per user).
     settings = get_settings()
+    app.add_middleware(CatchUnhandled)  # innermost: its 500 still gets the CORS headers
     app.add_middleware(RequestLimits)
     if hosted:
         app.add_middleware(HostedAuth)
@@ -186,6 +188,11 @@ def create_app(startup: bool = True) -> FastAPI:
         (LLMNotConfigured, 503, None),
         (UnsafeEndpoint, 400, None),
         (openai.APIConnectionError, 503, lambda e: {"hint": "is the LLM server running?"}),
+        (LLMMisconfigured, 503, lambda e: {"misconfigured": True}),
+        (LLMBadOutput, 503, None),
+        # Anything else the provider answers (5xx, a 429 that outlasted our backoff). A fixed
+        # message: the response body could repeat the prompt.
+        (openai.APIStatusError, 503, lambda e: {"detail": "The AI service isn't responding."}),
         # Hosted beta
         (Waitlisted, 403, lambda e: {"waitlist": True}),
         (ConsentRequired, 403, lambda e: {"consent_required": True}),
@@ -220,6 +227,33 @@ def validation_error(_req: Request, exc: Exception) -> JSONResponse:
         for e in errors
     ]
     return JSONResponse({"detail": detail}, status_code=422)
+
+
+class CatchUnhandled:
+    """Turn an unexpected error into `internal_error`'s response inside the middleware stack.
+    Starlette's own Exception handler answers outside it, with no CORS headers: the browser reads
+    that as a network failure ("Can't reach Escalate"), and the hosted app retries the request."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        started = False
+
+        async def tracked(message: Message) -> None:
+            nonlocal started
+            started = started or message["type"] == "http.response.start"
+            await send(message)
+
+        try:
+            await self.app(scope, receive, tracked)
+        except Exception as exc:
+            if started:
+                raise
+            await internal_error(Request(scope), exc)(scope, receive, send)
 
 
 def internal_error(_req: Request, exc: Exception) -> JSONResponse:

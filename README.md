@@ -136,7 +136,7 @@ flowchart LR
 
 Escalate is self-hosted first. For people who can't run it themselves there is an optional
 hosted mode (`DEPLOY_MODE=hosted`), built on free tiers: Vercel (web), Render (API, Frankfurt),
-Supabase (Postgres, Google sign-in and encrypted file storage, Frankfurt) and Groq (AI, zero
+Supabase (Postgres, Google sign-in and encrypted file storage, Ireland) and Groq (AI, zero
 data retention). In hosted mode:
 
 - people sign in with Google; only invited emails get in (`make invite EMAIL=...`), everyone

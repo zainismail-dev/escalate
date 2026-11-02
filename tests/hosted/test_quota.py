@@ -13,9 +13,10 @@ from escalate.db.models import GLOBAL_USAGE
 from escalate.db.session import session_scope
 from escalate.db.tenancy import as_user
 from escalate.llm import get_llm
-from escalate.llm.quota import AiBusy, AiDailyLimit, calls_today, charge
+from escalate.llm.client import LLMBadOutput, LLMMisconfigured
+from escalate.llm.quota import AiBusy, AiDailyLimit, calls_today, charge, refund
 from tests.factories import LED_TEXT
-from tests.hosted.conftest import Hosted
+from tests.hosted.conftest import WEB_ORIGIN, Hosted
 
 A, B = "11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"
 
@@ -139,3 +140,162 @@ def test_rate_limits_are_per_user(hosted: Hosted, monkeypatch: pytest.MonkeyPatc
         assert alice.client.put("/settings", json={"default_country": "GB"}).status_code == 200
     assert alice.client.put("/settings", json={"default_country": "GB"}).status_code == 429
     assert bob.client.put("/settings", json={"default_country": "GB"}).status_code == 200
+
+
+# --- only successful completions count ------------------------------------------------------
+
+
+def _failures() -> list[Exception]:
+    import httpx
+    import openai
+
+    req = httpx.Request("POST", "https://api.groq.test/openai/v1/chat/completions")
+    return [
+        openai.InternalServerError("x", response=httpx.Response(500, request=req), body=None),
+        openai.NotFoundError("x", response=httpx.Response(404, request=req), body=None),
+        openai.RateLimitError("x", response=httpx.Response(429, request=req), body=None),
+        openai.APITimeoutError(request=req),
+        openai.APIConnectionError(request=req),
+        LLMMisconfigured(404),
+        LLMBadOutput("empty"),
+    ]
+
+
+@pytest.mark.parametrize("n", range(7))
+def test_a_failed_call_counts_against_neither_limit(hosted_db: Engine, n: int) -> None:
+    from escalate.llm import set_llm
+    from tests.fakes.fake_llm import FakeLLM
+
+    set_llm(FakeLLM(script=[_failures()[n]]))
+    try:
+        with as_user(A), pytest.raises(type(_failures()[n])):
+            get_llm().complete("ping")
+        assert (used(A), used(GLOBAL_USAGE)) == (0, 0)
+    finally:
+        set_llm(None)
+
+
+def test_failures_never_use_up_the_daily_limit(
+    hosted_db: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from escalate.llm import set_llm
+    from tests.fakes.fake_llm import FakeLLM
+
+    monkeypatch.setenv("AI_CALLS_PER_DAY", "2")
+    get_settings.cache_clear()
+    set_llm(FakeLLM(script=[LLMBadOutput("x") for _ in range(5)] + ["ok", "ok", "too many"]))
+    try:
+        with as_user(A):
+            for _ in range(5):
+                with pytest.raises(LLMBadOutput):
+                    get_llm().complete("ping")
+            assert get_llm().complete("ping") == "ok"
+            assert get_llm().complete("ping") == "ok"
+            with pytest.raises(AiDailyLimit):
+                get_llm().complete("ping")
+        assert used(A) == 2 and used(GLOBAL_USAGE) == 2
+    finally:
+        set_llm(None)
+
+
+def test_a_call_failing_past_midnight_is_refunded_on_the_day_it_was_charged(
+    hosted_db: Engine,
+) -> None:
+    with freeze_time(datetime(2026, 10, 1, 23, 59)):
+        day = charge(A)
+        refund(A, day)
+        assert used(A) == 0
+    with freeze_time(datetime(2026, 10, 2, 0, 1)):
+        charge(A)
+        refund(A, day)  # yesterday's count is 0 already: today's is untouched
+        assert used(A) == 1
+
+
+def test_json_mode_reaches_the_model_through_the_meter(hosted_db: Engine) -> None:
+    from escalate.llm import set_llm
+
+    seen: list[bool] = []
+
+    class Spy:
+        def complete(self, prompt: str, slot: str = "smart", json_mode: bool = False) -> str:
+            seen.append(json_mode)
+            return "{}"
+
+    set_llm(Spy())  # type: ignore[arg-type]
+    try:
+        with as_user(A):
+            get_llm().complete("ping", json_mode=True)
+        assert seen == [True]
+    finally:
+        set_llm(None)
+
+
+# --- a permanent AI error fails fast, and the browser can read it ---------------------------
+
+
+def test_a_misconfigured_model_is_one_clear_503_with_cors_and_no_charge(hosted: Hosted) -> None:
+    alice = hosted.account("alice@example.com")
+    cid = with_evidence(alice.client)
+    hosted.llm.script = [LLMMisconfigured(404)]
+    before = len(hosted.llm.calls)
+    r = alice.client.post(f"/cases/{cid}/start", headers={"Origin": WEB_ORIGIN})
+    assert r.status_code == 503
+    assert r.json()["misconfigured"] is True
+    assert "misconfigured" in r.json()["detail"]
+    assert r.headers["access-control-allow-origin"] == WEB_ORIGIN
+    assert len(hosted.llm.calls) == before + 1  # one attempt, no retry loop
+    assert alice.client.get("/me").json()["ai_calls_today"] == 0
+
+
+def test_a_provider_5xx_is_a_503_that_never_repeats_its_body(hosted: Hosted) -> None:
+    import httpx
+    import openai
+
+    req = httpx.Request("POST", "https://api.groq.test/openai/v1/chat/completions")
+    secret = "provider echoed the prompt"
+    alice = hosted.account("alice@example.com")
+    cid = with_evidence(alice.client)
+    hosted.llm.script = [
+        openai.InternalServerError(secret, response=httpx.Response(500, request=req), body=None)
+    ]
+    r = alice.client.post(f"/cases/{cid}/start", headers={"Origin": WEB_ORIGIN})
+    assert r.status_code == 503 and secret not in r.text
+    assert r.headers["access-control-allow-origin"] == WEB_ORIGIN
+
+
+def test_an_unexpected_error_is_a_500_the_browser_can_read(
+    hosted: Hosted, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Without CORS headers the browser sees a network failure and the app retried the POST."""
+    from escalate.agent import runner
+
+    def boom(_case_id: int) -> None:
+        raise RuntimeError("secret detail")
+
+    alice = hosted.account("alice@example.com")
+    cid = with_evidence(alice.client)
+    monkeypatch.setattr(runner, "start_case", boom)
+    r = alice.client.post(f"/cases/{cid}/start", headers={"Origin": WEB_ORIGIN})
+    assert r.status_code == 500 and "secret detail" not in r.text
+    assert r.json()["error_id"]
+    assert r.headers["access-control-allow-origin"] == WEB_ORIGIN
+
+
+def test_the_tick_stops_at_a_misconfigured_model(
+    hosted: Hosted, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from escalate.agent import runner
+    from escalate.scheduler import tick
+
+    tried: list[int] = []
+
+    def fails(case_id: int, _step: str) -> None:
+        tried.append(case_id)
+        raise LLMMisconfigured(404)
+
+    monkeypatch.setattr(tick, "due_cases", lambda: [(1, None), (2, None), (3, None)])
+    monkeypatch.setattr(runner, "pending", lambda _c: {"type": "waiting_reply", "step": "s"})
+    monkeypatch.setattr(runner, "resume_timeout", fails)
+    monkeypatch.setattr(tick, "scan_deadlines", lambda: 0)
+    assert tick.run_tick()["failed"] == 1
+    assert tried == [1]

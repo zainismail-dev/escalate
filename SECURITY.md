@@ -108,7 +108,7 @@ The hosted, multi-user beta (Phase 2) has real accounts and per-user isolation: 
 
 `DEPLOY_MODE=hosted` (deploy guide: [docs/DEPLOY_BETA.md](docs/DEPLOY_BETA.md)) runs Escalate for
 a small number of invited users on Vercel (web), Render (API, Frankfurt), Supabase (Postgres,
-Auth and Storage, Frankfurt) and Groq (AI, zero data retention). Local mode is unchanged.
+Auth and Storage, Ireland) and Groq (AI, zero data retention). Local mode is unchanged.
 
 **Assets:** users' case text, facts, letters and evidence files; their Google identity; the
 server secrets (`DATABASE_URL`, Supabase secret key, `FERNET_KEY`, Groq key, `TICK_SECRET`).

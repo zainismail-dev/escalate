@@ -1,4 +1,7 @@
 List every factual claim in this draft that is NOT supported by the facts.
-DRAFT: {draft}  FACTS: {facts_json}
-Ignore tone, greetings, the sign-off and the reply deadline. Only list claims of fact.
-Return JSON: {"unsupported": [str]}
+DRAFT: {draft}
+FACTS: {facts_json}
+TRUSTED LETTER (already checked; everything in it is supported): {reference}
+A claim is supported if it is in the FACTS or the TRUSTED LETTER, in any wording or format: 2026-10-01 and 1 October 2026 are the same date, and 39.99 GBP and £39.99 are the same amount.
+Ignore tone, greetings, the sign-off, the not-legal-advice notice and the reply deadline. Only list claims of fact.
+Return JSON: {"unsupported": [str]} with an empty list if every claim is supported.

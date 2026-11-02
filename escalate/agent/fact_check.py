@@ -43,6 +43,13 @@ _ID = re.compile(r"\b[A-Za-z0-9]{1,64}(?:-[A-Za-z0-9]{1,64}){1,16}\b")
 # rescan the run): `_numbers` checks what follows instead.
 _DIGIT_RUN = re.compile(r"(?<![\w.-])\d(?:[,.\s]*\d)*")
 _WORDISH = re.compile(r"[\w-]")
+# "14-day", "43-inch": a number and a word, not an ID. The number still has to be known. Bounded
+# like `_ID`, and only a lower-case word: "123-ABC" stays an ID.
+_NUMBER_WORD = re.compile(r"(?<![\w-])(\d{1,12})-[a-z]{1,32}(?![\w-])")
+# Reasoning models like U+2011 in "AC-10234" and U+202F in "1 October 2026".
+_TYPOGRAPHY = str.maketrans(
+    dict.fromkeys("\u2010\u2011", "-") | dict.fromkeys("\u00a0\u2009\u202f", " ")
+)
 
 
 def _month(name: str) -> int:
@@ -89,8 +96,15 @@ def norm_number(raw: str) -> str:
     return s.lstrip("0") or "0"
 
 
+def plain_typography(text: str) -> str:
+    """Ordinary hyphens and spaces, so IDs and dates stay searchable and copy cleanly."""
+    return text.translate(_TYPOGRAPHY)
+
+
 def _is_id(m: re.Match[str]) -> bool:
     v = m.group(0)
+    if _NUMBER_WORD.fullmatch(v):
+        return False
     return any(c.isdigit() for c in v) and any(c.isalpha() for c in v)
 
 
@@ -118,6 +132,7 @@ def _numbers(text: str) -> list[str]:
 
 def find_numbers(text: str) -> set[str]:
     text = _ID.sub(lambda m: " " if _is_id(m) else m.group(0), _strip_dates(text))
+    text = _NUMBER_WORD.sub(r"\1 ", text)
     return {norm_number(n) for n in _numbers(text)}
 
 
@@ -130,15 +145,28 @@ class FactCheckResult:
     code_issues: list[str] = field(default_factory=list)
     model_issues: list[str] = field(default_factory=list)
     tone_issues: list[str] = field(default_factory=list)
+    omissions: list[str] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
-        return not self.code_issues and not self.model_issues and not self.tone_issues
+        return not (self.code_issues or self.model_issues or self.tone_issues or self.omissions)
 
     @property
     def issues(self) -> list[str]:
         tone = [f"tone: {t} (keep it firm, polite and factual)" for t in self.tone_issues]
-        return [*self.code_issues, *tone, *self.model_issues]
+        return [*self.code_issues, *tone, *self.omissions, *self.model_issues]
+
+    @property
+    def categories(self) -> list[str]:
+        """Why the draft failed, safe to log: categories only, never a value from the case."""
+        found = {f"invented_{i.split(' ', 1)[0].lower()}" for i in self.code_issues}
+        if self.tone_issues:
+            found.add("tone")
+        if self.omissions:
+            found.add("dropped_value")
+        if self.model_issues:
+            found.add("model_unsupported")
+        return sorted(found)
 
 
 def ascii_digits(text: str) -> str:
@@ -146,11 +174,15 @@ def ascii_digits(text: str) -> str:
     return "".join(str(unicodedata.decimal(c)) if c.isdecimal() else c for c in text)
 
 
+def _comparable(text: str) -> str:
+    return plain_typography(ascii_digits(text))
+
+
 def code_check(draft: str, facts: dict[str, str], reference: str = "") -> list[str]:
     """Every number, date and ID in `draft` must come from `facts` or the trusted `reference`."""
-    draft = ascii_digits(draft)
-    facts = {k: ascii_digits(v) for k, v in facts.items()}
-    reference = ascii_digits(reference)
+    draft = _comparable(draft)
+    facts = {k: _comparable(v) for k, v in facts.items()}
+    reference = _comparable(reference)
     # Masked forms (e.g. "•••• 1111" for a card number) count as known too.
     corpus = "\n".join(
         [*facts.values(), reference, mask_pii(reference)] + [mask_pii(v) for v in facts.values()]
@@ -178,19 +210,44 @@ def _is_num(v: str) -> bool:
     return bool(re.fullmatch(r"[\d,.\s]+", v.strip()))
 
 
+def dropped_values(draft: str, reference: str) -> list[str]:
+    """A rewrite may reword the letter, but every date, ID and number of the trusted template
+    (order number, amount, the days to reply, the reply-by date, the law's year) must survive."""
+    draft, reference = _comparable(draft), _comparable(reference)
+    gone = [d.isoformat() for d in find_dates(reference) - find_dates(draft)]
+    gone += find_ids(reference) - find_ids(draft)
+    gone += find_numbers(reference) - find_numbers(draft) - _parts_of_ids_and_dates(draft)
+    return [f"keep {value} from the template" for value in sorted(gone)]
+
+
+def _parts_of_ids_and_dates(text: str) -> set[str]:
+    parts = {norm_number(p) for i in find_ids(text) for p in re.findall(r"\d+", i)}
+    for d in find_dates(text):
+        parts |= {str(d.year), str(d.day), str(d.month)}
+    return parts
+
+
 class ModelCheck(BaseModel):
     unsupported: list[str] = Field(default_factory=list)
 
 
-def model_check(draft: str, facts: dict[str, str], llm: LLM | None = None) -> list[str]:
+def model_check(
+    draft: str, facts: dict[str, str], llm: LLM | None = None, reference: str = ""
+) -> list[str]:
     prompt = render_prompt(
-        "fact_check", draft=draft, facts_json=json.dumps(facts, ensure_ascii=False)
+        "fact_check",
+        draft=draft,
+        facts_json=json.dumps(facts, ensure_ascii=False),
+        reference=reference or "(none)",
     )
     try:
         out = ask_json(llm or get_llm(), prompt, ModelCheck, slot="fast")
     except StructuredOutputError:
         return []  # the code check already ran; a confused model must not block forever
-    return [u.strip() for u in out.unsupported if u and u.strip()]
+    # A cautious model can flag the trusted template's own words (or a fact, word for word).
+    known = _comparable("\n".join([reference, *facts.values()])).casefold()
+    claims = (u.strip() for u in out.unsupported if u and u.strip())
+    return [c for c in claims if _comparable(c).strip(" .\"'").casefold() not in known]
 
 
 def fact_check(
@@ -199,10 +256,15 @@ def fact_check(
     reference: str = "",
     llm: LLM | None = None,
     use_model: bool = True,
+    keep_values: bool = False,
 ) -> FactCheckResult:
+    """`keep_values`: also fail a model's rewrite that lost a value of the template (never set for
+    the user's own edit: they may cut what they like)."""
     result = FactCheckResult(
         code_issues=code_check(draft, facts, reference), tone_issues=tone_flags(draft)
     )
-    if use_model and not result.code_issues and not result.tone_issues:
-        result.model_issues = model_check(draft, facts, llm)
+    if keep_values:
+        result.omissions = dropped_values(draft, reference)
+    if use_model and result.ok:
+        result.model_issues = model_check(draft, facts, llm, reference)
     return result

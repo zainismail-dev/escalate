@@ -4,7 +4,7 @@ To: {{ authority_name }}
 
 I wish to make a complaint against {{ company_name }}.
 
-1. I asked {{ company_name }} to cancel my subscription (account {{ account_id }}{% if plan_name %}, {{ plan_name }}{% endif %}) on {{ cancel_requested_on }}.
+1. I asked {{ company_name }} to cancel my subscription (account {{ account_id }}{% if plan_name %}, {{ plan_name }}{% endif %}) on {{ cancel_requested_on | date }}.
 2. They did not cancel it and continued to charge me.{% if charges_after_cancel %} Charges after my request: {{ charges_after_cancel }}.{% endif %}
 3. I sent a written cancellation request and a final notice{% if card_issuer %}, and disputed the charges with {{ card_issuer }}{% endif %}. The matter is not resolved.
 

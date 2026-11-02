@@ -16,6 +16,7 @@ from escalate.config import get_settings
 from escalate.db.models import Case, CaseStatus, utcnow
 from escalate.db.session import session_scope
 from escalate.db.tenancy import as_user
+from escalate.llm.client import LLMMisconfigured
 from escalate.llm.quota import AiQuotaError, calls_today
 from escalate.scheduler.jobs import scan_deadlines
 
@@ -69,6 +70,9 @@ def run_tick() -> dict[str, int]:
             except AiQuotaError:
                 result.skipped += 1
                 continue
+            except LLMMisconfigured:  # every other case would fail the same way (already logged)
+                result.failed += 1
+                break
             except Exception as exc:  # one broken case must not stop the others
                 log.error("tick: case wake-up failed: %s", type(exc).__name__, exc_info=exc)
                 result.failed += 1

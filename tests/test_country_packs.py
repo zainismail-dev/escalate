@@ -17,6 +17,7 @@ from tests.factories import LED_FACTS
 REPO = Path(__file__).resolve().parents[1]
 FULL = {
     **LED_FACTS,
+    "product": "43 inch LED TV",
     "buyer_address": "1 Main St",
     "seller_address": "2 Shop Rd",
     "authority_name": "Consumer Office",

@@ -37,7 +37,7 @@ def ladder(pb: Playbook, case: Case) -> list[dict[str, Any]]:
         out.append(
             {
                 "id": s.id,
-                "name": s.title,
+                "name": s.label,
                 "channel": s.channel,
                 "recipient_role": s.recipient_role,
                 "wait_days": s.wait_days,

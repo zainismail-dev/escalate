@@ -32,15 +32,16 @@ services:
       # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
       - key: FERNET_KEY
         sync: false
-      # Groq (OpenAI-compatible). Users can't change the provider in hosted mode.
+      # Groq (OpenAI-compatible). Users can't change the provider in hosted mode. Groq shut down
+      # its llama-3.x models on 16 Aug 2026: these are gpt-oss reasoning models.
       - key: LLM_BASE_URL
         value: https://api.groq.com/openai/v1
       - key: LLM_API_KEY
         sync: false
       - key: MODEL_SMART
-        value: llama-3.3-70b-versatile
+        value: openai/gpt-oss-120b
       - key: MODEL_FAST
-        value: llama-3.1-8b-instant
+        value: openai/gpt-oss-20b
       - key: CLOUD_PRIVACY_WARNING
         value: "false"
       # The beta web app (Vercel project escalate-beta) and this API's own host name

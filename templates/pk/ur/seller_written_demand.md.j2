@@ -2,13 +2,13 @@ Subject: آرڈر {{ order_id }}: {{ remedy_wanted }} کی درخواست
 
 محترم {{ seller_name }}،
 
-میں نے {{ order_date }} کو آپ سے آرڈر نمبر {{ order_id }} کے تحت خریداری کی اور {{ amount | money(currency) }} ادا کیے۔
+میں نے {{ order_date | date }} کو آپ سے آرڈر نمبر {{ order_id }} کے تحت خریداری کی اور {{ amount | money(currency) }} ادا کیے۔
 
 مسئلہ: {{ defect_description }}
 {% if return_shipped_on %}
-میں نے {{ return_shipped_on }} کو سامان آپ کو واپس بھیج دیا{% if return_tracking %} (ٹریکنگ نمبر {{ return_tracking }}){% endif %}۔
+میں نے {{ return_shipped_on | date }} کو سامان آپ کو واپس بھیج دیا{% if return_tracking %} (ٹریکنگ نمبر {{ return_tracking }}){% endif %}۔
 {% endif %}{% if last_promise_on %}
-{{ last_promise_on }} کو آپ نے مجھ سے کہا{% if last_promise_text %}: "{{ last_promise_text }}"{% else %} کہ معاملہ حل ہو جائے گا{% endif %}۔ معاملہ اب تک حل نہیں ہوا۔
+{{ last_promise_on | date }} کو آپ نے مجھ سے کہا{% if last_promise_text %}: "{{ last_promise_text }}"{% else %} کہ معاملہ حل ہو جائے گا{% endif %}۔ معاملہ اب تک حل نہیں ہوا۔
 {% endif %}
 میری درخواست ہے کہ آپ مجھے یہ فراہم کریں: {{ remedy_wanted }}۔
 

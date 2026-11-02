@@ -1,7 +1,7 @@
 """LLM access. Code asks `get_llm()` for the model; tests swap in a fake with `set_llm()`.
 
 Hosted mode: the server's provider only (LLM_* from the environment), and every call counts
-against the user's and the beta's daily AI limits (escalate/llm/quota.py)."""
+against the user's and the beta's daily AI limits (escalate/llm/quota.py), unless it fails."""
 
 from escalate.config import get_settings
 from escalate.llm.client import LLM, LLMClient, Slot

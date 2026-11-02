@@ -65,6 +65,8 @@ class Settings(BaseSettings):
     llm_api_key: str = "ollama"
     model_smart: str = ""
     model_fast: str = ""
+    # Sent to reasoning models only (llm/client.py REASONING_MODELS). Empty: the endpoint's default.
+    llm_reasoning_effort: Literal["", "low", "medium", "high"] = "low"
     cloud_privacy_warning: bool = True
 
     database_url: str = "sqlite:///./escalate.db"

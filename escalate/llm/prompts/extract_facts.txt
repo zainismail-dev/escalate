@@ -3,6 +3,9 @@ Return JSON: {"facts": {key: {"value": str, "evidence_id": int|null, "confidence
               "missing": [required keys you could not find]}
 Required keys: {required_facts}
 Optional keys (include only if clearly present): {optional_facts}
+Where these keys are listed: product = what was bought, as a short name; defect_description = what went wrong, in a short phrase;
+refused_on = the date the company refused; refusal_text = what the company said when it refused, in its own words if given;
+last_promise_on and last_promise_text = the date and words of a promise the company made.
 Rules: never guess a value; dates as YYYY-MM-DD; amounts as numbers with currency;
 if two sources disagree, use the evidence and lower confidence.
 Put the amount as a plain number in "amount" and the ISO 4217 code in "currency" (e.g. 45000 and PKR).

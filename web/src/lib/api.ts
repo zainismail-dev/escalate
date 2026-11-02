@@ -26,6 +26,7 @@ export type ApiErrorKind =
   | "offline_api"
   | "model_offline"
   | "ai_unavailable"
+  | "ai_misconfigured"
   | "fact_check"
   | "rate_limited"
   | "quota"
@@ -48,6 +49,7 @@ export class ApiError extends Error {
   get kind(): ApiErrorKind {
     if (this.status === DEMO_BLOCKED) return "demo";
     if (this.status === 0) return "offline_api";
+    if (this.body.misconfigured) return "ai_misconfigured"; // permanent: retrying can't help
     // Hosted: the server's AI provider, not a model on the user's machine.
     if (this.status === 503 && !/pdf|pango|weasy/i.test(this.detail)) return HOSTED ? "ai_unavailable" : "model_offline";
     if (this.status === 422 && Array.isArray(this.body.issues)) return "fact_check";
@@ -118,7 +120,17 @@ async function send(method: string, path: string, body?: unknown): Promise<Respo
   if (token) headers.Authorization = `Bearer ${token}`;
   init.credentials = "omit";
   const waking = (on: boolean) => window.dispatchEvent(new CustomEvent(WAKING_EVENT, { detail: on }));
-  return withWakeRetries(() => fetch(`${API_URL}${path}`, init), waking);
+  // A write that failed while the API is up is a real failure, so it isn't sent again.
+  const isAwake = method === "GET" ? undefined : apiIsUp;
+  return withWakeRetries(() => fetch(`${API_URL}${path}`, init), waking, undefined, isAwake);
+}
+
+async function apiIsUp(): Promise<boolean> {
+  try {
+    return (await fetch(`${API_URL}/health`, { cache: "no-store", credentials: "omit" })).ok;
+  } catch {
+    return false;
+  }
 }
 
 /** Hosted: the API says signed out, waitlisted or consent needed: the gate redirects. */
