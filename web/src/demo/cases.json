@@ -93,7 +93,7 @@
       {
         "channel": "email",
         "id": "s1_cancel_request",
-        "name": "cancellation request",
+        "name": "Cancellation request",
         "recipient_role": "the company",
         "state": "current",
         "wait_days": 7
@@ -101,7 +101,7 @@
       {
         "channel": "email",
         "id": "s2_final_notice",
-        "name": "final notice listing the charges",
+        "name": "Final notice listing the charges",
         "recipient_role": "the company",
         "state": "future",
         "wait_days": 14
@@ -109,7 +109,7 @@
       {
         "channel": "email",
         "id": "s3_card_dispute",
-        "name": "card-issuer dispute letter",
+        "name": "Card-issuer dispute letter",
         "recipient_role": "your card issuer or bank",
         "state": "future",
         "wait_days": 30
@@ -117,7 +117,7 @@
       {
         "channel": "web_form",
         "id": "s4_authority",
-        "name": "complaint to the consumer authority",
+        "name": "Complaint to the consumer authority",
         "recipient_role": "the national consumer authority or ombudsman",
         "state": "future",
         "wait_days": null
@@ -209,7 +209,7 @@
       }
     ],
     "status": "awaiting_approval",
-    "step_name": "cancellation request",
+    "step_name": "Cancellation request",
     "text_direction": "ltr",
     "title": "Gym still charging after cancelling",
     "waiting_for": "approve_draft"
@@ -338,7 +338,7 @@
       {
         "channel": "email",
         "id": "s1_seller_written",
-        "name": "written demand to the seller",
+        "name": "Written demand to the seller",
         "recipient_role": "the seller",
         "state": "current",
         "wait_days": 5
@@ -346,7 +346,7 @@
       {
         "channel": "web_form",
         "id": "s2_platform",
-        "name": "escalation to the marketplace",
+        "name": "Escalation to the marketplace",
         "recipient_role": "the marketplace's customer support",
         "state": "future",
         "wait_days": 5
@@ -362,7 +362,7 @@
       {
         "channel": "court",
         "id": "s4_consumer_court",
-        "name": "consumer court complaint",
+        "name": "Consumer court complaint",
         "recipient_role": "the District Consumer Court",
         "state": "future",
         "wait_days": null
@@ -439,7 +439,7 @@
       }
     ],
     "status": "waiting_reply",
-    "step_name": "written demand to the seller",
+    "step_name": "Written demand to the seller",
     "text_direction": "ltr",
     "title": "Broken LED TV — refund refused",
     "waiting_for": "waiting_reply"
@@ -524,7 +524,7 @@
       {
         "channel": "email",
         "id": "s1_bank_fraud_report",
-        "name": "fraud report to your bank",
+        "name": "Fraud report to your bank",
         "recipient_role": "your bank or card issuer's fraud team",
         "state": "future",
         "wait_days": 10
@@ -532,7 +532,7 @@
       {
         "channel": "post",
         "id": "s2_police_report",
-        "name": "police report",
+        "name": "Police report",
         "recipient_role": "the police",
         "state": "future",
         "wait_days": 30
@@ -540,7 +540,7 @@
       {
         "channel": "web_form",
         "id": "s3_national_report",
-        "name": "report to the national fraud reporting body",
+        "name": "Report to the national fraud reporting body",
         "recipient_role": "the national fraud or cybercrime reporting body",
         "state": "future",
         "wait_days": null
@@ -702,7 +702,7 @@
       {
         "channel": "email",
         "id": "s1_written_demand",
-        "name": "written demand to the seller",
+        "name": "Written demand to the seller",
         "recipient_role": "the seller",
         "state": "current",
         "wait_days": 10
@@ -710,7 +710,7 @@
       {
         "channel": "email",
         "id": "s2_final_demand",
-        "name": "final demand letter",
+        "name": "Final demand letter",
         "recipient_role": "the seller",
         "state": "future",
         "wait_days": 14
@@ -718,7 +718,7 @@
       {
         "channel": "web_form",
         "id": "s3_attorney_general",
-        "name": "complaint to your state attorney general",
+        "name": "Complaint to your state attorney general",
         "recipient_role": "your state attorney general's consumer protection office",
         "state": "future",
         "wait_days": 30
@@ -726,7 +726,7 @@
       {
         "channel": "info",
         "id": "s4_small_claims",
-        "name": "small claims guide",
+        "name": "Small claims guide",
         "recipient_role": "you (a filing guide)",
         "state": "future",
         "wait_days": null
@@ -818,7 +818,7 @@
       }
     ],
     "status": "awaiting_approval",
-    "step_name": "written demand to the seller",
+    "step_name": "Written demand to the seller",
     "text_direction": "ltr",
     "title": "Laptop refund refused",
     "waiting_for": "approve_draft"

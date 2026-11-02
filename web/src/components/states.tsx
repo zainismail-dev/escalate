@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, type ApiError, API_URL } from "@/lib/api";
 import { HOSTED } from "@/lib/hosted";
+import { errorBodyKey } from "@/lib/hosted-copy";
 import type { Problem, ReviewFact } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -72,7 +73,7 @@ export function ErrorState({ error, onRetry, className }: { error: ApiError; onR
   const t = useTranslations("errors");
   const kind = error.kind;
   if (kind === "demo") return null; // the demo dialog already says why
-  const Icon = ["model_offline", "offline_api", "ai_unavailable"].includes(kind) ? CloudOff : AlertTriangle;
+  const Icon = ["model_offline", "offline_api", "ai_unavailable", "ai_misconfigured"].includes(kind) ? CloudOff : AlertTriangle;
   const title = t(`${kind}.title`);
   return (
     <div role="alert" className={cn("rounded-2xl border border-danger/40 bg-danger-bg p-5", className)} data-testid={`error-${kind}`}>
@@ -81,7 +82,7 @@ export function ErrorState({ error, onRetry, className }: { error: ApiError; onR
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-lg text-text">{title}</h2>
           <p className="mt-1 text-sm text-text-2">
-            {t(`${kind}.body`, { url: API_URL })}
+            {t(errorBodyKey(kind, HOSTED), { url: API_URL })}
           </p>
           {["model_offline", "offline_api", "ai_unavailable", "quota"].includes(kind) && (
             <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-card px-2.5 py-1 text-xs font-semibold text-success">
@@ -92,13 +93,13 @@ export function ErrorState({ error, onRetry, className }: { error: ApiError; onR
           {kind === "other" && <p className="mt-2 break-words font-mono text-xs text-muted">{error.detail}</p>}
           {kind === "quota" && <p className="mt-2 text-sm font-semibold text-text">{error.detail}</p>}
           <div className="mt-3 flex flex-wrap gap-2">
-            {onRetry && (
+            {onRetry && kind !== "ai_misconfigured" && (
               <Button size="sm" variant="ink" onClick={onRetry}>
                 <RefreshCw aria-hidden />
                 {t("retry")}
               </Button>
             )}
-            {kind === "model_offline" && !HOSTED && (
+            {(kind === "model_offline" || kind === "ai_misconfigured") && !HOSTED && (
               <Button size="sm" asChild>
                 <Link href="/settings">{t("checkSettings")}</Link>
               </Button>

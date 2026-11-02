@@ -6,6 +6,7 @@ import { useState } from "react";
 import { FactChip, useFactLabel } from "@/components/fact-chip";
 import { EscalationLadder } from "@/components/ladder";
 import { FileLink } from "@/components/hosted";
+import { LocalTime } from "@/components/local-time";
 import { NextMove } from "@/components/next-move";
 import { ErrorState, PageSkeleton } from "@/components/states";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { api } from "@/lib/api";
 import { HOSTED } from "@/lib/hosted";
 import { displayFact } from "@/lib/facts";
 import { caseLocale, formatDate, formatDateTime } from "@/lib/format";
+import { collapseRetries } from "@/lib/timeline";
 import type { CaseDetail } from "@/lib/types";
 import { useAction, useApi } from "@/lib/use-api";
 import { cn } from "@/lib/utils";
@@ -63,11 +65,13 @@ function Timeline({ id, locale }: { id: string; locale: string }) {
   if (!data) return null;
   return (
     <ol className="relative space-y-3 border-s border-line ps-5">
-      {[...data].reverse().map((e) => (
+      {collapseRetries(data).reverse().map((e) => (
         <li key={e.id} className="relative">
           <span className="absolute -start-[1.6rem] top-1.5 size-2.5 rounded-full border-2 border-card bg-muted" aria-hidden />
-          <p className="text-sm font-semibold">{t.has(e.type) ? t(e.type) : e.type.replace(/_/g, " ")}</p>
-          <p className="label-mono text-muted">{formatDateTime(e.created_at, locale)}</p>
+          <p className="text-sm font-semibold">
+            {e.retries > 0 ? t("case_started_retried", { count: e.retries }) : t.has(e.type) ? t(e.type) : e.type.replace(/_/g, " ")}
+          </p>
+          <LocalTime value={e.created_at} locale={locale} className="label-mono block text-muted" />
         </li>
       ))}
     </ol>
@@ -195,7 +199,7 @@ export function CaseDashboard({ id }: { id: string }) {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-xs text-muted">{t("encrypted")}</p>
+              <p className="mt-3 text-xs text-muted">{t(HOSTED ? "encryptedHosted" : "encrypted")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -258,7 +262,7 @@ export function CaseDashboard({ id }: { id: string }) {
           ) : (
             <>
               <DialogTitle>{confirm === "delete" ? t("confirmDelete.title") : t("confirmWithdraw.title")}</DialogTitle>
-              <DialogDescription>{confirm === "delete" ? t("confirmDelete.body") : t("confirmWithdraw.body")}</DialogDescription>
+              <DialogDescription>{confirm === "delete" ? t(HOSTED ? "confirmDelete.bodyHosted" : "confirmDelete.body") : t("confirmWithdraw.body")}</DialogDescription>
               <div className="mt-6 flex justify-end gap-2">
                 <Button variant="ghost" onClick={() => setConfirm(null)}>
                   {tc("cancel")}

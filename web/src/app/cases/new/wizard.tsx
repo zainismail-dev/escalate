@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FieldHint, Input, Label, Textarea } from "@/components/ui/input";
 import { api, ApiError } from "@/lib/api";
+import { HOSTED } from "@/lib/hosted";
 import { DEMO_STATIC, SAMPLE_CASE } from "@/lib/demo-mode";
 import { displayFact } from "@/lib/facts";
 import type { CaseDetail, Country, Evidence } from "@/lib/types";
@@ -273,7 +274,7 @@ export function Wizard() {
               >
                 <FileUp className="size-8 text-muted" aria-hidden />
                 <span className="font-semibold">{t("dropTitle")}</span>
-                <span className="text-xs text-muted">{t("dropHint")}</span>
+                <span className="text-xs text-muted">{t(HOSTED ? "dropHintHosted" : "dropHint")}</span>
                 <input
                   id="evidence"
                   type="file"

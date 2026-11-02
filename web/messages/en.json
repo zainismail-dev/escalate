@@ -219,7 +219,8 @@
     },
     "offline_api": {
       "title": "Can't reach Escalate",
-      "body": "The Escalate API at {url} isn't answering. Start it with `make up` or `uv run uvicorn escalate.api.main:app`."
+      "body": "The Escalate API at {url} isn't answering. Start it with `make up` or `uv run uvicorn escalate.api.main:app`.",
+      "hostedBody": "The server is waking up or unavailable — try again in a minute."
     },
     "fact_check": {
       "title": "Blocked by the fact check",
@@ -232,6 +233,11 @@
     "other": {
       "title": "Something went wrong",
       "body": "The request failed. Details below."
+    },
+    "ai_misconfigured": {
+      "title": "The AI service is misconfigured",
+      "body": "Nothing was sent. The AI endpoint refused the model name or API key. Check them in Settings; trying again won't help until then.",
+      "hostedBody": "Nothing was sent. This needs a fix on our side, so trying again won't help yet. Your case is saved."
     },
     "ai_unavailable": {
       "title": "The AI service isn't answering",
@@ -345,6 +351,14 @@
     "delay_reason": {
       "label": "Reason for the delay",
       "why": "If a deadline passed, the court may excuse it for a good reason."
+    },
+    "refused_on": {
+      "label": "Date they refused",
+      "why": "The letter says when they refused you."
+    },
+    "refusal_text": {
+      "label": "What they said when they refused",
+      "why": "Quoting their own words is strong evidence."
     },
     "last_promise_on": {
       "label": "Date of their last promise",
@@ -581,6 +595,7 @@
     "next": "Next",
     "dropTitle": "Choose files to upload",
     "dropHint": "Photos, PDFs or emails (.eml). Encrypted on your computer.",
+    "dropHintHosted": "Photos, PDFs or emails (.eml). Encrypted on our server.",
     "uploaded": "Uploaded files",
     "needsReview": "hard to read: check the facts",
     "encrypted": "Files are encrypted at rest. Card numbers, IBANs and ID numbers are masked in the text.",
@@ -655,6 +670,7 @@
     "pdf": "PDF",
     "evidence": "Evidence",
     "encrypted": "Encrypted on this computer.",
+    "encryptedHosted": "Encrypted on our server.",
     "timeline": "Timeline",
     "export": "Export case file (PDF)",
     "withdraw": "Withdraw",
@@ -670,7 +686,8 @@
     },
     "confirmDelete": {
       "title": "Delete this case?",
-      "body": "This deletes the case, its evidence files, drafts and timeline from this computer. It can't be undone."
+      "body": "This deletes the case, its evidence files, drafts and timeline from this computer. It can't be undone.",
+      "bodyHosted": "This deletes the case, its evidence files, drafts and timeline from our server. It can't be undone."
     },
     "confirmWithdraw": {
       "title": "Withdraw this case?",
@@ -680,6 +697,8 @@
   "timeline": {
     "case_created": "Case opened",
     "case_started": "Agent started",
+    "case_started_retried": "Agent started (retried {count}×)",
+    "draft_template_used": "Used the standard letter",
     "evidence_added": "Evidence added",
     "classified": "Complaint understood",
     "playbook_selected": "Playbook chosen",
@@ -1020,7 +1039,7 @@
       "signedInAs": "Signed in as {email}",
       "openCases": "Open cases: {n} of {max}",
       "aiCalls": "AI requests today: {n} of {max}",
-      "where": "Your data is stored in the EU (Frankfurt). Evidence files are encrypted before they are stored.",
+      "where": "Your data is stored in the EU (Ireland) and processed in the EU (Frankfurt). Evidence files are encrypted before they are stored.",
       "export": "Export my data",
       "privacy": "Privacy policy",
       "terms": "Terms",
@@ -1047,9 +1066,9 @@
       "aiTitle": "AI processing",
       "ai": "To draft and check letters, your case text and the text read from your evidence are sent to Groq. The beta uses Groq with zero data retention: Groq doesn't store or train on it.",
       "processorsTitle": "Service providers (processors)",
-      "processors": "Vercel (the web app), Render (the API server, EU Frankfurt), Supabase (sign-in, database and encrypted file storage, EU Frankfurt) and Groq (AI processing, zero data retention). Google is used for sign-in only.",
+      "processors": "Vercel (the web app), Render (the API server, EU Frankfurt, Germany), Supabase (sign-in, database and encrypted file storage, EU Ireland, eu-west-1) and Groq (AI processing, zero data retention). Google is used for sign-in only.",
       "regionTitle": "Where",
-      "region": "The database, file storage and API run in the EU (Frankfurt, Germany). The web pages are served by Vercel's global network.",
+      "region": "The database, sign-in and file storage (Supabase) run in the EU (Ireland, eu-west-1), and the API server (Render) in the EU (Frankfurt, Germany). The web pages are served by Vercel's global network.",
       "retentionTitle": "How long",
       "retention": "Until you delete a case or your account. The beta may be reset with notice. Deleting your account removes your data and sign-in at once; backups held by the providers expire on their own schedule.",
       "rightsTitle": "Your rights",
