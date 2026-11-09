@@ -314,7 +314,7 @@ export function ReviewDraft({ id }: { id: string }) {
           <section className="rounded-2xl border-[1.5px] border-line-strong bg-card p-5" aria-labelledby="decision" data-testid="decision-card">
             <p className="label-mono text-muted">{t("decision.eyebrow")}</p>
             <h2 id="decision" className="mt-1 font-display text-xl">{t(reviewKey("decision.title", HOSTED))}</h2>
-            <p className="mt-1 text-sm text-text-2">{t(reviewKey("decision.body", HOSTED), { recipient: msg.recipient ?? t("noRecipient"), channel: tch(msg.channel) })}</p>
+            <p className="mt-1 text-sm text-text-2 wrap-anywhere">{t(reviewKey("decision.body", HOSTED), { recipient: msg.recipient ?? t("noRecipient"), channel: tch(msg.channel) })}</p>
             {r.recipient_check && (
               <RecipientConfirm
                 key={`${msg.id}:${msg.recipient}`}

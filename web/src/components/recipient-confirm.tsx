@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import type { RecipientCheck } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { EmailText } from "@/components/email-text";
 
 /**
  * The user confirms the exact recipient before approving. A recipient read from evidence may
@@ -70,8 +71,8 @@ export function RecipientConfirm({
       ) : (
         <div className="mt-1 flex items-start gap-2">
           <AtSign className="mt-0.5 size-4 shrink-0 text-muted" aria-hidden />
-          <p className="min-w-0 flex-1 break-all font-semibold" data-testid="recipient-value">
-            {check.recipient}
+          <p className="min-w-0 flex-1 font-semibold wrap-anywhere" data-testid="recipient-value" title={check.recipient}>
+            <EmailText address={check.recipient} />
           </p>
           <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setEditing(true)} aria-label={t("change")}>
             <Pencil aria-hidden />
@@ -88,7 +89,7 @@ export function RecipientConfirm({
           </p>
           {check.ascii_form && (
             <p className="mt-1">
-              {t("asciiForm")} <code className="break-all font-mono font-semibold" data-testid="recipient-punycode">{check.ascii_form}</code>
+              {t("asciiForm")} <code className="font-mono font-semibold wrap-anywhere" data-testid="recipient-punycode"><EmailText address={check.ascii_form} /></code>
             </p>
           )}
         </div>
