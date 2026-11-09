@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/auth";
+import { safeNext } from "@/lib/safe-next";
 
 export function Callback() {
   const t = useTranslations("hosted.callback");
@@ -27,7 +28,7 @@ export function Callback() {
       if (done) return;
       const next = sessionStorage.getItem("escalate:next");
       sessionStorage.removeItem("escalate:next");
-      router.replace(next && next.startsWith("/") && !next.startsWith("//") ? next : "/cases");
+      router.replace(safeNext(next));
     })();
     return () => {
       done = true;

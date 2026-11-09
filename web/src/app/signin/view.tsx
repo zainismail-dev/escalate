@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { signedInEmail, signInWithGoogle } from "@/lib/auth";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/hosted";
+import { safeNext } from "@/lib/safe-next";
 
 function GoogleMark() {
   return (
@@ -28,7 +29,7 @@ function SignInInner() {
   const [failed, setFailed] = useState(false);
   const configured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
   const next = params.get("next");
-  const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/cases";
+  const target = safeNext(next);
 
   useEffect(() => {
     void signedInEmail().then((email) => email && router.replace(target));
