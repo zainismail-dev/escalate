@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="{{ case.language }}" dir="{{ 'rtl' if case.language in rtl else 'ltr' }}">
-<head><meta charset="utf-8"><title>{{ title }} · case {{ case.id }}</title>
+<head><meta charset="utf-8"><title>{{ title }} · case {{ case.public_id[:8] }}</title>
 <style>
-@page { size: A4; margin: 18mm 16mm; @bottom-right { content: "Case {{ case.id }} · page " counter(page); font-size: 8pt; color: #666; } }
+@page { size: A4; margin: 18mm 16mm; @bottom-right { content: "Case {{ case.public_id[:8] }} · page " counter(page); font-size: 8pt; color: #666; } }
 body { font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif; font-size: 10pt; color: #111; }
 h1 { font-size: 20pt; margin: 0 0 4pt; } h2 { font-size: 13pt; border-bottom: 1px solid #999; padding-bottom: 2pt; margin-top: 0; }
 section { page-break-before: always; } section.cover { page-break-before: auto; }

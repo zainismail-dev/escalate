@@ -62,6 +62,7 @@ def test_case_html_has_every_section(agent_env: AgentEnv, monkeypatch: pytest.Mo
     with env.session() as s:  # internal ids never appear: the public id, and files by number
         public_id = s.get_one(Case, cid).public_id
     assert f"Case file {public_id[:8]}" in html and f"#{cid}" not in html
+    assert f"case {public_id[:8]}</title>" in html and f'"Case {public_id[:8]} · page "' in html
     assert "<h1>Refund refused by BrightMart Electronics</h1>" in html  # the case title
     assert "Ali Raza" in html and "BrightMart Electronics" in html
     assert "PKR 45,000.00" in html  # in the letter (ISO code, unambiguous)
@@ -102,8 +103,9 @@ def test_pdf_builds_with_case_number_and_event_dates(
         assert case is not None
         pdf = build_case_pdf(s, case)
         dates = {ev.created_at.strftime("%Y-%m-%d") for ev in case.events}
+        public_id = case.public_id
     assert pdf.startswith(b"%PDF")
     text = "\n".join(p.extract_text() for p in PdfReader(io.BytesIO(pdf)).pages)
-    assert f"Case file #{cid}" in text
+    assert f"Case file {public_id[:8]}" in text  # the public id: internal ids never leave
     for d in dates:
         assert d in text
