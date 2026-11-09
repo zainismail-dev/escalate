@@ -123,6 +123,13 @@ def test_the_short_term_right_only_appears_when_it_can_apply() -> None:
     assert "short-term right to reject" in raised_in_time
 
 
+@pytest.mark.parametrize("product", ["kettle", "wireless earbuds"])
+def test_the_short_term_right_reads_right_for_one_item_or_a_pair(product: str) -> None:
+    letter = uk_letter(product=product, order_date="2026-10-01", refused_on="2026-10-29")
+    assert "I raised this within 30 days of the purchase, so" in letter
+    assert "buying them" not in letter
+
+
 def test_a_pack_without_a_legal_basis_cites_no_law() -> None:
     pb = get_playbook("us-general-refund-refused")
     r = render_step(pb, pb.steps[0], UK, "en", country="US")
