@@ -25,13 +25,17 @@ from tests.fakes.fake_smtp import FakeSMTP
 from tests.fakes.manual_scheduler import ManualScheduler
 
 
+def template_parts(prompt: str) -> tuple[str, str]:
+    """The subject and the rendered letter template the draft prompt gives the model."""
+    m = re.search(r'Subject line \(it goes in "subject" only\): (.*)\n', prompt)
+    block = prompt.split("keep its structure:", 1)[1].split("Facts you may use", 1)[0]
+    return (m.group(1) if m else ""), block.strip()
+
+
 def echo_template(prompt: str, _slot: Slot) -> dict[str, str]:
     """The fake 'smart model' returns the rendered template unchanged (facts only)."""
-    block = prompt.split("keep its structure:", 1)[1].split("Facts you may use", 1)[0]
-    m = re.search(r"SUBJECT: (.*)\n", block)
-    subject = m.group(1) if m else ""
-    body = block.split("\n", 2)[2] if m else block
-    return {"subject": subject, "body": body.strip()}
+    subject, body = template_parts(prompt)
+    return {"subject": subject, "body": body}
 
 
 def facts_reply(facts: dict[str, str]) -> dict[str, Any]:

@@ -176,3 +176,47 @@ def test_case_fact_factory_has_led_facts(db: Session) -> None:
     case = led_case(db)
     assert isinstance(case.facts[0], CaseFact)
     assert case.fact_dict()["order_id"] == "BM-48213"
+
+
+# --- P1: the subject is shown once, never inside the body ---------------------------------
+
+
+@pytest.mark.parametrize(
+    "echo",
+    [
+        "SUBJECT: Refund for BM-48213",
+        "Subject: Refund for BM-48213",
+        "**Subject:** Refund for BM-48213",
+        "**Refund for BM-48213**",
+        "# Refund for BM-48213",
+        "Refund for BM-48213",
+        "Re: Refund for BM-48213",
+    ],
+)
+def test_a_subject_echoed_in_the_body_is_removed(db: Session, echo: str) -> None:
+    case = led_case(db, country="BR", region=None)
+    pb = get_playbook("intl-generic-refund-refused")
+    body = f"{echo}\n\nDear BrightMart,\n\nPlease refund me."
+    llm = FakeLLM(script=[{"subject": "Refund for BM-48213", "body": body}])
+    msg = draft_step(db, case, pb, pb.steps[0], llm=llm)
+    assert msg.subject == "Refund for BM-48213"
+    assert msg.body.startswith("Dear BrightMart,\n\nPlease refund me.")
+    assert "Refund for BM-48213" not in msg.body
+
+
+def test_the_model_gets_the_subject_apart_from_the_letter(db: Session) -> None:
+    case = led_case(db, country="BR", region=None)
+    pb = get_playbook("intl-generic-refund-refused")
+    llm = FakeLLM(script=[{"subject": "s", "body": "Dear BrightMart,"}])
+    draft_step(db, case, pb, pb.steps[0], llm=llm)
+    prompt = llm.calls[0][0]
+    assert "SUBJECT:" not in prompt
+    assert 'Subject line (it goes in "subject" only): Refund request for order BM-48213' in prompt
+    assert "never put the subject" in prompt
+
+
+def test_a_body_line_that_merely_mentions_the_subject_stays() -> None:
+    from escalate.agent.draft import without_subject
+
+    body = "Dear BrightMart,\n\nSubject: see my order BM-48213."
+    assert without_subject(body, "Refund") == body

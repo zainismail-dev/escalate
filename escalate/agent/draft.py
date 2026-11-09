@@ -65,7 +65,8 @@ def polish(
         "draft",
         step_name=step.title,
         recipient_role=step.recipient_role or "the company",
-        template_rendered=f"\nSUBJECT: {rendered.subject}\n{rendered.body}\n",
+        template_subject=rendered.subject,
+        template_rendered=f"\n{rendered.body}\n",
         facts_json=json.dumps(readable, ensure_ascii=False),
         history=history(case),
         language=case.language,
@@ -75,7 +76,27 @@ def polish(
     if not out.body.strip():
         return rendered
     subject = plain_typography(out.subject.strip()) or rendered.subject
-    return Rendered(subject, plain_typography(out.body.strip()) + "\n")
+    body = without_subject(plain_typography(out.body.strip()), subject)
+    return Rendered(subject, body + "\n")
+
+
+_MARKUP = re.compile(r"^[#*_\s]+|[*_\s]+$")
+_SUBJECT_LINE = re.compile(r"^(subject|re)\s*:", re.IGNORECASE)
+
+
+def without_subject(body: str, subject: str) -> str:
+    """The subject is shown once, as the email subject or the PDF heading. A model sometimes
+    repeats it at the top of the body ("SUBJECT: ...", "**Subject:** ..." or the bare subject as
+    a heading): those lines go, and the body starts at the greeting."""
+    lines = body.strip("\n").split("\n")
+    wanted = _MARKUP.sub("", subject).casefold()
+    while lines:
+        first = _MARKUP.sub("", lines[0]).strip()
+        if not first or _SUBJECT_LINE.match(first) or (wanted and first.casefold() == wanted):
+            lines.pop(0)
+            continue
+        break
+    return "\n".join(lines)
 
 
 def draft_step(

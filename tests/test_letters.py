@@ -22,7 +22,7 @@ from escalate.agent.fact_check import (
 from escalate.playbooks import loader
 from escalate.playbooks.loader import get_playbook
 from escalate.templates_engine import render_step
-from tests.agent_env import AgentEnv, agent_env, make_llm  # noqa: F401
+from tests.agent_env import AgentEnv, agent_env, make_llm, template_parts  # noqa: F401
 from tests.factories import led_case
 from tests.fakes.fake_llm import FakeLLM
 
@@ -236,9 +236,7 @@ UK_TEXT = "I bought a kettle from Acme on 1 October 2026 for £39.99. It stopped
 
 def gpt_oss_rewrite(prompt: str, _slot: Any) -> dict[str, str]:
     """A rewrite in gpt-oss's habits: U+2011 hyphens, U+202F in dates, "14-day", the same values."""
-    block = prompt.split("keep its structure:", 1)[1].split("Facts you may use", 1)[0]
-    subject = re.search(r"SUBJECT: (.*)\n", block).group(1)  # type: ignore[union-attr]
-    body = block.split("\n", 2)[2].strip()
+    subject, body = template_parts(prompt)
     body = body.replace("AC-10234", "AC‑10234").replace("1 October 2026", "1 October 2026")
     body += "\n\nYou have this 14-day period to respond; the 30-day period is set out above."
     return {"subject": subject, "body": body}
