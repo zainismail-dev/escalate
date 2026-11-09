@@ -2,7 +2,11 @@
  * "escalate-supabase" alias in next.config.ts); other builds get ./supabase-disabled.ts. */
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { sessionCookieOptions } from "./supabase-cookies";
 
 export function createClient(url: string, anonKey: string): SupabaseClient | null {
-  return createBrowserClient(url, anonKey, { auth: { flowType: "pkce", detectSessionInUrl: true } });
+  return createBrowserClient(url, anonKey, {
+    auth: { flowType: "pkce", detectSessionInUrl: true },
+    cookieOptions: sessionCookieOptions(),
+  });
 }

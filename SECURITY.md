@@ -130,6 +130,7 @@ someone abusing the free AI budget; someone using Escalate to harass a recipient
 | Hidden admin surfaces | `/docs`, `/openapi.json`, demo seed, global delete-all, model test and the app lock aren't registered (404); `/internal/tick` needs a ≥32-character secret, compared in constant time, 404 otherwise | `tests/hosted/test_routes.py`, `tests/hosted/test_tick.py` |
 | Misconfiguration | The API refuses to start in hosted mode on a missing or unsafe value (SQLite, http origins, short tick secret, demo mode), naming the variable only | `tests/hosted/test_config.py` |
 | Cross-site requests | CORS and the Origin check allow only `WEB_ORIGIN`; bearer tokens (no cookies) plus the existing CSRF header; CSP with nonces on the web app | `tests/hosted/test_auth.py` |
+| Stolen browser session | The Supabase session cookie is `Secure`, `SameSite=Lax` and expires after 7 days (`web/src/lib/supabase-cookies.ts`). It can't be `httpOnly`: the session lives in the browser client (`@supabase/ssr` `createBrowserClient`), which must read the access token to send it as the API's bearer token; the web app has no server-side Supabase client or route that could hold an httpOnly cookie instead. The CSP with nonces is the defence against script reading it | `web/tests/supabase-cookies.test.mts` |
 
 **Users' rights:** Settings → *Export my data* (JSON, case PDFs and the original files) and
 *Delete my account* (type `DELETE`: every row, evidence object, agent checkpoint and the Supabase
