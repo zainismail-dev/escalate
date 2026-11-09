@@ -67,6 +67,7 @@ class LLMClient:
         max_rate_retries: int = 5,
         base_delay: float = 1.0,
         sleep: Callable[[float], None] = time.sleep,
+        clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self.settings = settings or get_settings()
         if client is None:  # never connect to metadata / unlisted private addresses
@@ -75,14 +76,17 @@ class LLMClient:
             base_url=self.settings.llm_base_url,
             api_key=self.settings.llm_api_key or "none",
             max_retries=0,  # we handle 429 ourselves
-            timeout=300,
+            timeout=self.settings.llm_timeout_s,
             # Never follow redirects: a 307 from an allowed endpoint could send the request (and
             # the API key) to an internal address that check_url would have refused.
-            http_client=openai.DefaultHttpx2Client(follow_redirects=False, timeout=300),
+            http_client=openai.DefaultHttpx2Client(
+                follow_redirects=False, timeout=self.settings.llm_timeout_s
+            ),
         )
         self.max_rate_retries = max_rate_retries
         self.base_delay = base_delay
         self._sleep = sleep
+        self._clock = clock
         self._extras_refused = False  # this endpoint said 400 to reasoning_effort or JSON mode
 
     def model_for(self, slot: Slot) -> str:
@@ -101,12 +105,13 @@ class LLMClient:
             extras["response_format"] = {"type": "json_object"}
         return extras
 
-    def _create(self, model: str, prompt: str, extras: dict[str, Any]) -> str:
+    def _create(self, model: str, prompt: str, extras: dict[str, Any], timeout: float) -> str:
         """The reply text. Only `message.content`: a reasoning model's thoughts stay out of it."""
         resp = self._client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,
+            timeout=timeout,
             **extras,
         )
         content = resp.choices[0].message.content if resp.choices else None
@@ -137,14 +142,17 @@ class LLMClient:
 
     def complete(self, prompt: str, slot: Slot = "smart", json_mode: bool = False) -> str:
         model = self.model_for(slot)
+        deadline = self._clock() + self.settings.llm_total_timeout_s
         for attempt in range(self.max_rate_retries + 1):
             extras = self._extras(model, json_mode)
+            timeout = min(self.settings.llm_timeout_s, max(deadline - self._clock(), 1.0))
             try:
-                return self._create(model, prompt, extras)
+                return self._create(model, prompt, extras, timeout)
             except openai.RateLimitError:
-                if attempt == self.max_rate_retries:
+                delay = self.base_delay * (2**attempt)
+                if attempt == self.max_rate_retries or self._clock() + delay >= deadline:
                     raise
-                self._sleep(self.base_delay * (2**attempt))
+                self._sleep(delay)
             except openai.BadRequestError as exc:
                 retry_plain = extras and _error_code(exc) not in (_INVALID_JSON, *_NOT_CONFIG)
                 if not retry_plain:

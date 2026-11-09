@@ -138,3 +138,37 @@ def test_missing_model_is_a_clear_error() -> None:
 )
 def test_is_cloud(url: str, warn: bool, expected: bool) -> None:
     assert is_cloud(_settings(llm_base_url=url, cloud_privacy_warning=warn)) is expected
+
+
+def test_one_ai_call_has_a_short_request_timeout_and_a_total_time_budget() -> None:
+    """M3: a slow or rate-limiting provider can't hold an agent run for many minutes."""
+    client, seen = _mock_openai([_rate_limited() for _ in range(6)])
+    now = [0.0]
+    sleeps: list[float] = []
+
+    def sleep(d: float) -> None:
+        sleeps.append(d)
+        now[0] += d
+
+    settings = _settings(llm_timeout_s=60, llm_total_timeout_s=10)
+    llm = LLMClient(settings, client=client, base_delay=4.0, sleep=sleep, clock=lambda: now[0])
+    with pytest.raises(openai.RateLimitError):
+        llm.complete("hi")
+    assert sum(sleeps) < 10 and len(seen) == 2  # waited 4 s, then 8 s would pass the budget
+    real = LLMClient(_settings(llm_base_url="https://api.groq.test/openai/v1"))
+    assert real._client.timeout == 60
+
+
+def test_each_request_gets_at_most_the_time_left(monkeypatch: pytest.MonkeyPatch) -> None:
+    client, _ = _mock_openai([_ok("hello")])
+    llm = LLMClient(_settings(llm_timeout_s=60, llm_total_timeout_s=90), client=client)
+    seen: list[float] = []
+    real_create = llm._create
+
+    def spy(model: str, prompt: str, extras: dict[str, object], timeout: float) -> str:
+        seen.append(timeout)
+        return real_create(model, prompt, extras, timeout)
+
+    monkeypatch.setattr(llm, "_create", spy)
+    assert llm.complete("hi") == "hello"
+    assert seen == [60]

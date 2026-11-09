@@ -32,7 +32,7 @@ local_router = APIRouter(tags=["system"])
 
 
 @router.get("/health", response_model=HealthOut)
-def health() -> HealthOut:
+async def health() -> HealthOut:  # on the event loop: answers even when every worker is busy
     return HealthOut(ok=True)
 
 

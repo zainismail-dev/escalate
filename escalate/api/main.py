@@ -20,6 +20,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from escalate import __version__
 from escalate.agent import runner
 from escalate.agent.approval import ApprovalError, RecipientNotConfirmed, UnsupportedFacts
+from escalate.agent.runner import AgentBusy
 from escalate.api.applock import AppLock, AppLockGuard
 from escalate.api.deps import member
 from escalate.api.hosted_auth import HostedAuth
@@ -186,6 +187,7 @@ def create_app(startup: bool = True) -> FastAPI:
         (PdfUnavailable, 503, None),
         (NotImplementedError, 501, None),
         (LLMNotConfigured, 503, None),
+        (AgentBusy, 503, lambda e: {"busy": True}),
         (UnsafeEndpoint, 400, None),
         (openai.APIConnectionError, 503, lambda e: {"hint": "is the LLM server running?"}),
         (LLMMisconfigured, 503, lambda e: {"misconfigured": True}),

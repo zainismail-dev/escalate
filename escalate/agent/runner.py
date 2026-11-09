@@ -9,7 +9,8 @@ node checks the DB row.
 import functools
 import sqlite3
 import threading
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import AbstractContextManager, contextmanager, nullcontext
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -35,6 +36,10 @@ class RunnerError(Exception):
     """The case is not waiting for this kind of input."""
 
 
+class AgentBusy(Exception):
+    """Every agent slot is taken (AGENT_CONCURRENCY): try again in a moment."""
+
+
 @dataclass
 class RunResult:
     case_id: int
@@ -48,9 +53,41 @@ class RunResult:
 
 _graph: CompiledStateGraph[CaseState] | None = None
 _scheduler: BaseScheduler | None = None
-_lock = threading.RLock()  # around graph invocations
+# Local mode (one user, SQLite, the demo swaps in its own model): one graph run at a time.
+# Hosted mode never takes it: a slow AI call for one case must not block anyone else's case.
+_lock = threading.RLock()
 _case_locks: dict[int, threading.RLock] = {}
 _case_locks_guard = threading.Lock()
+_slots: threading.BoundedSemaphore | None = None
+_slots_guard = threading.Lock()
+
+
+def _global_lock() -> AbstractContextManager[Any]:
+    return nullcontext() if get_settings().hosted else _lock
+
+
+@contextmanager
+def agent_slot() -> Iterator[None]:
+    """One of AGENT_CONCURRENCY agent runs. Bounds the worker threads a slow AI can tie up."""
+    global _slots
+    s = get_settings()
+    with _slots_guard:
+        if _slots is None:
+            _slots = threading.BoundedSemaphore(max(1, s.agent_concurrency))
+        slots = _slots
+    if not slots.acquire(timeout=s.agent_slot_wait_s):
+        raise AgentBusy("The AI is busy with other cases right now. Try again in a minute.")
+    try:
+        yield
+    finally:
+        slots.release()
+
+
+def reset_slots() -> None:
+    """Tests: pick up a changed AGENT_CONCURRENCY."""
+    global _slots
+    with _slots_guard:
+        _slots = None
 
 
 def case_lock(case_id: int) -> threading.RLock:
@@ -106,7 +143,7 @@ def pending(case_id: int) -> dict[str, Any] | None:
 
 
 def _run(case_id: int, inp: Any) -> RunResult:
-    with _lock:
+    with agent_slot(), _global_lock():
         graph().invoke(inp, _cfg(case_id))
         return RunResult(case_id, pending(case_id))
 
@@ -232,7 +269,7 @@ def override_verdict(case_id: int, verdict: str) -> RunResult:
     Uses the graph checkpoint taken just before `judge_reply`. Drafts made after the old verdict
     are rejected (never sent); nothing is approved here.
     """
-    with _lock:
+    with agent_slot(), _global_lock():
         target = None
         for snap in graph().get_state_history(_cfg(case_id)):
             if snap.next == ("judge_reply",):

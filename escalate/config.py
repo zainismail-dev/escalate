@@ -68,6 +68,10 @@ class Settings(BaseSettings):
     # Sent to reasoning models only (llm/client.py REASONING_MODELS). Empty: the endpoint's default.
     llm_reasoning_effort: Literal["", "low", "medium", "high"] = "low"
     cloud_privacy_warning: bool = True
+    # One AI request may take this long; all attempts of one call (429 back-off included) share
+    # LLM_TOTAL_TIMEOUT_S. Then the step fails with "the AI service isn't responding".
+    llm_timeout_s: float = 60
+    llm_total_timeout_s: float = 90
 
     database_url: str = "sqlite:///./escalate.db"
     evidence_dir: Path = Path("./data/evidence")
@@ -116,6 +120,11 @@ class Settings(BaseSettings):
     rate_limit_writes_per_minute: int = 120
     rate_limit_ai_per_minute: int = 20
     max_json_body_kb: int = 1024  # uploads are capped separately by max_upload_mb
+    # Agent runs (each may wait on the AI) at once, across all cases and users; a request that
+    # can't get a slot within agent_slot_wait_s is a 503 "busy". Keeps the worker threads (and
+    # /health) free however slow the AI is.
+    agent_concurrency: int = 4
+    agent_slot_wait_s: float = 2
     require_evidence: bool = True
     max_cases_per_recipient: int = 3  # within recipient_window_days: a harassment pattern
     recipient_window_days: int = 30
