@@ -167,7 +167,8 @@ def test_a_decommissioned_model_is_misconfigured() -> None:
     assert len(seen) == 1  # no extras were sent, so nothing to retry without
 
 
-def test_an_endpoint_that_refuses_the_extras_is_retried_plain_and_remembered() -> None:
+def test_an_endpoint_that_refuses_the_extras_is_retried_plain_for_that_call_only() -> None:
+    """One provider 400 (maybe about that one prompt) must not switch JSON mode off for good."""
     llm, seen = client_for(
         [groq_error(400, "unsupported_parameter"), completion("one"), completion("two")]
     )
@@ -175,7 +176,7 @@ def test_an_endpoint_that_refuses_the_extras_is_retried_plain_and_remembered() -
     assert "reasoning_effort" in seen[0]
     assert "reasoning_effort" not in seen[1] and "response_format" not in seen[1]
     assert llm.complete("again", json_mode=True) == "two"
-    assert "reasoning_effort" not in seen[2]
+    assert "reasoning_effort" in seen[2] and "response_format" in seen[2]
 
 
 def test_429_is_still_retried_and_500_is_not_misconfiguration() -> None:

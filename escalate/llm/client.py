@@ -87,7 +87,6 @@ class LLMClient:
         self.base_delay = base_delay
         self._sleep = sleep
         self._clock = clock
-        self._extras_refused = False  # this endpoint said 400 to reasoning_effort or JSON mode
 
     def model_for(self, slot: Slot) -> str:
         model = self.settings.model_smart if slot == "smart" else self.settings.model_fast_or_smart
@@ -95,8 +94,8 @@ class LLMClient:
             raise LLMNotConfigured("No model configured: set MODEL_SMART (and MODEL_FAST) in .env")
         return model
 
-    def _extras(self, model: str, json_mode: bool) -> dict[str, Any]:
-        if self._extras_refused or not is_reasoning_model(model):
+    def _extras(self, model: str, json_mode: bool, plain: bool = False) -> dict[str, Any]:
+        if plain or not is_reasoning_model(model):
             return {}
         extras: dict[str, Any] = {}
         if self.settings.llm_reasoning_effort:
@@ -143,8 +142,9 @@ class LLMClient:
     def complete(self, prompt: str, slot: Slot = "smart", json_mode: bool = False) -> str:
         model = self.model_for(slot)
         deadline = self._clock() + self.settings.llm_total_timeout_s
+        plain = False  # this call only: one 400 must not switch JSON mode off for every call
         for attempt in range(self.max_rate_retries + 1):
-            extras = self._extras(model, json_mode)
+            extras = self._extras(model, json_mode, plain)
             timeout = min(self.settings.llm_timeout_s, max(deadline - self._clock(), 1.0))
             try:
                 return self._create(model, prompt, extras, timeout)
@@ -158,8 +158,8 @@ class LLMClient:
                 if not retry_plain:
                     raise self._classify_status_error(exc, model, slot) from exc
                 # Maybe the extras it refused (an unknown model fails the plain request too).
-                self._extras_refused = True
-                log.warning("LLM endpoint refused optional parameters (HTTP 400); not sent again")
+                plain = True
+                log.warning("LLM endpoint refused optional parameters (HTTP 400); retrying plain")
             except openai.APIStatusError as exc:
                 raise self._classify_status_error(exc, model, slot) from exc
         raise AssertionError("unreachable")
