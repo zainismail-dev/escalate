@@ -264,8 +264,12 @@ def hosted_problems(s: Settings) -> list[str]:
     origins = [o.strip() for o in s.web_origin.split(",") if o.strip()]
     if not origins or not all(_is_https(o) for o in origins):
         problems.append("WEB_ORIGIN must be the beta web app's https:// origin(s)")
-    hosts = [h.strip() for h in s.allowed_hosts.split(",") if h.strip()]
-    if not hosts or all(h in LOCAL_HOSTS for h in hosts):
+    hosts = [h.strip() for h in s.allowed_hosts.split(",")]
+    if any("*" in h for h in hosts):
+        problems.append("ALLOWED_HOSTS must list host names: no * wildcards in hosted mode")
+    elif not all(hosts):
+        problems.append("ALLOWED_HOSTS has an empty entry (a stray comma?)")
+    elif all(h in LOCAL_HOSTS for h in hosts):
         problems.append("ALLOWED_HOSTS must include the API's public host name")
     if len(s.tick_secret) < MIN_TICK_SECRET:
         problems.append(f"TICK_SECRET must be at least {MIN_TICK_SECRET} random characters")
