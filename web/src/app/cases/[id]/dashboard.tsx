@@ -118,7 +118,7 @@ export function CaseDashboard({ id }: { id: string }) {
       {stalled && (
         <div role="alert" className="flex flex-wrap items-center gap-3 rounded-2xl border border-warning bg-warning-bg p-4 text-sm">
           <AlertTriangle className="size-5 text-warning" aria-hidden />
-          <p className="flex-1 text-text-2">{t("stalled")}</p>
+          <p className="flex-1 text-text-2">{t(HOSTED ? "stalledHosted" : "stalled")}</p>
           <Button size="sm" variant="ink" disabled={act.busy} onClick={() => act.run(() => api.retry(c.id)).then(() => reload())}>
             {t("retry")}
           </Button>

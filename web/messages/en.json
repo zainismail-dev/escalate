@@ -472,6 +472,7 @@
   "landing": {
     "hero": {
       "eyebrow": "Open source · free · runs on your computer",
+      "eyebrowHosted": "Open source · free · invite-only beta",
       "title": "Don't give up on your refund.",
       "body": "Escalate takes your complaint and your evidence and runs it up the ladder: a written demand, a final notice, the regulator, then consumer court. It drafts every letter, tracks every deadline and follows up when they go quiet.",
       "cta": "Start a case",
@@ -546,7 +547,8 @@
       },
       "private": {
         "title": "Private by default",
-        "body": "Runs on your computer with a local model. Evidence is encrypted; card numbers and codes are masked."
+        "body": "Runs on your computer with a local model. Evidence is encrypted; card numbers and codes are masked.",
+        "bodyHosted": "Evidence is encrypted before it's stored; card numbers and codes are masked. Export or delete everything at any time."
       },
       "legal": {
         "title": "Not legal advice",
@@ -681,6 +683,7 @@
     "withdraw": "Withdraw",
     "delete": "Delete case",
     "stalled": "The agent stopped before finishing (often because the AI model was offline). Nothing was sent.",
+    "stalledHosted": "The agent stopped before finishing (often because the AI service didn't respond). Nothing was sent.",
     "retry": "Try again",
     "created": "Opened {when}",
     "delivery": {
@@ -902,6 +905,7 @@
     "eyebrow": "Settings",
     "title": "Settings",
     "intro": "Everything is saved on this computer. Secrets are never shown again after you save them.",
+    "introHosted": "Your preferences for new cases. Your data and account are managed below.",
     "model": {
       "title": "AI model",
       "intro": "Any OpenAI-compatible endpoint. A local model keeps your case on this computer.",

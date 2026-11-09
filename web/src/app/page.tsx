@@ -8,6 +8,7 @@ import { RepoLink } from "@/components/repo-link";
 import { Button } from "@/components/ui/button";
 import { WhyPanel } from "@/components/why-panel";
 import { formatDate, formatMoney } from "@/lib/format";
+import { HOSTED } from "@/lib/hosted";
 import type { LadderStep, Reason } from "@/lib/types";
 
 /** Example values for the showcase. Formatting is Intl with each example's own locale. */
@@ -43,7 +44,7 @@ export default function Landing() {
       <section className="dark bg-night text-text">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-20 pt-14 md:grid-cols-[1.1fr_1fr] md:items-center md:pt-20">
           <div>
-            <p className="label-mono text-lime">{t("hero.eyebrow")}</p>
+            <p className="label-mono text-lime">{t(HOSTED ? "hero.eyebrowHosted" : "hero.eyebrow")}</p>
             <h1 className="mt-4 font-display text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.03em] sm:text-6xl">
               {t("hero.title")}
             </h1>
@@ -174,7 +175,7 @@ export default function Landing() {
                 <li key={k as string} className="rounded-2xl border border-line bg-bg p-5">
                   <I className="size-6" aria-hidden />
                   <h3 className="mt-3 font-display text-lg">{t(`safety.${k}.title`)}</h3>
-                  <p className="mt-1 text-sm text-text-2">{t(`safety.${k}.body`)}</p>
+                  <p className="mt-1 text-sm text-text-2">{t(HOSTED && k === "private" ? "safety.private.bodyHosted" : `safety.${k}.body`)}</p>
                 </li>
               );
             })}

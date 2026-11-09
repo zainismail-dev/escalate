@@ -436,7 +436,7 @@ export function SettingsView() {
       <div>
         <p className="label-mono text-muted">{t("eyebrow")}</p>
         <h1 className="mt-1 font-display text-3xl">{t("title")}</h1>
-        <p className="mt-1 text-text-2">{t("intro")}</p>
+        <p className="mt-1 text-text-2">{t(HOSTED ? "introHosted" : "intro")}</p>
       </div>
       {HOSTED ? (
         // Hosted beta: the AI provider and email are the server's; deleting is per account.

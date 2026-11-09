@@ -154,3 +154,42 @@ test("case pages show Case not found for a 404", () => {
   const states = readFileSync(new URL("../src/components/states.tsx", import.meta.url), "utf8");
   assert.match(states, /error\.status === 404 \? <CaseNotFound \/>/);
 });
+
+// P7: no local-only wording ("this computer", Ollama, `make up`) reaches the hosted beta.
+test("every local-only string has a hosted variant or never renders in hosted mode", () => {
+  const LOCAL_WORDING = /your computer|this computer|ollama|make up|local model|runs locally|uv run/i;
+  // Rendered only by local-mode code paths (with why).
+  const LOCAL_ONLY = new Set([
+    "errors.model_offline.body", // hosted errors are ai_unavailable
+    "settings.model.intro", // ModelSection: local mode only
+    "settings.model.sources.ollama",
+    "settings.model.ollamaHint",
+    "settings.model.keyNone",
+    "settings.model.keyHint",
+    "settings.model.cloudWarning",
+    "settings.privacy.local", // PrivacySection: local mode only
+    "settings.privacy.localModel",
+    "settings.privacy.deleteBody",
+    "settings.privacy.confirmBody",
+    "lock.body", // the app lock doesn't exist in hosted mode
+    "demo.dialogBody", // the static demo only
+  ]);
+  const walk = (o: unknown, path: string[] = []): [string, string][] =>
+    typeof o === "string"
+      ? [[path.join("."), o]]
+      : Object.entries(o as Record<string, unknown>).flatMap(([k, v]) => walk(v, [...path, k]));
+  const all = new Map(walk(en));
+  for (const [key, value] of all) {
+    if (!LOCAL_WORDING.test(value) || LOCAL_ONLY.has(key) || /hosted/i.test(key)) continue;
+    const parent = key.split(".").slice(0, -1).join(".");
+    const last = key.split(".").at(-1);
+    const variant = [`${key}Hosted`, `${parent}.hostedBody`].find((k) => all.has(k) && (last === "body" || k.endsWith("Hosted")));
+    assert.ok(variant, `${key} says "${value}" with no hosted variant`);
+    assert.doesNotMatch(all.get(variant)!, LOCAL_WORDING, variant);
+  }
+  const read = (f: string) => readFileSync(new URL(f, import.meta.url), "utf8");
+  assert.match(read("../src/app/page.tsx"), /HOSTED \? "hero\.eyebrowHosted"/);
+  assert.match(read("../src/app/page.tsx"), /"safety\.private\.bodyHosted"/);
+  assert.match(read("../src/app/settings/view.tsx"), /HOSTED \? "introHosted" : "intro"/);
+  assert.match(read("../src/app/cases/[id]/dashboard.tsx"), /HOSTED \? "stalledHosted" : "stalled"/);
+});
