@@ -8,6 +8,12 @@ A token is accepted only if all of these hold:
   are valid;
 - it is a signed-in, non-anonymous user: role "authenticated", a UUID `sub`, and an email.
 Anything else is a 401.
+
+A valid token is not yet proof of its email address: Supabase signs whatever its enabled
+providers produce (an email/password sign-up holds any address its owner types). So the email
+only counts for the invite list (`Identity.email_trusted`) when the token came from an allowed
+provider (`app_metadata.provider`, which users can't edit; AUTH_PROVIDERS, default google) and
+the provider verified the address. Otherwise the user is a 403 waitlist, never a member.
 """
 
 import threading
@@ -34,6 +40,7 @@ class AuthError(Exception):
 class Identity:
     user_id: str  # Supabase auth user id (UUID)
     email: str  # lower-case
+    email_trusted: bool = False  # an allowed provider verified it: may match an invite
 
 
 Fetch = Callable[[str], dict[str, Any]]
@@ -104,10 +111,21 @@ def verify(token: str, settings: Settings, jwks: Jwks) -> Identity:
         )
     except jwt.PyJWTError as exc:
         raise AuthError(type(exc).__name__) from exc
-    return _identity(claims)
+    return _identity(claims, settings.auth_providers)
 
 
-def _identity(claims: dict[str, Any]) -> Identity:
+def _email_trusted(claims: dict[str, Any], providers: list[str]) -> bool:
+    app_meta, user_meta = claims.get("app_metadata"), claims.get("user_metadata")
+    provider = app_meta.get("provider") if isinstance(app_meta, dict) else None
+    if not isinstance(provider, str) or provider not in providers:
+        return False
+    verified = claims.get("email_verified")
+    if verified is None and isinstance(user_meta, dict):
+        verified = user_meta.get("email_verified")  # set from the provider's identity data
+    return verified is True
+
+
+def _identity(claims: dict[str, Any], providers: list[str]) -> Identity:
     if claims.get("role") != "authenticated" or claims.get("is_anonymous") is True:
         raise AuthError("not a signed-in user")
     sub, email = claims.get("sub"), claims.get("email")
@@ -117,4 +135,8 @@ def _identity(claims: dict[str, Any]) -> Identity:
         raise AuthError("sub is not a user id") from exc
     if not isinstance(email, str) or "@" not in email or len(email) > 320:
         raise AuthError("no email")
-    return Identity(user_id=user_id, email=email.strip().lower())
+    return Identity(
+        user_id=user_id,
+        email=email.strip().lower(),
+        email_trusted=_email_trusted(claims, providers),
+    )

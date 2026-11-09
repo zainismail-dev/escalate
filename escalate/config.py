@@ -130,6 +130,8 @@ class Settings(BaseSettings):
     supabase_jwt_alg: Literal["ES256", "RS256"] = "ES256"  # pinned; never HS256 or "none"
     supabase_storage_bucket: str = "evidence"
     jwks_cache_seconds: int = 600
+    # Sign-in providers whose verified email may match an invite (app_metadata.provider).
+    auth_providers: list[str] = ["google"]
     db_schema: str = "escalate"  # hosted Postgres: a private schema the Data API doesn't expose
     tick_secret: str = ""  # X-Tick-Secret for POST /internal/tick (GitHub Actions cron)
     max_open_cases: int = 3  # per user

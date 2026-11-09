@@ -47,10 +47,15 @@ def is_invited(session: Session, email: str) -> bool:
     return session.get(Invite, email.strip().lower()) is not None
 
 
+def may_join(session: Session, identity: Identity) -> bool:
+    """Invited, and the email really is theirs (hosted/jwt.py, `email_trusted`)."""
+    return identity.email_trusted and is_invited(session, identity.email)
+
+
 def require_member(session: Session, identity: Identity) -> User:
     """Raise Waitlisted or ConsentRequired unless this user may use the case routes. Nothing is
     stored about people on the waitlist (their user row is created once they are invited)."""
-    if not is_invited(session, identity.email):
+    if not may_join(session, identity):
         raise Waitlisted("You're on the waitlist")
     user = ensure_user(session, identity)
     if user.consented_at is None:
@@ -59,7 +64,7 @@ def require_member(session: Session, identity: Identity) -> User:
 
 
 def record_consent(session: Session, identity: Identity) -> User:
-    if not is_invited(session, identity.email):
+    if not may_join(session, identity):
         raise Waitlisted("You're on the waitlist")
     user = ensure_user(session, identity)
     user.consented_at = user.consented_at or utcnow()

@@ -3,13 +3,15 @@
 import io
 import json
 import zipfile
+from pathlib import Path
 
+import pytest
 from sqlalchemy import select
 
 from escalate.agent import runner
 from escalate.db.models import Base, Case, Invite, User
 from escalate.db.session import session_scope
-from tests.hosted.conftest import Hosted, count_rows
+from tests.hosted.conftest import Hosted, count_rows, hosted_mode
 from tests.hosted.test_sending import started
 
 USER_TABLES = ("cases", "case_facts", "evidence", "messages", "events", "user_settings")
@@ -35,6 +37,52 @@ def test_the_invite_is_matched_case_insensitively(hosted: Hosted) -> None:
     acct = hosted.account("carol@example.com")
     shouty = hosted.client(hosted.signer.token(acct.id, "Carol@Example.COM"))
     assert shouty.get("/cases").status_code == 200
+
+
+UNTRUSTED_EMAILS = {
+    "email/password sign-up": {"app_metadata": {"provider": "email", "providers": ["email"]}},
+    "magic link, email verified": {
+        "app_metadata": {"provider": "email"},
+        "user_metadata": {"email_verified": True},
+        "email_verified": True,
+    },
+    "no provider": {"app_metadata": {}},
+    "no app_metadata": {"app_metadata": None},
+    "google, unverified": {"user_metadata": {"email_verified": False}},
+    "google, verification missing": {"user_metadata": {}},
+    "google, verified as a string": {"user_metadata": {"email_verified": "true"}},
+    "provider list only": {"app_metadata": {"providers": ["google"]}},
+}
+
+
+@pytest.mark.parametrize("claims", UNTRUSTED_EMAILS.values(), ids=list(UNTRUSTED_EMAILS))
+def test_an_invited_email_needs_a_verified_allowed_provider(
+    hosted: Hosted, claims: dict[str, object]
+) -> None:
+    """M2: a token is not proof of its email. Someone who signs up with the invited address on
+    another provider (or unverified) stays on the waitlist and can't consent or see cases."""
+    acct = hosted.account("victim@example.com")
+    imposter = hosted.client(hosted.signer.token(acct.id, acct.email, **claims))
+    r = imposter.get("/cases")
+    assert r.status_code == 403 and r.json()["waitlist"] is True
+    assert imposter.get("/me").json()["invited"] is False
+    assert imposter.post("/me/consent", json={"confirm": True}).status_code == 403
+
+
+def test_a_top_level_email_verified_claim_counts(hosted: Hosted) -> None:
+    acct = hosted.account("dora@example.com")
+    token = hosted.signer.token(acct.id, acct.email, user_metadata={}, email_verified=True)
+    assert hosted.client(token).get("/cases").status_code == 200
+
+
+def test_the_provider_allow_list_is_configurable(tmp_path: Path) -> None:
+    with hosted_mode(tmp_path, AUTH_PROVIDERS='["google","github"]') as h:
+        acct = h.account("erin@example.com")
+        gh = {"app_metadata": {"provider": "github"}, "user_metadata": {"email_verified": True}}
+        email = {**gh, "app_metadata": {"provider": "email"}}
+        for claims, status in ((gh, 200), (email, 403)):
+            token = h.signer.token(acct.id, acct.email, **claims)
+            assert h.client(token).get("/cases").status_code == status
 
 
 def test_export_holds_the_users_data_only(hosted: Hosted) -> None:

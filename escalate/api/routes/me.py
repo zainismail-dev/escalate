@@ -14,7 +14,7 @@ from escalate.config import get_settings
 from escalate.db import repo
 from escalate.db.models import User, utcnow
 from escalate.hosted import lifecycle
-from escalate.hosted.accounts import is_invited, record_consent
+from escalate.hosted.accounts import may_join, record_consent
 from escalate.llm.quota import calls_today
 
 router = APIRouter(prefix="/me", tags=["account"])
@@ -38,7 +38,7 @@ class DeleteIn(BaseModel):
 
 def me_out(session: Session, request: Request) -> MeOut:
     ident, s = identity(request), get_settings()
-    invited = is_invited(session, ident.email)
+    invited = may_join(session, ident)
     user = session.get(User, ident.user_id) if invited else None
     out = MeOut(
         email=ident.email,

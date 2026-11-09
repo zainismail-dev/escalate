@@ -102,8 +102,10 @@ Keep a note (in your password manager) as you go. You will collect these values:
    - **Create**. Copy the **Client ID** → value **F** and the **Client secret** → value **G**
      (download the JSON or copy it now; Google may not show the secret again).
 7. Back in Supabase: **Authentication → Sign In / Providers → Google** → turn it **on** → paste
-   **Client ID** (F) and **Client Secret** (G) → **Save**. Leave other providers off. (Email
-   sign-up can stay on or off; the beta only offers the Google button.)
+   **Client ID** (F) and **Client Secret** (G) → **Save**. Then open **Email** on the same page
+   and turn it **off** (and leave every other provider off). The API only accepts a
+   Google-verified email for the invite list (`AUTH_PROVIDERS`, default `["google"]`); anyone
+   signing in another way stays on the waitlist.
 
 ## 3. Groq (the AI)
 

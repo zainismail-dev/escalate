@@ -161,6 +161,8 @@ class Signer:
             "email": email,
             "role": "authenticated",
             "is_anonymous": False,
+            "app_metadata": {"provider": "google", "providers": ["google"]},
+            "user_metadata": {"email_verified": True},
             "iat": now,
             "exp": now + 3600,
         }
