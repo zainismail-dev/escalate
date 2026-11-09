@@ -48,3 +48,10 @@ def test_ten_good_first_issues() -> None:
 
     text = (REPO / "docs" / "good-first-issues.md").read_text()
     assert len(re.findall(r"^\d+\. \*\*", text, re.M)) == 10
+
+
+def test_security_md_describes_how_evidence_files_are_really_named() -> None:
+    """Files get random names (escalate/evidence/store.py, storage.py), not their SHA-256."""
+    text = (REPO / "SECURITY.md").read_text()
+    assert "named by SHA-256" not in text
+    assert "<user id>/<random>.bin" in text and "<case>/<random>.bin" in text
