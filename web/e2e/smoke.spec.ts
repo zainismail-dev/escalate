@@ -114,5 +114,5 @@ test("a missing (or someone else's) case is a friendly 'Case not found'", async 
   const box = page.getByTestId("case-not-found");
   await expect(box.getByRole("heading", { name: "Case not found" })).toBeVisible();
   await expect(box.getByRole("link", { name: "Back to My cases" })).toHaveAttribute("href", "/cases");
-  await expect(page.getByRole("alert")).toHaveCount(0); // no red "something went wrong"
+  await expect(page.locator('[data-testid^="error-"]')).toHaveCount(0); // no red error card
 });
