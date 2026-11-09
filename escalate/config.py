@@ -96,6 +96,10 @@ class Settings(BaseSettings):
     ui_origin: str = ""
     # Host headers the API answers (DNS-rebinding protection). Hosted mode: add your domain.
     allowed_hosts: str = "localhost,127.0.0.1"
+    # Proxies in front of the API that append to X-Forwarded-For. Unset: 1 in hosted mode
+    # (Render's proxy), 0 locally. Rate limits for requests without a user use the address the
+    # outermost trusted proxy saw (escalate/api/limits.py, client_ip), never the client's claim.
+    trusted_proxy_hops: int | None = None
     allow_lan: bool = False  # Docker publishes ports on the LAN only when true: NO login!
     # Private/loopback addresses LLM_BASE_URL or SMTP_HOST may use (a local model or relay).
     # Link-local and cloud-metadata addresses are always refused (escalate/netguard.py).
@@ -204,6 +208,12 @@ class Settings(BaseSettings):
     @property
     def model_fast_or_smart(self) -> str:
         return self.model_fast or self.model_smart
+
+    @property
+    def proxy_hops(self) -> int:
+        if self.trusted_proxy_hops is not None:
+            return max(self.trusted_proxy_hops, 0)
+        return 1 if self.hosted else 0
 
     @property
     def hosted(self) -> bool:

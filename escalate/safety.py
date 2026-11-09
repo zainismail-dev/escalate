@@ -3,7 +3,7 @@
 import hashlib
 import hmac
 import threading
-from collections import deque
+from collections import OrderedDict, deque
 from datetime import timedelta
 
 from sqlalchemy import select
@@ -30,11 +30,16 @@ class HarassmentPattern(SafetyError):
 
 
 class RateLimiter:
-    """Sliding one-hour window per key (e.g. client IP). In memory: one API process."""
+    """Sliding window per key (a user id, or a client address). In memory: one API process.
 
-    def __init__(self) -> None:
-        self._hits: dict[str, deque[float]] = {}
+    Memory is bounded: a key unused for longer than `ttl` (the longest window) is dropped, and
+    past `max_keys` the least recently used key goes, so a flood of new addresses can't grow it
+    without bound."""
+
+    def __init__(self, max_keys: int = 10_000, ttl: timedelta = timedelta(hours=1)) -> None:
+        self._hits: OrderedDict[str, deque[float]] = OrderedDict()
         self._lock = threading.Lock()
+        self.max_keys, self.ttl = max_keys, ttl.total_seconds()
 
     def check(
         self,
@@ -45,13 +50,26 @@ class RateLimiter:
     ) -> None:
         now = utcnow().timestamp()
         with self._lock:
+            self._prune(now)
             hits = self._hits.setdefault(key, deque())
+            self._hits.move_to_end(key)
             while hits and hits[0] <= now - window.total_seconds():
                 hits.popleft()
             if len(hits) >= limit:
                 per = "hour" if window == timedelta(hours=1) else f"{int(window.total_seconds())} s"
                 raise RateLimited(f"too many {what}; try again later (limit {limit} per {per})")
             hits.append(now)
+
+    def _prune(self, now: float) -> None:
+        """Oldest keys first (least recently used): stop at the first one still in use."""
+        while self._hits:
+            key, hits = next(iter(self._hits.items()))
+            if len(self._hits) < self.max_keys and hits and hits[-1] > now - self.ttl:
+                break
+            del self._hits[key]
+
+    def __len__(self) -> int:
+        return len(self._hits)
 
     def reset(self) -> None:
         with self._lock:

@@ -197,3 +197,71 @@ def test_api_docs_are_opt_in(monkeypatch: pytest.MonkeyPatch, db: Session) -> No
     get_settings.cache_clear()
     assert r.status_code == 200
     assert "content-security-policy" not in r.headers  # Swagger UI loads from a CDN
+
+
+# --- L3: who a limit counts, and bounded limiter memory -------------------------------------
+
+
+def test_client_ip_is_the_address_the_trusted_proxy_saw() -> None:
+    from escalate.api.limits import client_ip
+
+    def scope(*xff: str) -> dict[str, Any]:
+        return {
+            "client": ("10.0.0.5", 1),
+            "headers": [(b"x-forwarded-for", v.encode()) for v in xff],
+        }
+
+    assert client_ip(scope("6.6.6.6, 203.0.113.9"), 1) == "203.0.113.9"
+    assert client_ip(scope("1.1.1.1", "2.2.2.2, 203.0.113.9"), 1) == "203.0.113.9"
+    assert client_ip(scope("6.6.6.6, 203.0.113.9, 10.1.1.1"), 2) == "203.0.113.9"
+    assert client_ip(scope(), 1) == "10.0.0.5"  # no header: the peer
+    assert client_ip(scope("6.6.6.6, 203.0.113.9"), 0) == "10.0.0.5"  # no proxy: never trusted
+
+
+def test_a_spoofed_x_forwarded_for_cannot_dodge_the_limit(
+    monkeypatch: pytest.MonkeyPatch, db: Session
+) -> None:
+    """Behind uvicorn's --proxy-headers --forwarded-allow-ips=* (render.yaml), scope["client"]
+    is the leftmost X-Forwarded-For entry, which the client chooses."""
+    from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+    monkeypatch.setenv("RATE_LIMIT_WRITES_PER_MINUTE", "3")
+    monkeypatch.setenv("TRUSTED_PROXY_HOPS", "1")
+    get_settings.cache_clear()
+    app = ProxyHeadersMiddleware(create_app(startup=False), trusted_hosts="*")
+    with TestClient(app, base_url=APP_BASE_URL, headers=APP_HEADERS) as c:  # type: ignore[arg-type]
+        codes = [
+            c.patch(
+                f"/cases/{FAKE}",
+                json={"title": "t"},
+                headers={"X-Forwarded-For": f"198.51.100.{n}, 203.0.113.9"},
+            ).status_code
+            for n in range(5)
+        ]
+    get_settings.cache_clear()
+    assert codes[:3] == [404, 404, 404] and codes[3:] == [429, 429]
+
+
+def test_the_rate_limiter_memory_is_bounded() -> None:
+    from datetime import datetime, timedelta
+
+    from freezegun import freeze_time
+
+    from escalate.safety import RateLimiter
+
+    lim = RateLimiter(max_keys=100)
+    with freeze_time(datetime(2026, 11, 1, 12, 0)) as clock:
+        for n in range(1000):
+            lim.check(f"ip:{n}", 5)
+        assert len(lim) == 100  # the least recently used went first
+        lim.check("ip:999", 5)  # recent keys are kept
+        clock.tick(timedelta(hours=1, seconds=1))
+        lim.check("new", 5)
+        assert len(lim) == 1  # keys unused for longer than the longest window are dropped
+
+
+def test_the_hosted_default_trusts_one_proxy(monkeypatch: pytest.MonkeyPatch) -> None:
+    from escalate.config import Settings
+
+    assert Settings(_env_file=None).proxy_hops == 0  # type: ignore[call-arg]
+    assert Settings(_env_file=None, deploy_mode="hosted").proxy_hops == 1  # type: ignore[call-arg]

@@ -1,8 +1,10 @@
-"""Request limits: per-client rate limits on writes and AI calls, and a request body cap.
+"""Request limits: per-client rate limits on writes, AI calls and downloads, and a request body
+cap.
 
 Pure ASGI (like CsrfGuard) so it runs before routing and before any body is parsed. Limits are
-per client address, in memory (one API process). They protect a single user's machine from a
-runaway script or a page that loops, and an AI endpoint that costs money from being hammered.
+in memory (one API process), per signed-in user in hosted mode, otherwise per client address
+(client_ip). They protect a single user's machine from a runaway script or a page that loops,
+and an AI endpoint that costs money from being hammered.
 """
 
 import json
@@ -51,6 +53,21 @@ def body_limit(headers: dict[str, str]) -> int:
     return s.max_json_body_kb * 1024
 
 
+def client_ip(scope: Scope, hops: int) -> str:
+    """The address to rate-limit a request without a user by.
+
+    Behind `hops` trusted proxies (TRUSTED_PROXY_HOPS; Render's proxy in hosted mode) it is the
+    hops-th X-Forwarded-For entry from the right: the address the outermost trusted proxy saw.
+    Entries to the left of it are whatever the client sent, and uvicorn's --proxy-headers with
+    --forwarded-allow-ips=* would trust the leftmost, so scope["client"] can't be used there."""
+    peer = str((scope.get("client") or ("unknown", 0))[0])
+    if hops <= 0:
+        return peer
+    values = [v.decode("latin-1") for k, v in scope["headers"] if k.lower() == b"x-forwarded-for"]
+    hops_seen = [h.strip() for h in ",".join(values).split(",") if h.strip()]
+    return hops_seen[-hops] if len(hops_seen) >= hops else peer
+
+
 class RequestLimits:
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
@@ -83,7 +100,7 @@ class RequestLimits:
             await self.app(scope, receive, send)
             return
         headers = {k.decode("latin-1").lower(): v.decode("latin-1") for k, v in scope["headers"]}
-        client = (scope.get("client") or ("unknown", 0))[0]
+        client = client_ip(scope, get_settings().proxy_hops)
         identity = scope.get("state", {}).get("identity")
         if identity is not None:  # hosted mode: limits are per signed-in user
             client = f"user:{identity.user_id}"
