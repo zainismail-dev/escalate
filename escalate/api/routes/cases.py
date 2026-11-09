@@ -51,7 +51,7 @@ from escalate.evidence import ocr
 from escalate.evidence.ocr import ExtractResult
 from escalate.evidence.sniff import UploadRejected, check_upload
 from escalate.evidence.store import safe_filename, save_upload
-from escalate.hosted.accounts import user_settings
+from escalate.hosted.accounts import case_count_lock, check_open_case_slot, user_settings
 from escalate.i18n.countries import currency_for, default_letter_language, is_rtl
 from escalate.i18n.formatting import format_amount, locale_for
 from escalate.pii import mask_pii
@@ -60,10 +60,6 @@ from escalate.playbooks.models import Playbook
 from escalate.safety import new_case_limiter, require_evidence
 
 router = APIRouter(prefix="/cases", tags=["cases"])
-
-
-class OpenCaseLimit(Exception):
-    """Hosted beta: MAX_OPEN_CASES per user."""
 
 
 def run_out(r: runner.RunResult) -> RunOut:
@@ -158,11 +154,6 @@ def create_case(
     user_id = None
     if settings.hosted:
         user_id = client = identity(request).user_id  # limits are per user, not per address
-        if repo.open_case_count(session) >= settings.max_open_cases:
-            raise OpenCaseLimit(
-                f"the beta allows {settings.max_open_cases} open cases at a time: resolve, "
-                "withdraw or delete one first"
-            )
         prefs = user_settings(session, user_id)
         default_country = prefs.default_country or default_country
         default_language = prefs.default_language
@@ -179,10 +170,14 @@ def create_case(
     )
     if case.region and case.country and not case.region.startswith(case.country + "-"):
         raise HTTPException(422, f"region {case.region} is not in country {case.country}")
-    session.add(case)
-    session.flush()
-    log_event(session, case.id, "case_created", {"country": case.country, "region": case.region})
-    session.commit()
+    with case_count_lock(user_id):  # the limit check and the new case commit as one step
+        check_open_case_slot(session, user_id)
+        session.add(case)
+        session.flush()
+        log_event(
+            session, case.id, "case_created", {"country": case.country, "region": case.region}
+        )
+        session.commit()
     return case_detail(session, case)
 
 

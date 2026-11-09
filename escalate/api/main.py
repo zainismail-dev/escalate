@@ -20,13 +20,12 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from escalate import __version__
 from escalate.agent import runner
 from escalate.agent.approval import ApprovalError, RecipientNotConfirmed, UnsupportedFacts
-from escalate.agent.runner import AgentBusy
+from escalate.agent.runner import AgentBusy, CaseClosed
 from escalate.api.applock import AppLock, AppLockGuard
 from escalate.api.deps import member
 from escalate.api.hosted_auth import HostedAuth
 from escalate.api.limits import RequestLimits
 from escalate.api.routes import auth, cases, hosted_settings, internal, me, messages, system
-from escalate.api.routes.cases import OpenCaseLimit
 from escalate.api.security import CSRF_HEADER, CsrfGuard, SecurityHeaders, split_list
 from escalate.channels import NotApproved, ProofRequired
 from escalate.channels.email_smtp import EmailConfigError
@@ -36,7 +35,7 @@ from escalate.db.session import get_engine
 from escalate.evidence.storage import StorageError
 from escalate.evidence.store import EvidenceKeyMissing
 from escalate.export.pdf import PdfUnavailable
-from escalate.hosted.accounts import ConsentRequired, Waitlisted
+from escalate.hosted.accounts import ConsentRequired, OpenCaseLimit, Waitlisted
 from escalate.hosted.supabase_admin import AdminError
 from escalate.llm.client import LLMBadOutput, LLMMisconfigured, LLMNotConfigured
 from escalate.llm.quota import AiBusy, AiDailyLimit, AiFailureLimit
@@ -188,6 +187,7 @@ def create_app(startup: bool = True) -> FastAPI:
         (NotImplementedError, 501, None),
         (LLMNotConfigured, 503, None),
         (AgentBusy, 503, lambda e: {"busy": True}),
+        (CaseClosed, 409, None),
         (UnsafeEndpoint, 400, None),
         (openai.APIConnectionError, 503, lambda e: {"hint": "is the LLM server running?"}),
         (LLMMisconfigured, 503, lambda e: {"misconfigured": True}),

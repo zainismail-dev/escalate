@@ -1,11 +1,16 @@
 """Hosted accounts: the user row, invites, consent and per-user settings."""
 
 import re
+import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from escalate.config import get_settings
+from escalate.db import repo
 from escalate.db.models import Invite, User, UserSettings, utcnow
 from escalate.hosted.jwt import Identity
 
@@ -18,6 +23,42 @@ class Waitlisted(Exception):
 
 class ConsentRequired(Exception):
     """Invited, but the first-run consent has not been given yet."""
+
+
+class OpenCaseLimit(Exception):
+    """Hosted beta: MAX_OPEN_CASES per user."""
+
+
+_case_count_locks: dict[str, threading.Lock] = {}
+_case_count_guard = threading.Lock()
+
+
+@contextmanager
+def case_count_lock(user_id: str | None) -> Iterator[None]:
+    """Hold around "check the open-case limit, open a case, commit", so two parallel requests
+    can't both take the last slot. Per process here; check_open_case_slot also locks the user's
+    row, which holds across processes on Postgres. Local mode (no user): nothing to lock."""
+    if user_id is None:
+        yield
+        return
+    with _case_count_guard:
+        lock = _case_count_locks.setdefault(user_id, threading.Lock())
+    with lock:
+        yield
+
+
+def check_open_case_slot(session: Session, user_id: str | None) -> None:
+    """Raise OpenCaseLimit when opening (or reopening) one more case would pass MAX_OPEN_CASES.
+    Call inside case_count_lock, and commit before leaving it."""
+    s = get_settings()
+    if not s.hosted or user_id is None:
+        return
+    session.execute(select(User.id).where(User.id == user_id).with_for_update())
+    if repo.open_case_count(session) >= s.max_open_cases:
+        raise OpenCaseLimit(
+            f"the beta allows {s.max_open_cases} open cases at a time: resolve, withdraw or "
+            "delete one first"
+        )
 
 
 def normalise_email(email: str) -> str:

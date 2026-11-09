@@ -20,20 +20,28 @@ from apscheduler.schedulers.base import BaseScheduler
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
+from sqlalchemy import select
 
 from escalate.agent.approval import approve_message, edit_message, reject_message
 from escalate.agent.graph import CaseState, compile_graph, compile_with, postgres_checkpointer
 from escalate.agent.judge_reply import record_reply
 from escalate.channels import confirm_delivery as confirm_delivery_svc
 from escalate.config import get_settings
+from escalate.db import repo
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseStatus, Evidence
 from escalate.db.session import session_scope
+from escalate.db.tenancy import current_user_id
+from escalate.hosted.accounts import case_count_lock, check_open_case_slot
 from escalate.scheduler import jobs
 
 
 class RunnerError(Exception):
     """The case is not waiting for this kind of input."""
+
+
+class CaseClosed(Exception):
+    """The case is resolved, withdrawn or closed: the agent doesn't run on it any more."""
 
 
 class AgentBusy(Exception):
@@ -142,7 +150,15 @@ def pending(case_id: int) -> dict[str, Any] | None:
     return dict(interrupts[0].value) if interrupts else None
 
 
+def _refuse_closed(case_id: int) -> None:
+    with session_scope() as s:
+        status = s.scalar(select(Case.status).where(Case.id == case_id))
+    if status in repo.OPEN_STATUSES_EXCLUDED:
+        raise CaseClosed(f"this case is {status}: it can't be started or continued")
+
+
 def _run(case_id: int, inp: Any) -> RunResult:
+    _refuse_closed(case_id)
     with agent_slot(), _global_lock():
         graph().invoke(inp, _cfg(case_id))
         return RunResult(case_id, pending(case_id))
@@ -277,7 +293,7 @@ def override_verdict(case_id: int, verdict: str) -> RunResult:
                 break
         if target is None:
             raise RunnerError(f"case {case_id} has no judged reply to correct")
-        with session_scope() as s:
+        with case_count_lock(current_user_id()), session_scope() as s:  # a reopen counts
             case = s.get(Case, case_id)
             if case is None or case.status == CaseStatus.WITHDRAWN:
                 raise RunnerError(f"case {case_id} cannot be changed")
@@ -288,8 +304,10 @@ def override_verdict(case_id: int, verdict: str) -> RunResult:
             if verdict == "resolved":
                 case.status, case.next_action_at = CaseStatus.RESOLVED, None
                 log_event(s, case_id, "case_resolved", {"step": target.values.get("step_id")})
-            elif case.status == CaseStatus.RESOLVED:
-                case.status = CaseStatus.PICK_NEXT
+            elif case.status in repo.OPEN_STATUSES_EXCLUDED:  # reopened: one more open case
+                check_open_case_slot(s, case.user_id)
+                if case.status == CaseStatus.RESOLVED:
+                    case.status = CaseStatus.PICK_NEXT
             log_event(
                 s,
                 case_id,
