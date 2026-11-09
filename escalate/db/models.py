@@ -108,6 +108,7 @@ class Evidence(Owned, Base):
     filename: Mapped[str] = mapped_column(String(300), default="")
     file_path: Mapped[str] = mapped_column(String(500))  # encrypted file
     sha256: Mapped[str] = mapped_column(String(64))
+    size_bytes: Mapped[int] = mapped_column(default=0, server_default="0")  # the upload's size
     extracted_text: Mapped[str | None] = mapped_column(Text)
     ocr_confidence: Mapped[float | None]
     needs_review: Mapped[bool] = mapped_column(default=False)

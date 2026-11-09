@@ -24,6 +24,8 @@ AI_PATHS = re.compile(
     r"|messages/[^/]+/(approve|reject|confirm-delivery)"
     r"|settings/llm-test)$"
 )
+# Downloads that build a PDF or a zip: slow, so limited like writes (DOWNLOADS_PER_MINUTE).
+DOWNLOAD_PATHS = re.compile(r"^/(cases/[^/]+/export\.pdf|messages/[^/]+/printable\.pdf|me/export)$")
 
 
 async def _reply(send: Send, status: int, detail: str, headers: list[tuple[bytes, bytes]]) -> None:
@@ -55,9 +57,16 @@ class RequestLimits:
         self.limiter = RateLimiter()  # per app: a fresh app (and test client) starts at zero
 
     def rate_problem(self, method: str, path: str, client: str) -> str | None:
+        s = get_settings()
+        if method in ("GET", "HEAD") and DOWNLOAD_PATHS.match(path):
+            try:
+                limit = s.rate_limit_downloads_per_minute
+                self.limiter.check(f"download:{client}", limit, MINUTE, what="downloads")
+            except RateLimited as exc:
+                return str(exc)
+            return None
         if method not in STATE_CHANGING:
             return None
-        s = get_settings()
         ai = bool(AI_PATHS.match(path))
         bucket, limit = (
             ("ai", s.rate_limit_ai_per_minute) if ai else ("write", s.rate_limit_writes_per_minute)

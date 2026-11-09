@@ -153,6 +153,9 @@ class Settings(BaseSettings):
     global_ai_tokens_per_day: int = 1_000_000  # all users together (match the provider's plan)
     ai_failures_per_day: int = 20  # failed AI calls per user: then no more calls until tomorrow
     max_evidence_per_case: int = 10
+    hosted_upload_mb: int = 10  # one file; MAX_UPLOAD_MB still applies when it is lower
+    max_storage_mb_per_user: int = 50  # all of a user's evidence files together
+    rate_limit_downloads_per_minute: int = 10  # PDFs and the data export, per user
 
     @classmethod
     def settings_customise_sources(
@@ -177,9 +180,11 @@ class Settings(BaseSettings):
 
     @property
     def upload_limit_mb(self) -> int:
-        return (
-            min(self.max_upload_mb, self.demo_upload_mb) if self.demo_mode else self.max_upload_mb
-        )
+        if self.demo_mode:
+            return min(self.max_upload_mb, self.demo_upload_mb)
+        if self.hosted:
+            return min(self.max_upload_mb, self.hosted_upload_mb)
+        return self.max_upload_mb
 
     @field_validator("db_schema")
     @classmethod

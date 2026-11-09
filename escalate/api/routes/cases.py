@@ -11,7 +11,7 @@ from escalate.agent import runner
 from escalate.agent.deadlines import deadline_status
 from escalate.agent.review import display_value
 from escalate.agent.titles import display_title
-from escalate.api import views
+from escalate.api import uploads, views
 from escalate.api.deps import (
     CasePk,
     get_case,
@@ -223,30 +223,43 @@ def update_case(
 
 @router.post("/{case_id}/evidence", response_model=EvidenceOut, status_code=201)
 async def upload_evidence(
-    case_id: CasePk, file: UploadFile = File(...), session: Session = Depends(get_session)
+    case_id: CasePk,
+    request: Request,
+    file: UploadFile = File(...),
+    session: Session = Depends(get_session),
 ) -> EvidenceOut:
-    case = get_case(session, case_id)
     settings = get_settings()
-    if settings.hosted and len(case.evidence) >= settings.max_evidence_per_case:
-        raise HTTPException(409, f"a case can hold {settings.max_evidence_per_case} files")
-    limit = settings.upload_limit_mb * 1024 * 1024
-    data = await file.read(limit + 1)
-    if len(data) > limit:
-        raise HTTPException(413, f"file is larger than {settings.upload_limit_mb} MB")
-    if not data:
-        raise HTTPException(422, "empty file")
-    name = safe_filename(file.filename or "upload")
-    # Parsing, OCR and encryption are slow: never on the event loop (the API stays responsive).
-    try:
-        kind = await anyio.to_thread.run_sync(check_upload, name, data)
-    except UploadRejected as exc:
-        raise HTTPException(415, str(exc)) from exc
-    result = await extract_off_loop(kind, data, settings)
-    ev = await anyio.to_thread.run_sync(
-        partial(save_upload, session, case_id, name, data, result=result)
-    )
-    session.commit()
-    return EvidenceOut.model_validate(ev)
+    user = identity(request).user_id if settings.hosted else None
+    with uploads.one_at_a_time(user):
+        case = get_case(session, case_id)
+        if settings.hosted and len(case.evidence) >= settings.max_evidence_per_case:
+            raise HTTPException(409, f"a case can hold {settings.max_evidence_per_case} files")
+        stored = repo.evidence_bytes(session) if settings.hosted else 0
+        session.close()  # no database connection is held while the file is read and OCR'd
+        limit = settings.upload_limit_mb * 1024 * 1024
+        data = await file.read(limit + 1)
+        if len(data) > limit:
+            raise HTTPException(413, f"file is larger than {settings.upload_limit_mb} MB")
+        if not data:
+            raise HTTPException(422, "empty file")
+        if settings.hosted and stored + len(data) > settings.max_storage_mb_per_user * 1024**2:
+            raise HTTPException(
+                413,
+                f"your evidence files are limited to {settings.max_storage_mb_per_user} MB in "
+                "all: delete a case to make room",
+            )
+        name = safe_filename(file.filename or "upload")
+        # Parsing, OCR and encryption are slow: never on the event loop (the API stays responsive).
+        try:
+            kind = await anyio.to_thread.run_sync(check_upload, name, data)
+        except UploadRejected as exc:
+            raise HTTPException(415, str(exc)) from exc
+        result = await extract_off_loop(kind, data, settings)
+        ev = await anyio.to_thread.run_sync(
+            partial(save_upload, session, case_id, name, data, result=result)
+        )
+        session.commit()
+        return EvidenceOut.model_validate(ev)
 
 
 async def extract_off_loop(kind: str, data: bytes, settings: Settings) -> ExtractResult:

@@ -172,6 +172,7 @@ def save_upload(
         filename=safe_filename(filename),
         file_path=file_path,
         sha256=sha,
+        size_bytes=len(data),
         user_id=owner,
     )
     session.add(ev)

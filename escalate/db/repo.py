@@ -8,11 +8,11 @@ fail closed.
 
 from typing import Any
 
-from sqlalchemy import ColumnElement, Select, select, true
+from sqlalchemy import ColumnElement, Select, func, select, true
 from sqlalchemy.orm import Session
 
 from escalate.config import get_settings
-from escalate.db.models import Case, Event, Message, Owned
+from escalate.db.models import Case, Event, Evidence, Message, Owned
 from escalate.db.tenancy import current_user_id
 
 
@@ -79,6 +79,14 @@ def case_message(session: Session, case_id: int, message_id: Any) -> Message | N
 
 
 OPEN_STATUSES_EXCLUDED = ("resolved", "withdrawn", "closed_unresolved")
+
+
+def evidence_bytes(session: Session) -> int:
+    """The size of all of the current user's evidence files (hosted storage cap)."""
+    total = session.scalar(
+        select(func.coalesce(func.sum(Evidence.size_bytes), 0)).where(mine(Evidence))
+    )
+    return int(total or 0)
 
 
 def open_case_count(session: Session) -> int:
