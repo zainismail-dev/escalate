@@ -246,7 +246,15 @@ Google app is in testing mode.
 
 - **Limits** (Render → Environment): `MAX_OPEN_CASES` (3), `AI_CALLS_PER_DAY` (40 per user),
   `GLOBAL_AI_CALLS_PER_DAY` (1000 for everyone; then users see "The AI is busy today, try
-  tomorrow").
+  tomorrow"), `AI_TOKENS_PER_DAY` (150,000 estimated tokens per user) and
+  `GLOBAL_AI_TOKENS_PER_DAY` (1,000,000; keep it under your Groq plan's daily token limit),
+  `AI_FAILURES_PER_DAY` (20 failed AI calls per user), `MAX_EVIDENCE_PER_CASE` (10),
+  `HOSTED_UPLOAD_MB` (10 per file), `MAX_STORAGE_MB_PER_USER` (50),
+  `RATE_LIMIT_DOWNLOADS_PER_MINUTE` (10 PDFs/exports per user), `AGENT_CONCURRENCY` (4 AI steps
+  at once; then "busy, try again"), `LLM_TIMEOUT_S` (60) and `LLM_TOTAL_TIMEOUT_S` (90).
+  All have safe defaults: you only set them to change them.
+- **`ALLOWED_HOSTS`** must list host names only: the API refuses to start on a `*` or an empty
+  entry (a stray comma).
 - **Cold starts:** the free API sleeps after about 15 idle minutes; the web app shows "Waking
   the server…" and retries for about 90 seconds.
 - **Updates:** `render.yaml` sets `autoDeploy: false`; click **Manual Deploy** on Render after

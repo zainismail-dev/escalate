@@ -23,6 +23,31 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - Hosted copy (server wake-up, "Encrypted on our server", Supabase in Ireland); the timeline
   collapses retries and shows local times; ladder step names are capitalised.
 
+### Security
+- Sign-in only follows same-site `next` paths (backslash, tab and newline tricks refused).
+- Hosted: only a Google-verified email (`AUTH_PROVIDERS`) matches an invite; turn the Supabase
+  Email provider off.
+- No global lock around agent runs; AI requests time out after 60 s (90 s per call in all);
+  at most `AGENT_CONCURRENCY` runs at once; `/health` always answers.
+- Token-aware daily AI budgets, a daily limit on failed AI calls, 10 files per case and 40k
+  characters of evidence per prompt.
+- Per-user storage cap (50 MB), 10 MB files, one upload at a time, rate-limited PDF/export
+  downloads; no database connection held during OCR.
+- Supabase session cookie: Secure, SameSite=Lax, 7 days.
+- Closed cases can't be started or continued; the open-case limit is atomic and covers reopening.
+- Rate limits use the address Render's proxy saw, never a spoofable `X-Forwarded-For` entry;
+  limiter memory is bounded.
+- Hosted mode refuses `ALLOWED_HOSTS` with `*` or empty entries.
+- `/internal/tick` is a 404 for every method without the secret; evidence and event ids in the
+  API are UUIDs; a provider 400 drops JSON mode for that call only.
+
+### Fixed (smoke test)
+- The letter's subject appears once (email subject / PDF heading), never in the body.
+- Hosted: the approve button says "Approve"; no local-only wording; a missing case shows
+  "Case not found".
+- "Within 30 days of the purchase"; step names capitalised in headings and labels; recipient
+  addresses wrap between their parts.
+
 ## [0.1.0] - 2026-10-28
 
 First public release.
