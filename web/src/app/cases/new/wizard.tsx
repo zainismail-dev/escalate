@@ -18,6 +18,7 @@ import { api, ApiError } from "@/lib/api";
 import { HOSTED } from "@/lib/hosted";
 import { DEMO_STATIC, SAMPLE_CASE } from "@/lib/demo-mode";
 import { displayFact } from "@/lib/facts";
+import { stepHeading } from "@/lib/steps";
 import type { CaseDetail, Country, Evidence } from "@/lib/types";
 import { useAction, useApi } from "@/lib/use-api";
 import { useLetterLanguages } from "@/lib/letter-languages";
@@ -373,7 +374,7 @@ export function Wizard() {
             <dl className="grid gap-3 sm:grid-cols-2">
               <div>
                 <dt className="label-mono text-muted">{t("firstStep")}</dt>
-                <dd className="mt-0.5 font-semibold">{c.step_name}</dd>
+                <dd className="mt-0.5 font-semibold">{stepHeading(c.step_name)}</dd>
               </div>
               <div>
                 <dt className="label-mono text-muted">{t("factsCount")}</dt>

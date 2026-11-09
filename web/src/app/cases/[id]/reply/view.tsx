@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FieldHint, Label, NativeSelect, Textarea } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { caseLocale, formatDate, formatDateTime } from "@/lib/format";
+import { stepHeading } from "@/lib/steps";
 import type { ReplyOut } from "@/lib/types";
 import { useAction, useApi } from "@/lib/use-api";
 import { CaseHeader } from "../case-header";
@@ -160,7 +161,7 @@ export function LogReply({ id }: { id: string }) {
           <section className="rounded-2xl border border-line bg-card p-5" aria-labelledby="next" data-testid="reply-next">
             <p className="label-mono text-muted">{t("nextStep")}</p>
             <h2 id="next" className="mt-1 font-display text-xl">
-              {c.status === "resolved" ? t("resolvedTitle") : (c.step_name ?? t("ladderDone"))}
+              {c.status === "resolved" ? t("resolvedTitle") : (c.step_name ? stepHeading(c.step_name) : t("ladderDone"))}
             </h2>
             <p className="mt-1 text-sm text-text-2">{c.status === "resolved" ? t("resolvedBody") : t("nextBody")}</p>
             <Button variant="lime" size="lg" className="mt-4" asChild>

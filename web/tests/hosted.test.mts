@@ -126,3 +126,19 @@ test("hosted review copy says Approve, never Approve & send", () => {
     assert.ok(src.includes(`reviewKey("${key}", HOSTED)`), key);
   }
 });
+
+// P4: step names are capitalised where they start a heading or label, nowhere else.
+test("a step name starting a heading or label is capitalised", async () => {
+  const { stepHeading } = await import("../src/lib/steps.ts");
+  assert.equal(stepHeading("written complaint to the trader"), "Written complaint to the trader");
+  assert.equal(stepHeading("Final notice"), "Final notice");
+  assert.equal(stepHeading("état des lieux", "fr"), "État des lieux");
+  assert.equal(stepHeading(null), "");
+  const read = (f: string) => readFileSync(new URL(f, import.meta.url), "utf8");
+  assert.match(read("../src/app/cases/[id]/review/view.tsx"), /t\("title", \{ step: stepHeading\(r\.step_name/);
+  assert.match(read("../src/app/cases/new/wizard.tsx"), /\{stepHeading\(c\.step_name\)\}<\/dd>/);
+  assert.match(read("../src/app/cases/[id]/dashboard.tsx"), /t\("currentStep", \{ step: stepHeading\(c\.step_name\) \}\)/);
+  assert.match(read("../src/app/cases/[id]/reply/view.tsx"), /stepHeading\(c\.step_name\)/);
+  // mid-sentence stays as the API sends it ("Approve written complaint to the trader")
+  assert.doesNotMatch(read("../src/app/cases/cases-list.tsx"), /stepHeading/);
+});

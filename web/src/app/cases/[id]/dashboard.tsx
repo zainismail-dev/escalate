@@ -18,6 +18,7 @@ import { api } from "@/lib/api";
 import { HOSTED } from "@/lib/hosted";
 import { displayFact } from "@/lib/facts";
 import { caseLocale, formatDate, formatDateTime } from "@/lib/format";
+import { stepHeading } from "@/lib/steps";
 import { collapseRetries } from "@/lib/timeline";
 import type { CaseDetail } from "@/lib/types";
 import { useAction, useApi } from "@/lib/use-api";
@@ -127,7 +128,7 @@ export function CaseDashboard({ id }: { id: string }) {
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle>{t("ladder")}</CardTitle>
-          {c.step_name && <span className="label-mono text-muted">{t("currentStep", { step: c.step_name })}</span>}
+          {c.step_name && <span className="label-mono text-muted">{t("currentStep", { step: stepHeading(c.step_name) })}</span>}
         </CardHeader>
         <CardContent>
           {c.ladder.length > 0 ? <EscalationLadder steps={c.ladder} /> : <p className="text-sm text-muted">{t("noLadder")}</p>}

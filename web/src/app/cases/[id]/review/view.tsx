@@ -18,6 +18,7 @@ import { WhyPanel } from "@/components/why-panel";
 import { dirFor, primaryLanguage } from "@/i18n/config";
 import { api } from "@/lib/api";
 import { languageName } from "@/lib/format";
+import { stepHeading } from "@/lib/steps";
 import { HOSTED } from "@/lib/hosted";
 import { reviewKey } from "@/lib/hosted-copy";
 import type { Preview, Review } from "@/lib/types";
@@ -149,7 +150,7 @@ export function ReviewDraft({ id }: { id: string }) {
 
   return (
     <div className="space-y-6">
-      <CaseHeader c={c} heading={t("title", { step: r.step_name ?? "" })} />
+      <CaseHeader c={c} heading={t("title", { step: stepHeading(r.step_name, ui) })} />
 
       {act.error && act.error.kind !== "fact_check" && <ErrorState error={act.error} />}
       {act.error?.kind === "fact_check" ? (
