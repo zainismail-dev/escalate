@@ -126,6 +126,8 @@ class Settings(BaseSettings):
     agent_concurrency: int = 4
     agent_slot_wait_s: float = 2
     require_evidence: bool = True
+    # Evidence text in one prompt, all files together; the rest is cut with a note to the model.
+    max_evidence_prompt_chars: int = 40_000
     max_cases_per_recipient: int = 3  # within recipient_window_days: a harassment pattern
     recipient_window_days: int = 30
     demo_upload_mb: int = 5
@@ -146,6 +148,11 @@ class Settings(BaseSettings):
     max_open_cases: int = 3  # per user
     ai_calls_per_day: int = 40  # per user
     global_ai_calls_per_day: int = 1000  # all users together; then "the AI is busy today"
+    # Size, not just count: estimated tokens sent (llm/quota.py), failed calls included.
+    ai_tokens_per_day: int = 150_000  # per user
+    global_ai_tokens_per_day: int = 1_000_000  # all users together (match the provider's plan)
+    ai_failures_per_day: int = 20  # failed AI calls per user: then no more calls until tomorrow
+    max_evidence_per_case: int = 10
 
     @classmethod
     def settings_customise_sources(

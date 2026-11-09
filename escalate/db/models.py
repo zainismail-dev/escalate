@@ -193,9 +193,12 @@ GLOBAL_USAGE = "*"  # the ai_usage row counting every user's calls
 
 
 class AiUsage(Base):
-    """Hosted mode: AI calls per user per UTC day, and all users together (user_id "*")."""
+    """Hosted mode: AI use per user per UTC day, and all users together (user_id "*"): successful
+    calls, estimated tokens sent (failed calls too) and failed calls."""
 
     __tablename__ = "ai_usage"
     user_id: Mapped[str] = mapped_column(String(64), primary_key=True)
     day: Mapped[date] = mapped_column(primary_key=True)
     calls: Mapped[int] = mapped_column(default=0)
+    tokens: Mapped[int] = mapped_column(default=0, server_default="0")
+    failures: Mapped[int] = mapped_column(default=0, server_default="0")

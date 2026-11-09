@@ -39,7 +39,7 @@ from escalate.export.pdf import PdfUnavailable
 from escalate.hosted.accounts import ConsentRequired, Waitlisted
 from escalate.hosted.supabase_admin import AdminError
 from escalate.llm.client import LLMBadOutput, LLMMisconfigured, LLMNotConfigured
-from escalate.llm.quota import AiBusy, AiDailyLimit
+from escalate.llm.quota import AiBusy, AiDailyLimit, AiFailureLimit
 from escalate.netguard import UnsafeEndpoint
 from escalate.pii import install_log_filter
 from escalate.playbooks.loader import PlaybookError
@@ -201,6 +201,7 @@ def create_app(startup: bool = True) -> FastAPI:
         (OpenCaseLimit, 409, lambda e: {"quota": "open_cases"}),
         (AiDailyLimit, 429, lambda e: {"quota": "user"}),
         (AiBusy, 429, lambda e: {"quota": "global"}),
+        (AiFailureLimit, 429, lambda e: {"quota": "failures"}),
         (StorageError, 502, None),
         (AdminError, 502, None),
     ]

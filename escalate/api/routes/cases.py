@@ -225,8 +225,10 @@ def update_case(
 async def upload_evidence(
     case_id: CasePk, file: UploadFile = File(...), session: Session = Depends(get_session)
 ) -> EvidenceOut:
-    get_case(session, case_id)
+    case = get_case(session, case_id)
     settings = get_settings()
+    if settings.hosted and len(case.evidence) >= settings.max_evidence_per_case:
+        raise HTTPException(409, f"a case can hold {settings.max_evidence_per_case} files")
     limit = settings.upload_limit_mb * 1024 * 1024
     data = await file.read(limit + 1)
     if len(data) > limit:

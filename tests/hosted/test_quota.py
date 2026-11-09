@@ -299,3 +299,126 @@ def test_the_tick_stops_at_a_misconfigured_model(
     monkeypatch.setattr(tick, "scan_deadlines", lambda: 0)
     assert tick.run_tick()["failed"] == 1
     assert tried == [1]
+
+
+# --- M4: size, failures and evidence caps ---------------------------------------------------
+
+
+def tokens_used(user: str) -> int:
+    from escalate.db.models import AiUsage
+
+    with session_scope() as s:
+        row = s.get(AiUsage, (user, datetime.now().date()))
+        return row.tokens if row else 0
+
+
+def test_the_budget_counts_prompt_size_not_just_calls(
+    hosted_db: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A 12M-character prompt cost one call. Now its estimated tokens count too."""
+    from escalate.llm import set_llm
+    from escalate.llm.quota import estimate_tokens
+    from tests.fakes.fake_llm import FakeLLM
+
+    monkeypatch.setenv("AI_TOKENS_PER_DAY", "20000")
+    get_settings.cache_clear()
+    set_llm(FakeLLM(handler=lambda p, s: "ok"))
+    try:
+        with as_user(A):
+            assert get_llm().complete("x" * 40_000) == "ok"  # ~11k tokens
+            assert tokens_used(A) == estimate_tokens("x" * 40_000)
+            with pytest.raises(AiDailyLimit):
+                get_llm().complete("x" * 40_000)
+            assert get_llm().complete("small") == "ok"  # what's left still works
+        assert used(A) == 2
+    finally:
+        set_llm(None)
+
+
+def test_the_global_budget_is_token_aware(
+    hosted_db: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GLOBAL_AI_TOKENS_PER_DAY", "5000")
+    get_settings.cache_clear()
+    charge(A, 4000)
+    with pytest.raises(AiBusy):
+        charge(B, 4000)
+    assert tokens_used(GLOBAL_USAGE) == 4000 and tokens_used(B) == 0
+
+
+def test_failed_calls_are_limited_per_user(
+    hosted_db: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Failures don't use up the call allowance, but after AI_FAILURES_PER_DAY of them the user
+    can't hammer the provider any more today. Their tokens still count."""
+    from escalate.llm import set_llm
+    from escalate.llm.quota import AiFailureLimit
+    from tests.fakes.fake_llm import FakeLLM
+
+    monkeypatch.setenv("AI_FAILURES_PER_DAY", "3")
+    get_settings.cache_clear()
+    llm = FakeLLM(handler=lambda p, s: LLMBadOutput("x"))
+    set_llm(llm)
+    try:
+        with as_user(A):
+            for _ in range(3):
+                with pytest.raises(LLMBadOutput):
+                    get_llm().complete("ping")
+            with pytest.raises(AiFailureLimit, match="paused until tomorrow"):
+                get_llm().complete("ping")
+        assert len(llm.calls) == 3  # the 4th never reached the provider
+        assert used(A) == 0 and tokens_used(A) > 0
+        with as_user(B), pytest.raises(LLMBadOutput):
+            get_llm().complete("ping")  # other users are unaffected
+    finally:
+        set_llm(None)
+
+
+def test_too_many_failures_is_a_friendly_429(
+    hosted: Hosted, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from escalate.llm.quota import refund
+
+    monkeypatch.setenv("AI_FAILURES_PER_DAY", "1")
+    get_settings.cache_clear()
+    acct = hosted.account("alice@example.com")
+    with as_user(acct.id):
+        refund(acct.id, charge(acct.id))
+    cid = new_case(acct.client)
+    acct.client.post(f"/cases/{cid}/evidence", files={"file": ("r.txt", b"BM-1", "text/plain")})
+    r = acct.client.post(f"/cases/{cid}/start")
+    assert r.status_code == 429 and r.json()["quota"] == "failures"
+
+
+def test_evidence_text_in_a_prompt_is_capped_with_a_note(hosted: Hosted) -> None:
+    from escalate.agent.intake import CUT_NOTE, evidence_blocks
+
+    blocks = evidence_blocks([(1, "A" * 30_000), (2, "B" * 30_000), (3, "C" * 100)])
+    assert blocks.count("A") == 30_000 and blocks.count("B") == 10_000
+    assert CUT_NOTE in blocks and "evidence_id=3" not in blocks
+    assert CUT_NOTE not in evidence_blocks([(1, "short")])
+
+
+def test_a_huge_case_sends_a_bounded_prompt(hosted: Hosted) -> None:
+    acct = hosted.account("alice@example.com")
+    cid = new_case(acct.client)
+    for i in range(10):
+        body = f"BM-48213 file {i} ".encode() + b"z" * 400_000
+        r = acct.client.post(
+            f"/cases/{cid}/evidence", files={"file": (f"{i}.txt", body, "text/plain")}
+        )
+        assert r.status_code == 201, r.text
+    acct.client.post(f"/cases/{cid}/start")
+    assert hosted.llm.calls and max(len(p) for p, _ in hosted.llm.calls) < 60_000
+
+
+def test_a_case_holds_at_most_max_evidence_files(hosted: Hosted) -> None:
+    acct = hosted.account("alice@example.com")
+    cid = new_case(acct.client)
+    for i in range(10):
+        r = acct.client.post(
+            f"/cases/{cid}/evidence", files={"file": (f"{i}.txt", b"x", "text/plain")}
+        )
+        assert r.status_code == 201
+    r = acct.client.post(f"/cases/{cid}/evidence", files={"file": ("11.txt", b"x", "text/plain")})
+    assert r.status_code == 409 and "10 files" in r.json()["detail"]

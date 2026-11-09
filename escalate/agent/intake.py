@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
+from escalate.config import get_settings
 from escalate.db.events import log_event
 from escalate.db.models import Case, CaseFact
 from escalate.llm import LLM, get_llm
@@ -13,6 +14,7 @@ from escalate.llm.structured import ask_json
 from escalate.pii import mask_pii
 
 MIN_CONFIDENCE = 0.5  # below this the model is guessing: ask the user instead
+CUT_NOTE = "[... the rest of the evidence text was cut to keep the request small ...]"
 
 
 class ExtractedFact(BaseModel):
@@ -49,10 +51,21 @@ class IntakeResult:
     saved: list[str] = field(default_factory=list)
 
 
-def evidence_blocks(evidence: list[tuple[int, str]]) -> str:
+def evidence_blocks(evidence: list[tuple[int, str]], max_chars: int | None = None) -> str:
+    """The evidence for a prompt, at most MAX_EVIDENCE_PROMPT_CHARS of text in all. Text past the
+    limit is cut and the model is told, so it asks instead of assuming a fact isn't there."""
     if not evidence:
         return "(none)"
-    return "\n".join(f"[evidence_id={eid}]\n{text.strip()}\n[/evidence]" for eid, text in evidence)
+    left = get_settings().max_evidence_prompt_chars if max_chars is None else max_chars
+    blocks = []
+    for eid, text in evidence:
+        text = text.strip()
+        if len(text) > left:  # this file is cut, and later files are left out
+            blocks.append(f"[evidence_id={eid}]\n{text[:left]}\n{CUT_NOTE}\n[/evidence]")
+            break
+        left -= len(text)
+        blocks.append(f"[evidence_id={eid}]\n{text}\n[/evidence]")
+    return "\n".join(blocks)
 
 
 def extract(
