@@ -31,6 +31,19 @@ def test_a_missing_or_wrong_secret_is_a_plain_404(hosted: Hosted) -> None:
     assert tick(hosted).status_code == 200
 
 
+def test_every_other_method_is_the_same_404_even_with_the_secret(hosted: Hosted) -> None:
+    for secret in (None, TICK_SECRET):
+        h = {"X-Tick-Secret": secret} if secret else {}
+        c = hosted.client(**h)
+        for method in ("GET", "PUT", "PATCH", "DELETE", "OPTIONS"):
+            r = c.request(
+                method, "/internal/tick", headers={"Origin": "", "X-Escalate-Request": ""}
+            )
+            assert r.status_code == 404 and r.json() == {"detail": "Not Found"}, (method, secret)
+        r = c.head("/internal/tick", headers={"Origin": "", "X-Escalate-Request": ""})
+        assert r.status_code == 404, secret
+
+
 def test_a_user_token_is_not_a_tick_secret(hosted: Hosted) -> None:
     alice = hosted.account("alice@example.com")
     r = alice.client.post("/internal/tick")

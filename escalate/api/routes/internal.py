@@ -1,7 +1,8 @@
 """Hosted mode: POST /internal/tick, called hourly by .github/workflows/tick.yml.
 
 Protected by the X-Tick-Secret header (TICK_SECRET, compared in constant time). A missing or
-wrong secret gets the same 404 as a route that doesn't exist.
+wrong secret gets the same 404 as a route that doesn't exist; any other method gets that 404
+too, from escalate/api/hosted_auth.py (never a 405 that would show the route is there).
 """
 
 import hmac

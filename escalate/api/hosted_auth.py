@@ -1,8 +1,9 @@
 """Hosted mode: every request carries a Supabase access token (`Authorization: Bearer ...`).
 
 Pure ASGI, like the other guards, so it runs before routing and before any body is read. Only
-GET /health and /internal/* (which has its own secret) are open; everything else without a
-valid token is a 401. A valid token makes its user current for the request
+GET /health and POST /internal/* (which has its own secret) are open; any other method on
+/internal/* is the same 404 as a wrong secret, and everything else without a valid token is a
+401. A valid token makes its user current for the request
 (escalate/db/tenancy.py) and is available to routes as `request.state.identity`.
 """
 
@@ -33,6 +34,21 @@ def bearer(scope: Scope) -> str | None:
     return None
 
 
+async def _not_found(send: Send) -> None:
+    body = json.dumps({"detail": "Not Found"}).encode()
+    await send(
+        {
+            "type": "http.response.start",
+            "status": 404,
+            "headers": [
+                (b"content-type", b"application/json"),
+                (b"content-length", str(len(body)).encode()),
+            ],
+        }
+    )
+    await send({"type": "http.response.body", "body": body})
+
+
 async def _unauthorized(send: Send) -> None:
     body = json.dumps({"detail": "sign in required", "signed_in": False}).encode()
     await send(
@@ -57,6 +73,13 @@ class HostedAuth:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         path = scope.get("path", "")
+        if (
+            scope["type"] == "http"
+            and path.startswith(INTERNAL_PREFIX)
+            and scope["method"] != "POST"
+        ):
+            await _not_found(send)
+            return
         if scope["type"] != "http" or path in OPEN_PATHS or path.startswith(INTERNAL_PREFIX):
             await self.app(scope, receive, send)
             return
