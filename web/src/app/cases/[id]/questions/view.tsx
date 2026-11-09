@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { AgentProgress, eventCount } from "@/components/agent-progress";
 import { QuestionsForm } from "@/components/questions-form";
-import { ErrorState, PageSkeleton } from "@/components/states";
+import { CaseLoadError, ErrorState, PageSkeleton } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useAction, useApi } from "@/lib/use-api";
@@ -20,7 +20,7 @@ export function CaseQuestions({ id }: { id: string }) {
   const [since, setSince] = useState(0);
   const c = caseQ.data;
   if (caseQ.loading && !c) return <PageSkeleton />;
-  if (caseQ.error && !c) return <ErrorState error={caseQ.error} onRetry={caseQ.reload} />;
+  if (caseQ.error && !c) return <CaseLoadError error={caseQ.error} onRetry={caseQ.reload} />;
   if (!c) return null;
 
   async function submit(answers: Record<string, string>) {

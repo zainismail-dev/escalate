@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AgentProgress, eventCount } from "@/components/agent-progress";
-import { ErrorState, PageSkeleton } from "@/components/states";
+import { CaseLoadError, ErrorState, PageSkeleton } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -59,7 +59,7 @@ export function UrgentChecklist({ id }: { id: string }) {
   const c = caseQ.data;
   const list = listQ.data;
   if ((caseQ.loading && !c) || (listQ.loading && !list)) return <PageSkeleton />;
-  if (caseQ.error && !c) return <ErrorState error={caseQ.error} onRetry={caseQ.reload} />;
+  if (caseQ.error && !c) return <CaseLoadError error={caseQ.error} onRetry={caseQ.reload} />;
   if (!c || !list) return listQ.error ? <ErrorState error={listQ.error} onRetry={listQ.reload} /> : null;
 
   const urgent = list.items.filter((i) => i.urgent);

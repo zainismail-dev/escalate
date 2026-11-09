@@ -9,7 +9,7 @@ import { useFactLabel } from "@/components/fact-chip";
 import { Letter } from "@/components/letter";
 import { LanguagePicker } from "@/components/pickers";
 import { RecipientConfirm } from "@/components/recipient-confirm";
-import { ErrorState, FactCheckBlocked, PageSkeleton } from "@/components/states";
+import { CaseLoadError, ErrorState, FactCheckBlocked, PageSkeleton } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -59,7 +59,7 @@ export function ReviewDraft({ id }: { id: string }) {
   const r = reviewQ.data;
 
   if ((caseQ.loading && !c) || (reviewQ.loading && !r && msgId)) return <PageSkeleton />;
-  if (caseQ.error && !c) return <ErrorState error={caseQ.error} onRetry={caseQ.reload} />;
+  if (caseQ.error && !c) return <CaseLoadError error={caseQ.error} onRetry={caseQ.reload} />;
   if (!c) return null;
 
   if (!msgId || !r) {

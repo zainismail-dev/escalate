@@ -69,6 +69,27 @@ export function EmptyState({
 }
 
 /** Errors: the API is down, the AI model is offline (nothing was sent), or anything else. */
+/** A case that doesn't exist for this user (deleted, a wrong link, or another account's: the
+ * API answers 404 for all three). Not an error the user can retry: a way back instead. */
+export function CaseNotFound() {
+  const t = useTranslations("caseNotFound");
+  return (
+    <div className="mx-auto max-w-md py-16 text-center" data-testid="case-not-found">
+      <FolderOpen className="mx-auto size-8 text-muted" aria-hidden />
+      <h1 className="mt-3 font-display text-3xl">{t("title")}</h1>
+      <p className="mt-2 text-text-2">{t("body")}</p>
+      <Button variant="lime" className="mt-6" asChild>
+        <Link href="/cases">{t("cta")}</Link>
+      </Button>
+    </div>
+  );
+}
+
+/** Loading a case failed: "Case not found" for a 404, the usual error card otherwise. */
+export function CaseLoadError({ error, onRetry }: { error: ApiError; onRetry?: () => void }) {
+  return error.status === 404 ? <CaseNotFound /> : <ErrorState error={error} onRetry={onRetry} />;
+}
+
 export function ErrorState({ error, onRetry, className }: { error: ApiError; onRetry?: () => void; className?: string }) {
   const t = useTranslations("errors");
   const kind = error.kind;

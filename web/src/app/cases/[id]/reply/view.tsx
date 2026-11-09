@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AgentProgress, eventCount, REPLY_STAGES } from "@/components/agent-progress";
 import { ResolutionConfirm } from "@/components/resolution-confirm";
-import { ErrorState, PageSkeleton } from "@/components/states";
+import { CaseLoadError, ErrorState, PageSkeleton } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,7 +40,7 @@ export function LogReply({ id }: { id: string }) {
 
   const c = caseQ.data;
   if (caseQ.loading && !c) return <PageSkeleton />;
-  if (caseQ.error && !c) return <ErrorState error={caseQ.error} onRetry={caseQ.reload} />;
+  if (caseQ.error && !c) return <CaseLoadError error={caseQ.error} onRetry={caseQ.reload} />;
   if (!c) return null;
   const locale = caseLocale(c.language, c.country);
 

@@ -8,7 +8,7 @@ import { EscalationLadder } from "@/components/ladder";
 import { FileLink } from "@/components/hosted";
 import { LocalTime } from "@/components/local-time";
 import { NextMove } from "@/components/next-move";
-import { ErrorState, PageSkeleton } from "@/components/states";
+import { CaseLoadError, ErrorState, PageSkeleton } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -91,7 +91,7 @@ export function CaseDashboard({ id }: { id: string }) {
   const [proof, setProof] = useState<File | null>(null);
 
   if (loading && !c) return <PageSkeleton />;
-  if (error && !c) return <ErrorState error={error} onRetry={reload} />;
+  if (error && !c) return <CaseLoadError error={error} onRetry={reload} />;
   if (!c) return null;
 
   const locale = caseLocale(c.language, c.country);

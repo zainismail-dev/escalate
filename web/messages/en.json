@@ -37,6 +37,11 @@
     "body": "This page doesn't exist, or the case was deleted.",
     "cta": "Go to my cases"
   },
+  "caseNotFound": {
+    "title": "Case not found",
+    "body": "This case doesn't exist. It may have been deleted, or the link is wrong.",
+    "cta": "Back to My cases"
+  },
   "caseType": {
     "refund_refused": "Refund refused",
     "subscription_cancel": "Subscription won't cancel",

@@ -142,3 +142,15 @@ test("a step name starting a heading or label is capitalised", async () => {
   // mid-sentence stays as the API sends it ("Approve written complaint to the trader")
   assert.doesNotMatch(read("../src/app/cases/cases-list.tsx"), /stepHeading/);
 });
+
+// P6: a 404 while loading a case is "Case not found" with a way back, not a red error.
+test("case pages show Case not found for a 404", () => {
+  assert.equal(en.caseNotFound.title, "Case not found");
+  assert.equal(en.caseNotFound.cta, "Back to My cases");
+  for (const page of ["dashboard.tsx", "review/view.tsx", "reply/view.tsx", "questions/view.tsx", "urgent/view.tsx"]) {
+    const src = readFileSync(new URL(`../src/app/cases/[id]/${page}`, import.meta.url), "utf8");
+    assert.match(src, /return <CaseLoadError error=/, page);
+  }
+  const states = readFileSync(new URL("../src/components/states.tsx", import.meta.url), "utf8");
+  assert.match(states, /error\.status === 404 \? <CaseNotFound \/>/);
+});

@@ -108,3 +108,11 @@ test("settings: model, email, region, privacy", async ({ page }) => {
   }
   await expect(page.getByLabel("App password")).toHaveAttribute("type", "password");
 });
+
+test("a missing (or someone else's) case is a friendly 'Case not found'", async ({ page }) => {
+  await page.goto("/cases/00000000-0000-4000-8000-000000000000");
+  const box = page.getByTestId("case-not-found");
+  await expect(box.getByRole("heading", { name: "Case not found" })).toBeVisible();
+  await expect(box.getByRole("link", { name: "Back to My cases" })).toHaveAttribute("href", "/cases");
+  await expect(page.getByRole("alert")).toHaveCount(0); // no red "something went wrong"
+});
