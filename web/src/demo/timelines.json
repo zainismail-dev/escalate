@@ -2,7 +2,7 @@
   "24ff5963-0342-4817-896c-09a895163713": [
     {
       "created_at": "2026-10-29T10:36:33.076731",
-      "id": 16,
+      "id": "demo-event-16",
       "payload": {
         "country": "GB",
         "region": null
@@ -11,15 +11,15 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.077373",
-      "id": 17,
+      "id": "demo-event-17",
       "payload": {},
       "type": "demo_case"
     },
     {
       "created_at": "2026-10-29T10:36:33.078941",
-      "id": 18,
+      "id": "demo-event-18",
       "payload": {
-        "evidence_id": 3,
+        "evidence_id": "demo-evidence-3",
         "filename": "pulsefit-cancellation-email.txt",
         "kind": "text",
         "needs_review": false,
@@ -29,13 +29,13 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.081125",
-      "id": 19,
+      "id": "demo-event-19",
       "payload": {},
       "type": "case_started"
     },
     {
       "created_at": "2026-10-29T10:36:33.087280",
-      "id": 20,
+      "id": "demo-event-20",
       "payload": {
         "case_type": "subscription_cancel",
         "country": "GB",
@@ -49,7 +49,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.090296",
-      "id": 21,
+      "id": "demo-event-21",
       "payload": {
         "playbook": "intl-generic-subscription-cancel",
         "version": "0.1.0"
@@ -58,7 +58,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.093993",
-      "id": 22,
+      "id": "demo-event-22",
       "payload": {
         "missing": [],
         "saved": [
@@ -77,7 +77,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.108969",
-      "id": 23,
+      "id": "demo-event-23",
       "payload": {
         "message_id": 2,
         "step": "s1_cancel_request"
@@ -86,7 +86,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.120074",
-      "id": 24,
+      "id": "demo-event-24",
       "payload": {
         "issues": [],
         "message_id": 2,
@@ -98,7 +98,7 @@
   "380e7416-3621-47d8-8071-c691016788df": [
     {
       "created_at": "2026-10-29T10:36:32.884992",
-      "id": 1,
+      "id": "demo-event-1",
       "payload": {
         "country": "PK",
         "region": "PK-SD"
@@ -107,15 +107,15 @@
     },
     {
       "created_at": "2026-10-29T10:36:32.886083",
-      "id": 2,
+      "id": "demo-event-2",
       "payload": {},
       "type": "demo_case"
     },
     {
       "created_at": "2026-10-29T10:36:32.892765",
-      "id": 3,
+      "id": "demo-event-3",
       "payload": {
-        "evidence_id": 1,
+        "evidence_id": "demo-evidence-1",
         "filename": "brightmart-invoice.txt",
         "kind": "text",
         "needs_review": false,
@@ -125,13 +125,13 @@
     },
     {
       "created_at": "2026-10-29T10:36:32.898187",
-      "id": 4,
+      "id": "demo-event-4",
       "payload": {},
       "type": "case_started"
     },
     {
       "created_at": "2026-10-29T10:36:32.909426",
-      "id": 5,
+      "id": "demo-event-5",
       "payload": {
         "case_type": "refund_refused",
         "country": "PK",
@@ -145,7 +145,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:32.960230",
-      "id": 6,
+      "id": "demo-event-6",
       "payload": {
         "playbook": "pk-ecommerce-refund-refused",
         "version": "0.1.0"
@@ -154,7 +154,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:32.967420",
-      "id": 7,
+      "id": "demo-event-7",
       "payload": {
         "missing": [],
         "saved": [
@@ -176,7 +176,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.030962",
-      "id": 8,
+      "id": "demo-event-8",
       "payload": {
         "message_id": 1,
         "step": "s1_seller_written"
@@ -185,7 +185,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.046286",
-      "id": 9,
+      "id": "demo-event-9",
       "payload": {
         "issues": [],
         "message_id": 1,
@@ -195,7 +195,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.315681",
-      "id": 35,
+      "id": "demo-event-35",
       "payload": {
         "message_id": 1,
         "recipient": "support@brightmart.example",
@@ -205,7 +205,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.323072",
-      "id": 36,
+      "id": "demo-event-36",
       "payload": {
         "channel": "email",
         "how": "email",
@@ -216,7 +216,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.329454",
-      "id": 37,
+      "id": "demo-event-37",
       "payload": {
         "step": "s1_seller_written",
         "until": "2026-11-03T10:36:33.320346"
@@ -227,7 +227,7 @@
   "67decde5-9393-477a-9839-acaac9822a72": [
     {
       "created_at": "2026-10-29T10:36:33.052791",
-      "id": 10,
+      "id": "demo-event-10",
       "payload": {
         "country": "IN",
         "region": null
@@ -236,15 +236,15 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.053496",
-      "id": 11,
+      "id": "demo-event-11",
       "payload": {},
       "type": "demo_case"
     },
     {
       "created_at": "2026-10-29T10:36:33.055107",
-      "id": 12,
+      "id": "demo-event-12",
       "payload": {
-        "evidence_id": 2,
+        "evidence_id": "demo-evidence-2",
         "filename": "upi-payment-screenshot.txt",
         "kind": "text",
         "needs_review": false,
@@ -254,13 +254,13 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.058609",
-      "id": 13,
+      "id": "demo-event-13",
       "payload": {},
       "type": "case_started"
     },
     {
       "created_at": "2026-10-29T10:36:33.063606",
-      "id": 14,
+      "id": "demo-event-14",
       "payload": {
         "case_type": "scam",
         "country": "IN",
@@ -274,7 +274,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.064822",
-      "id": 15,
+      "id": "demo-event-15",
       "payload": {
         "playbook": "intl-generic-scam",
         "version": "0.1.0"
@@ -285,7 +285,7 @@
   "84f36b16-33b7-44d9-86bf-0b7ada3ff1ae": [
     {
       "created_at": "2026-10-29T10:36:33.126093",
-      "id": 25,
+      "id": "demo-event-25",
       "payload": {
         "country": "US",
         "region": "US-CA"
@@ -294,15 +294,15 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.126678",
-      "id": 26,
+      "id": "demo-event-26",
       "payload": {},
       "type": "demo_case"
     },
     {
       "created_at": "2026-10-29T10:36:33.128195",
-      "id": 27,
+      "id": "demo-event-27",
       "payload": {
-        "evidence_id": 4,
+        "evidence_id": "demo-evidence-4",
         "filename": "northline-receipt.txt",
         "kind": "text",
         "needs_review": false,
@@ -312,13 +312,13 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.130396",
-      "id": 28,
+      "id": "demo-event-28",
       "payload": {},
       "type": "case_started"
     },
     {
       "created_at": "2026-10-29T10:36:33.135535",
-      "id": 29,
+      "id": "demo-event-29",
       "payload": {
         "case_type": "refund_refused",
         "country": "US",
@@ -332,7 +332,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.136619",
-      "id": 30,
+      "id": "demo-event-30",
       "payload": {
         "playbook": "us-general-refund-refused",
         "version": "0.1.0"
@@ -341,7 +341,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.139669",
-      "id": 31,
+      "id": "demo-event-31",
       "payload": {
         "missing": [],
         "saved": [
@@ -361,7 +361,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.154764",
-      "id": 32,
+      "id": "demo-event-32",
       "payload": {
         "message_id": 3,
         "step": "s1_written_demand"
@@ -370,7 +370,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.165403",
-      "id": 33,
+      "id": "demo-event-33",
       "payload": {
         "issues": [],
         "message_id": 3,
@@ -380,7 +380,7 @@
     },
     {
       "created_at": "2026-10-29T10:36:33.173738",
-      "id": 34,
+      "id": "demo-event-34",
       "payload": {
         "message_id": 3
       },

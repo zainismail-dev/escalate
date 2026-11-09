@@ -98,11 +98,19 @@ class CaseFact(Owned, Base):
     )
     confidence: Mapped[float] = mapped_column(default=1.0)
     case: Mapped[Case] = relationship(back_populates="facts")
+    source_evidence: Mapped["Evidence | None"] = relationship(viewonly=True)
+
+    @property
+    def source_evidence_public_id(self) -> str | None:
+        return self.source_evidence.public_id if self.source_evidence is not None else None
 
 
 class Evidence(Owned, Base):
     __tablename__ = "evidence"
     id: Mapped[int] = mapped_column(primary_key=True)
+    public_id: Mapped[str] = mapped_column(
+        String(36), unique=True, index=True, default=new_public_id
+    )
     case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"), index=True)
     kind: Mapped[str] = mapped_column(String(20))  # image | pdf | email | text | other
     filename: Mapped[str] = mapped_column(String(300), default="")
@@ -143,6 +151,9 @@ class Message(Owned, Base):
 class Event(Owned, Base):
     __tablename__ = "events"  # append-only audit log
     id: Mapped[int] = mapped_column(primary_key=True)
+    public_id: Mapped[str] = mapped_column(
+        String(36), unique=True, index=True, default=new_public_id
+    )
     case_id: Mapped[int] = mapped_column(ForeignKey("cases.id", ondelete="CASCADE"), index=True)
     type: Mapped[str] = mapped_column(String(40))
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)

@@ -57,11 +57,11 @@ class FactOut(Orm):
     value: str
     display: str | None = None  # how people read it: money and dates in the case's locale
     confidence: float
-    source_evidence_id: int | None
+    source_evidence_id: str | None = Field(validation_alias="source_evidence_public_id")
 
 
 class EvidenceOut(Orm):
-    id: int
+    id: str = Field(validation_alias="public_id")  # unguessable; internal ids never leave
     kind: str
     filename: str
     sha256: str
@@ -87,7 +87,7 @@ class MessageOut(Orm):
 
 
 class EventOut(Orm):
-    id: int
+    id: str = Field(validation_alias="public_id")
     type: str
     payload: dict[str, Any]
     created_at: datetime
@@ -239,7 +239,7 @@ class VerdictIn(BaseModel):
 
 
 class DeliveryIn(BaseModel):
-    evidence_id: int | None = None
+    evidence_id: str | None = Field(default=None, max_length=36)  # the proof's public id
 
 
 class WithdrawIn(BaseModel):
@@ -289,7 +289,7 @@ class ReviewFactOut(BaseModel):
     value: str
     display: list[str]
     confidence: float
-    source_evidence_id: int | None
+    source_evidence_id: str | None  # the evidence's public id
     source_filename: str | None
     used: bool
 

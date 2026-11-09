@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
-import { AgentProgress, lastEventId } from "@/components/agent-progress";
+import { AgentProgress, eventCount } from "@/components/agent-progress";
 import { useFactLabel } from "@/components/fact-chip";
 import { Letter } from "@/components/letter";
 import { LanguagePicker } from "@/components/pickers";
@@ -99,7 +99,7 @@ export function ReviewDraft({ id }: { id: string }) {
   }
 
   async function switchLanguage(lang: string) {
-    setSince(await lastEventId(c!.id));
+    setSince(await eventCount(c!.id));
     setRedrafting(true);
     await act.run(() => api.setLetterLanguage(c!.id, lang));
     setRedrafting(false);
@@ -127,7 +127,7 @@ export function ReviewDraft({ id }: { id: string }) {
 
   async function reject() {
     setDialog(null);
-    setSince(await lastEventId(c!.id));
+    setSince(await eventCount(c!.id));
     setRedrafting(true);
     await act.run(() => api.reject(msg.id, rejectReason));
     setRedrafting(false);

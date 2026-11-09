@@ -73,7 +73,7 @@ def build_case_html(session: Session, case: Case) -> str:
     amount = format_amount(amount_raw, currency, locale_for(case.language, case.country)) or "—"
     evidence = [
         {
-            "id": ev.id,
+            "number": n,  # its place in this case: internal ids never leave the API
             "filename": ev.filename,
             "kind": ev.kind,
             "uploaded_at": ev.uploaded_at,
@@ -81,7 +81,7 @@ def build_case_html(session: Session, case: Case) -> str:
             "thumb": _thumbnail(ev),
             "excerpt": (ev.extracted_text or "")[:200],
         }
-        for ev in case.evidence
+        for n, ev in enumerate(case.evidence, 1)
     ]
     messages = [m for m in case.messages if m.status in ("sent", "received", "approved")]
     generic = bool(case.playbook_id and case.playbook_id.startswith("intl-"))
@@ -92,6 +92,7 @@ def build_case_html(session: Session, case: Case) -> str:
         amount=amount,
         evidence=evidence,
         evidence_names={ev.id: ev.filename for ev in case.evidence},
+        evidence_numbers={ev.id: n for n, ev in enumerate(case.evidence, 1)},
         messages=messages,
         describe=describe,
         notice=disclaimer(case.language, generic).lstrip("-").strip(),

@@ -21,6 +21,9 @@ DAY0 = datetime(2026, 10, 1, 9, 0)
 
 def _led_case_with_history(env: AgentEnv) -> int:
     with freeze_time(DAY0) as clock:
+        other = env.new_case(description=LED_TEXT, country="PK")  # its file takes evidence id 1
+        with db_session.session_scope() as s:
+            save_upload(s, other, "other.txt", b"another case", env.settings)
         cid = env.new_case(description=LED_TEXT, country="PK", region="PK-SD")
         with db_session.session_scope() as s:
             ev = save_upload(
@@ -56,7 +59,9 @@ def test_case_html_has_every_section(agent_env: AgentEnv, monkeypatch: pytest.Mo
     env = agent_env
     cid = _led_case_with_history(env)
     html = _html(env, cid, monkeypatch)
-    assert f"Case file #{cid}" in html
+    with env.session() as s:  # internal ids never appear: the public id, and files by number
+        public_id = s.get_one(Case, cid).public_id
+    assert f"Case file {public_id[:8]}" in html and f"#{cid}" not in html
     assert "<h1>Refund refused by BrightMart Electronics</h1>" in html  # the case title
     assert "Ali Raza" in html and "BrightMart Electronics" in html
     assert "PKR 45,000.00" in html  # in the letter (ISO code, unambiguous)

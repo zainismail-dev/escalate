@@ -16,7 +16,7 @@ th { background: #f2f2f2; } .muted { color: #666; } .mono { font-family: "DejaVu
 <body>
 <section class="cover">
   <h1>{{ title }}</h1>
-  <p class="muted">Case file #{{ case.id }} · generated {{ generated }} UTC with Escalate</p>
+  <p class="muted">Case file {{ case.public_id[:8] }} · generated {{ generated }} UTC with Escalate</p>
   <table>
     <tr><th>Consumer</th><td>{{ facts.get('buyer_name', '—') }}</td></tr>
     <tr><th>Other party</th><td>{{ facts.get('seller_name') or facts.get('company_name') or case.company or '—' }}</td></tr>
@@ -38,7 +38,7 @@ th { background: #f2f2f2; } .muted { color: #666; } .mono { font-family: "DejaVu
     <tr><th>Fact</th><th>Value</th><th>Source</th><th>Confidence</th></tr>
     {% for f in case.facts %}
     <tr><td>{{ f.key.replace('_', ' ') }}</td><td>{{ f.value }}</td>
-        <td>{% if f.source_evidence_id %}evidence #{{ f.source_evidence_id }} ({{ evidence_names.get(f.source_evidence_id, '') }}){% else %}consumer's statement{% endif %}</td>
+        <td>{% if f.source_evidence_id %}evidence #{{ evidence_numbers.get(f.source_evidence_id, '') }} ({{ evidence_names.get(f.source_evidence_id, '') }}){% else %}consumer's statement{% endif %}</td>
         <td>{{ '%.0f' % (f.confidence * 100) }}%</td></tr>
     {% endfor %}
   </table>
@@ -72,7 +72,7 @@ th { background: #f2f2f2; } .muted { color: #666; } .mono { font-family: "DejaVu
   <table>
     <tr><th>#</th><th>File</th><th>Preview</th><th>SHA-256</th></tr>
     {% for ev in evidence %}
-    <tr><td>{{ ev.id }}</td><td>{{ ev.filename }}<br><span class="muted">{{ ev.kind }}, uploaded {{ ev.uploaded_at.strftime('%Y-%m-%d') }}</span></td>
+    <tr><td>{{ ev.number }}</td><td>{{ ev.filename }}<br><span class="muted">{{ ev.kind }}, uploaded {{ ev.uploaded_at.strftime('%Y-%m-%d') }}</span></td>
         <td>{% if ev.thumb %}<img class="thumb" src="{{ ev.thumb }}">{% else %}<span class="muted">{{ ev.excerpt }}</span>{% endif %}</td>
         <td class="mono">{{ ev.sha256 }}</td></tr>
     {% else %}<tr><td colspan="4" class="muted">No evidence uploaded.</td></tr>{% endfor %}

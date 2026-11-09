@@ -14,7 +14,7 @@
       {
         "extracted_text": "To: members@pulsefit.example\nDate: 2026-08-31\nSubject: Cancel membership PF-220931\nPlease cancel my monthly membership (GBP 39.99 per month) from today.\n",
         "filename": "pulsefit-cancellation-email.txt",
-        "id": 3,
+        "id": "demo-evidence-3",
         "kind": "text",
         "needs_review": false,
         "ocr_confidence": null,
@@ -27,63 +27,63 @@
         "confidence": 0.95,
         "display": "Sam Taylor",
         "key": "buyer_name",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "value": "Sam Taylor"
       },
       {
         "confidence": 0.95,
         "display": "PulseFit Gyms",
         "key": "company_name",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "value": "PulseFit Gyms"
       },
       {
         "confidence": 0.95,
         "display": "members@pulsefit.example",
         "key": "company_contact",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "value": "members@pulsefit.example"
       },
       {
         "confidence": 0.95,
         "display": "PF-220931",
         "key": "account_id",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "value": "PF-220931"
       },
       {
         "confidence": 0.95,
         "display": "31 August 2026",
         "key": "cancel_requested_on",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "value": "2026-08-31"
       },
       {
         "confidence": 0.95,
         "display": "confirm the cancellation and refund every charge after 31 August",
         "key": "remedy_wanted",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "value": "confirm the cancellation and refund every charge after 31 August"
       },
       {
         "confidence": 0.95,
         "display": "monthly membership",
         "key": "plan_name",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "value": "monthly membership"
       },
       {
         "confidence": 0.95,
         "display": "£39.99",
         "key": "amount",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "value": "39.99"
       },
       {
         "confidence": 0.95,
         "display": "GBP",
         "key": "currency",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "value": "GBP"
       }
     ],
@@ -238,7 +238,7 @@
       {
         "extracted_text": "BrightMart Electronics - Tax invoice\nOrder: BM-48213\nDate: 2026-02-14\nItem: 43-inch LED TV\nTotal paid: PKR 64,500\nSold via ShopNow Marketplace\n",
         "filename": "brightmart-invoice.txt",
-        "id": 1,
+        "id": "demo-evidence-1",
         "kind": "text",
         "needs_review": false,
         "ocr_confidence": null,
@@ -251,84 +251,84 @@
         "confidence": 0.95,
         "display": "Ayesha Siddiqui",
         "key": "buyer_name",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "Ayesha Siddiqui"
       },
       {
         "confidence": 0.95,
         "display": "43-inch LED TV",
         "key": "product",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "43-inch LED TV"
       },
       {
         "confidence": 0.95,
         "display": "BrightMart Electronics",
         "key": "seller_name",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "BrightMart Electronics"
       },
       {
         "confidence": 0.95,
         "display": "support@brightmart.example",
         "key": "seller_contact",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "support@brightmart.example"
       },
       {
         "confidence": 0.95,
         "display": "BM-48213",
         "key": "order_id",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "BM-48213"
       },
       {
         "confidence": 0.95,
         "display": "14 February 2026",
         "key": "order_date",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "2026-02-14"
       },
       {
         "confidence": 0.95,
         "display": "Rs 64,500",
         "key": "amount",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "64500"
       },
       {
         "confidence": 0.95,
         "display": "PKR",
         "key": "currency",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "PKR"
       },
       {
         "confidence": 0.95,
         "display": "The LED TV stopped working after 10 days: no picture, only sound.",
         "key": "defect_description",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "The LED TV stopped working after 10 days: no picture, only sound."
       },
       {
         "confidence": 0.95,
         "display": "a replacement LED TV or a full refund",
         "key": "remedy_wanted",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "a replacement LED TV or a full refund"
       },
       {
         "confidence": 0.95,
         "display": "ShopNow Marketplace",
         "key": "platform_name",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "ShopNow Marketplace"
       },
       {
         "confidence": 0.95,
         "display": "28 February 2026",
         "key": "return_shipped_on",
-        "source_evidence_id": 1,
+        "source_evidence_id": "demo-evidence-1",
         "value": "2026-02-28"
       }
     ],
@@ -459,7 +459,7 @@
       {
         "extracted_text": "Payment successful\nAmount: INR 18,000\nUPI ref: UPI-5521907\nDate: 2026-10-26\n",
         "filename": "upi-payment-screenshot.txt",
-        "id": 2,
+        "id": "demo-evidence-2",
         "kind": "text",
         "needs_review": false,
         "ocr_confidence": null,
@@ -472,49 +472,49 @@
         "confidence": 1.0,
         "display": "Rohan Mehta",
         "key": "buyer_name",
-        "source_evidence_id": 2,
+        "source_evidence_id": "demo-evidence-2",
         "value": "Rohan Mehta"
       },
       {
         "confidence": 1.0,
         "display": "₹18,000",
         "key": "amount",
-        "source_evidence_id": 2,
+        "source_evidence_id": "demo-evidence-2",
         "value": "18000"
       },
       {
         "confidence": 1.0,
         "display": "INR",
         "key": "currency",
-        "source_evidence_id": 2,
+        "source_evidence_id": "demo-evidence-2",
         "value": "INR"
       },
       {
         "confidence": 1.0,
         "display": "26 October 2026",
         "key": "paid_on",
-        "source_evidence_id": 2,
+        "source_evidence_id": "demo-evidence-2",
         "value": "2026-10-26"
       },
       {
         "confidence": 1.0,
         "display": "UPI transfer",
         "key": "payment_method",
-        "source_evidence_id": 2,
+        "source_evidence_id": "demo-evidence-2",
         "value": "UPI transfer"
       },
       {
         "confidence": 1.0,
         "display": "UPI-5521907",
         "key": "transaction_id",
-        "source_evidence_id": 2,
+        "source_evidence_id": "demo-evidence-2",
         "value": "UPI-5521907"
       },
       {
         "confidence": 1.0,
         "display": "An SMS claiming to be from a courier asked for a delivery fee via a link.",
         "key": "scam_description",
-        "source_evidence_id": 2,
+        "source_evidence_id": "demo-evidence-2",
         "value": "An SMS claiming to be from a courier asked for a delivery fee via a link."
       }
     ],
@@ -616,7 +616,7 @@
       {
         "extracted_text": "Northline Computers\nOrder NL-77120\nDate: 2026-09-05\nLaptop 14-inch\nTotal: USD 1,249.00\n",
         "filename": "northline-receipt.txt",
-        "id": 4,
+        "id": "demo-evidence-4",
         "kind": "text",
         "needs_review": false,
         "ocr_confidence": null,
@@ -629,70 +629,70 @@
         "confidence": 0.95,
         "display": "Jordan Lee",
         "key": "buyer_name",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "Jordan Lee"
       },
       {
         "confidence": 0.95,
         "display": "14-inch laptop",
         "key": "product",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "14-inch laptop"
       },
       {
         "confidence": 0.95,
         "display": "Northline Computers",
         "key": "seller_name",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "Northline Computers"
       },
       {
         "confidence": 0.95,
         "display": "help@northline.example",
         "key": "seller_contact",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "help@northline.example"
       },
       {
         "confidence": 0.95,
         "display": "NL-77120",
         "key": "order_id",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "NL-77120"
       },
       {
         "confidence": 0.95,
         "display": "September 5, 2026",
         "key": "order_date",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "2026-09-05"
       },
       {
         "confidence": 0.95,
         "display": "$1,249",
         "key": "amount",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "1249.00"
       },
       {
         "confidence": 0.95,
         "display": "USD",
         "key": "currency",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "USD"
       },
       {
         "confidence": 0.95,
         "display": "The screen flickers and goes black within minutes of use.",
         "key": "defect_description",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "The screen flickers and goes black within minutes of use."
       },
       {
         "confidence": 0.95,
         "display": "a full refund to my card",
         "key": "remedy_wanted",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "value": "a full refund to my card"
       }
     ],

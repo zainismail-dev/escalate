@@ -216,7 +216,7 @@ export const api = {
   confirmResolution: (caseId: string, resolved: boolean, verdict?: string) =>
     request<RunOut>("POST", `/cases/${caseId}/resolution`, { resolved, verdict: verdict ?? null }),
   reject: (messageId: string, reason: string) => request<RunOut>("POST", `/messages/${messageId}/reject`, { reason }),
-  confirmDelivery: (messageId: string, evidenceId?: number) =>
+  confirmDelivery: (messageId: string, evidenceId?: string) =>
     request<RunOut>("POST", `/messages/${messageId}/confirm-delivery`, { evidence_id: evidenceId ?? null }),
   checklist: (country?: string | null) =>
     request<Checklist>("GET", `/checklist${country ? `?country=${encodeURIComponent(country)}` : ""}`),

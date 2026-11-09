@@ -3,7 +3,7 @@ import { AlertOctagon, ArrowRight, BadgeAlert, KeyRound, Loader2, ShieldX } from
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { AgentProgress, lastEventId } from "@/components/agent-progress";
+import { AgentProgress, eventCount } from "@/components/agent-progress";
 import { ErrorState, PageSkeleton } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,7 +69,7 @@ export function UrgentChecklist({ id }: { id: string }) {
   const waiting = c.waiting_for === "urgent_checklist";
 
   async function done() {
-    setSince(await lastEventId(id));
+    setSince(await eventCount(id));
     setRunning(true);
     const out = await act.run(() => api.ackChecklist(id));
     setRunning(false);

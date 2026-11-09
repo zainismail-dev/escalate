@@ -30,6 +30,7 @@ from escalate.api.schemas import (
 )
 from escalate.channels.email_smtp import EMAIL_RE
 from escalate.config import get_settings
+from escalate.db import repo
 from escalate.db.events import log_event
 from escalate.db.models import Message
 from escalate.export.pdf import letter_pdf
@@ -165,8 +166,11 @@ def reject(
 def confirm_delivery(
     message_id: MessagePk, body: DeliveryIn, session: Session = Depends(get_session)
 ) -> RunOut:
+    proof = repo.evidence_pk(session, body.evidence_id) if body.evidence_id else None
+    if body.evidence_id and proof is None:
+        raise HTTPException(404, "evidence not found")
     case_id = _pending_case(session, message_id, "confirm_delivery")
-    return run_out(runner.confirm_delivery(case_id, body.evidence_id))
+    return run_out(runner.confirm_delivery(case_id, proof))
 
 
 @router.get("/{message_id}/printable.pdf")
@@ -219,7 +223,7 @@ def review(message_id: MessagePk, session: Session = Depends(get_session)) -> Re
                 value=f.value,
                 display=displays.get(f.key, [f.value]),
                 confidence=f.confidence,
-                source_evidence_id=f.source_evidence_id,
+                source_evidence_id=f.source_evidence_public_id,
                 source_filename=files.get(f.source_evidence_id or -1),
                 used=f.key in used,
             )

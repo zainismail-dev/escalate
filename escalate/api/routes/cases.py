@@ -305,7 +305,14 @@ def retry(case_id: CasePk, session: Session = Depends(get_session)) -> RunOut:
 @router.get("/{case_id}/timeline", response_model=list[EventOut])
 def timeline(case_id: CasePk, session: Session = Depends(get_session)) -> list[EventOut]:
     get_case(session, case_id)
-    return [EventOut.model_validate(e) for e in repo.events(session, case_id)]
+    public = repo.evidence_public_ids(session, case_id)
+    out = []
+    for e in repo.events(session, case_id):
+        ev = EventOut.model_validate(e)
+        if "evidence_id" in ev.payload:  # internal ids never leave: the public one, or none
+            ev.payload = {**ev.payload, "evidence_id": public.get(ev.payload["evidence_id"])}
+        out.append(ev)
+    return out
 
 
 @router.post("/{case_id}/replies", response_model=ReplyOut)

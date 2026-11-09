@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AgentProgress, lastEventId } from "@/components/agent-progress";
+import { AgentProgress, eventCount } from "@/components/agent-progress";
 import { CaseChip, PackBadge } from "@/components/case-bits";
 import { FactChip, useFactLabel } from "@/components/fact-chip";
 import { DemoEnd } from "@/components/demo";
@@ -132,7 +132,7 @@ export function Wizard() {
 
   async function runAgent(fn: () => Promise<unknown>) {
     if (!c) return;
-    setSince(await lastEventId(c.id));
+    setSince(await eventCount(c.id));
     setRunning(true);
     const ok = await action.run(fn);
     setRunning(false);

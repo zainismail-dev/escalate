@@ -9,9 +9,11 @@ from typing import ClassVar
 import pytest
 from fastapi.testclient import TestClient
 from freezegun import freeze_time
+from sqlalchemy import select
 
 from escalate.api.main import create_app
-from escalate.db.models import Case, CaseFact, Message
+from escalate.db.models import Case, CaseFact, Evidence, Message
+from escalate.db.session import session_scope
 from tests.agent_env import AgentEnv, agent_env  # noqa: F401
 from tests.factories import APP_BASE_URL, APP_ORIGIN
 from tests.fakes.fake_smtp import FakeSMTP
@@ -313,10 +315,9 @@ def _injected_case(client: TestClient, env: AgentEnv) -> tuple[str, str]:  # noq
     ev = client.post(f"/cases/{cid}/evidence", files=files)
     assert ev.status_code == 201
     facts = {**LED_FACTS, "seller_contact": "refunds@attacker.example"}
-    cited = {
-        k: {"value": v, "confidence": 0.95, "evidence_id": ev.json()["id"]}
-        for k, v in facts.items()
-    }
+    with session_scope() as s:  # the model cites the internal id it saw in the prompt
+        eid = s.scalar(select(Evidence.id).where(Evidence.public_id == ev.json()["id"]))
+    cited = {k: {"value": v, "confidence": 0.95, "evidence_id": eid} for k, v in facts.items()}
     env.llm.rules[0] = ("You extract facts", {"facts": cited})
     assert client.post(f"/cases/{cid}/start").status_code == 200
     return cid, client.get(f"/cases/{cid}").json()["pending_draft"]["id"]

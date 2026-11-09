@@ -43,7 +43,7 @@ export function AgentProgress({
   const poll = useCallback(async () => {
     try {
       const events = await api.timeline(caseId);
-      setSeen(new Set(events.filter((e) => e.id > since).map((e) => e.type)));
+      setSeen(new Set(events.slice(since).map((e) => e.type)));
     } catch {
       /* the main request reports errors */
     }
@@ -94,11 +94,11 @@ export function AgentProgress({
   );
 }
 
-/** Highest event id so far, so progress only counts what happens after a click. */
-export async function lastEventId(caseId: string): Promise<number> {
+/** How many events the (oldest-first) timeline has so far, so progress only counts what happens
+ * after a click. Event ids are opaque: they say nothing about order. */
+export async function eventCount(caseId: string): Promise<number> {
   try {
-    const ev = await api.timeline(caseId);
-    return ev.reduce((m, e) => Math.max(m, e.id), 0);
+    return (await api.timeline(caseId)).length;
   } catch {
     return 0;
   }

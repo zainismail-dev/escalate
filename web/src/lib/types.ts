@@ -26,11 +26,11 @@ export interface Fact {
   value: string;
   display?: string | null;
   confidence: number;
-  source_evidence_id: number | null;
+  source_evidence_id: string | null;
 }
 
 export interface Evidence {
-  id: number;
+  id: string; // public id (UUID)
   kind: string;
   filename: string;
   sha256: string;
@@ -153,7 +153,7 @@ export interface ReviewFact {
   value: string;
   display: string[];
   confidence: number;
-  source_evidence_id: number | null;
+  source_evidence_id: string | null;
   source_filename: string | null;
   used: boolean;
 }
@@ -250,7 +250,7 @@ export interface Settings {
 }
 
 export interface TimelineEvent {
-  id: number;
+  id: string; // public id (UUID)
   type: string;
   payload: Record<string, unknown>;
   created_at: string;

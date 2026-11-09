@@ -128,7 +128,7 @@
           "Jordan Lee"
         ],
         "key": "buyer_name",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": true,
         "value": "Jordan Lee"
@@ -139,7 +139,7 @@
           "14-inch laptop"
         ],
         "key": "product",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": false,
         "value": "14-inch laptop"
@@ -150,7 +150,7 @@
           "Northline Computers"
         ],
         "key": "seller_name",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": true,
         "value": "Northline Computers"
@@ -161,7 +161,7 @@
           "help@northline.example"
         ],
         "key": "seller_contact",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": false,
         "value": "help@northline.example"
@@ -172,7 +172,7 @@
           "NL-77120"
         ],
         "key": "order_id",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": true,
         "value": "NL-77120"
@@ -184,7 +184,7 @@
           "September 5, 2026"
         ],
         "key": "order_date",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": true,
         "value": "2026-09-05"
@@ -197,7 +197,7 @@
           "$1,249"
         ],
         "key": "amount",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": true,
         "value": "1249.00"
@@ -208,7 +208,7 @@
           "USD"
         ],
         "key": "currency",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": false,
         "value": "USD"
@@ -219,7 +219,7 @@
           "The screen flickers and goes black within minutes of use."
         ],
         "key": "defect_description",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": true,
         "value": "The screen flickers and goes black within minutes of use."
@@ -230,7 +230,7 @@
           "a full refund to my card"
         ],
         "key": "remedy_wanted",
-        "source_evidence_id": 4,
+        "source_evidence_id": "demo-evidence-4",
         "source_filename": "northline-receipt.txt",
         "used": true,
         "value": "a full refund to my card"
@@ -383,7 +383,7 @@
           "Sam Taylor"
         ],
         "key": "buyer_name",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "source_filename": "pulsefit-cancellation-email.txt",
         "used": true,
         "value": "Sam Taylor"
@@ -394,7 +394,7 @@
           "PulseFit Gyms"
         ],
         "key": "company_name",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "source_filename": "pulsefit-cancellation-email.txt",
         "used": true,
         "value": "PulseFit Gyms"
@@ -405,7 +405,7 @@
           "members@pulsefit.example"
         ],
         "key": "company_contact",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "source_filename": "pulsefit-cancellation-email.txt",
         "used": false,
         "value": "members@pulsefit.example"
@@ -416,7 +416,7 @@
           "PF-220931"
         ],
         "key": "account_id",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "source_filename": "pulsefit-cancellation-email.txt",
         "used": true,
         "value": "PF-220931"
@@ -428,7 +428,7 @@
           "31 August 2026"
         ],
         "key": "cancel_requested_on",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "source_filename": "pulsefit-cancellation-email.txt",
         "used": true,
         "value": "2026-08-31"
@@ -439,7 +439,7 @@
           "confirm the cancellation and refund every charge after 31 August"
         ],
         "key": "remedy_wanted",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "source_filename": "pulsefit-cancellation-email.txt",
         "used": true,
         "value": "confirm the cancellation and refund every charge after 31 August"
@@ -450,7 +450,7 @@
           "monthly membership"
         ],
         "key": "plan_name",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "source_filename": "pulsefit-cancellation-email.txt",
         "used": true,
         "value": "monthly membership"
@@ -463,7 +463,7 @@
           "£39.99"
         ],
         "key": "amount",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "source_filename": "pulsefit-cancellation-email.txt",
         "used": false,
         "value": "39.99"
@@ -474,7 +474,7 @@
           "GBP"
         ],
         "key": "currency",
-        "source_evidence_id": 3,
+        "source_evidence_id": "demo-evidence-3",
         "source_filename": "pulsefit-cancellation-email.txt",
         "used": false,
         "value": "GBP"

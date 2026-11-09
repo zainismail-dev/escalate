@@ -3,7 +3,7 @@ import { ArrowRight, Gavel, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { AgentProgress, lastEventId, REPLY_STAGES } from "@/components/agent-progress";
+import { AgentProgress, eventCount, REPLY_STAGES } from "@/components/agent-progress";
 import { ResolutionConfirm } from "@/components/resolution-confirm";
 import { ErrorState, PageSkeleton } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,7 @@ export function LogReply({ id }: { id: string }) {
   const locale = caseLocale(c.language, c.country);
 
   async function submit() {
-    setSince(await lastEventId(id));
+    setSince(await eventCount(id));
     setRunning(true);
     const out = await act.run(() => api.logReply(id, text));
     setRunning(false);
@@ -57,7 +57,7 @@ export function LogReply({ id }: { id: string }) {
 
   async function correct() {
     if (!override || override === result?.verdict) return;
-    setSince(await lastEventId(id));
+    setSince(await eventCount(id));
     setRunning(true);
     const out = await act.run(() => api.overrideVerdict(id, override));
     setRunning(false);

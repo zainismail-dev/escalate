@@ -89,7 +89,7 @@ function walk(method: string, path: string, body: unknown): unknown {
   if (method === "POST" && (m = path.match(/^\/cases\/([^/]+)\/evidence$/)) && draft && m[1] === draft.id) {
     const file = (body as FormData).get("file") as File; // only its name: the file is never read
     const ev: Evidence = {
-      id: draft.evidence.length + 1,
+      id: `demo-evidence-${draft.evidence.length + 1}`,
       kind: "image",
       filename: file.name,
       sha256: "",

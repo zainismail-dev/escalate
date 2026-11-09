@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { AgentProgress, lastEventId } from "@/components/agent-progress";
+import { AgentProgress, eventCount } from "@/components/agent-progress";
 import { QuestionsForm } from "@/components/questions-form";
 import { ErrorState, PageSkeleton } from "@/components/states";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ export function CaseQuestions({ id }: { id: string }) {
   if (!c) return null;
 
   async function submit(answers: Record<string, string>) {
-    setSince(await lastEventId(id));
+    setSince(await eventCount(id));
     setRunning(true);
     const out = await act.run(() => api.answers(id, answers));
     setRunning(false);

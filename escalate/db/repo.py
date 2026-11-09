@@ -81,6 +81,20 @@ def case_message(session: Session, case_id: int, message_id: Any) -> Message | N
 OPEN_STATUSES_EXCLUDED = ("resolved", "withdrawn", "closed_unresolved")
 
 
+def evidence_pk(session: Session, public_id: str) -> int | None:
+    """The current user's evidence by public id (another user's is None, like a missing one)."""
+    return session.scalar(
+        select(Evidence.id).where(Evidence.public_id == public_id, mine(Evidence))
+    )
+
+
+def evidence_public_ids(session: Session, case_id: int) -> dict[int, str]:
+    rows = session.execute(
+        select(Evidence.id, Evidence.public_id).where(Evidence.case_id == case_id)
+    )
+    return {pk: pub for pk, pub in rows.tuples()}
+
+
 def evidence_bytes(session: Session) -> int:
     """The size of all of the current user's evidence files (hosted storage cap)."""
     total = session.scalar(

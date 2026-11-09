@@ -4,12 +4,12 @@ import { test } from "node:test";
 import { formatDateTime, formatLocalDateTime } from "../src/lib/datetime.ts";
 import { collapseRetries } from "../src/lib/timeline.ts";
 
-const ev = (id: number, type: string) => ({ id, type, payload: {}, created_at: `2026-11-02T10:00:${String(id).padStart(2, "0")}` });
+const ev = (n: number, type: string) => ({ id: `ev-${n}`, type, payload: {}, created_at: `2026-11-02T10:00:${String(n).padStart(2, "0")}` });
 
 test("repeated starts become one entry with the number of retries", () => {
   const out = collapseRetries(Array.from({ length: 13 }, (_, i) => ev(i + 2, "case_started")));
   assert.equal(out.length, 1);
-  assert.equal(out[0].id, 2);
+  assert.equal(out[0].id, "ev-2");
   assert.equal(out[0].retries, 12);
 });
 
