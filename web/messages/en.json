@@ -762,6 +762,11 @@
       "body": "To {recipient} by {channel}. Nothing goes out until you approve.",
       "approve": "Approve & send",
       "reject": "Reject",
+      "hosted": {
+        "title": "Approve this letter?",
+        "body": "For {recipient} by {channel}. Escalate never sends it: once you approve, you send it yourself.",
+        "approve": "Approve"
+      },
       "fillBlanks": "Fill in {count, plural, one {# blank} other {# blanks}} first.",
       "fixFacts": "Fix the values the fact check flagged first.",
       "youApprove": "Only you can approve. The agent has no way to send.",
@@ -789,7 +794,12 @@
       "noBlanks": "No blanks left",
       "disclaimer": "Not-legal-advice notice included",
       "cta": "Approve & send",
-      "recipient": "Recipient checked by you: {recipient}"
+      "recipient": "Recipient checked by you: {recipient}",
+      "hosted": {
+        "title": "Approve this letter?",
+        "body": "Escalate doesn't send it. Next, you copy it or open it in your own email app and send it to {recipient} yourself.",
+        "cta": "Approve"
+      }
     },
     "rejectDialog": {
       "title": "Reject this draft?",

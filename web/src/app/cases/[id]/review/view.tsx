@@ -18,6 +18,8 @@ import { WhyPanel } from "@/components/why-panel";
 import { dirFor, primaryLanguage } from "@/i18n/config";
 import { api } from "@/lib/api";
 import { languageName } from "@/lib/format";
+import { HOSTED } from "@/lib/hosted";
+import { reviewKey } from "@/lib/hosted-copy";
 import type { Preview, Review } from "@/lib/types";
 import { useLetterLanguages } from "@/lib/letter-languages";
 import { useAction, useApi } from "@/lib/use-api";
@@ -310,8 +312,8 @@ export function ReviewDraft({ id }: { id: string }) {
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <section className="rounded-2xl border-[1.5px] border-line-strong bg-card p-5" aria-labelledby="decision" data-testid="decision-card">
             <p className="label-mono text-muted">{t("decision.eyebrow")}</p>
-            <h2 id="decision" className="mt-1 font-display text-xl">{t("decision.title")}</h2>
-            <p className="mt-1 text-sm text-text-2">{t("decision.body", { recipient: msg.recipient ?? t("noRecipient"), channel: tch(msg.channel) })}</p>
+            <h2 id="decision" className="mt-1 font-display text-xl">{t(reviewKey("decision.title", HOSTED))}</h2>
+            <p className="mt-1 text-sm text-text-2">{t(reviewKey("decision.body", HOSTED), { recipient: msg.recipient ?? t("noRecipient"), channel: tch(msg.channel) })}</p>
             {r.recipient_check && (
               <RecipientConfirm
                 key={`${msg.id}:${msg.recipient}`}
@@ -331,8 +333,8 @@ export function ReviewDraft({ id }: { id: string }) {
               onClick={() => setDialog("approve")}
               data-testid="approve"
             >
-              <Send aria-hidden />
-              {t("decision.approve")}
+              {HOSTED ? <CheckCircle2 aria-hidden /> : <Send aria-hidden />}
+              {t(reviewKey("decision.approve", HOSTED))}
             </Button>
             {approveDisabledReason && (
               <p id="approve-why" className="mt-2 text-xs font-semibold text-warning" data-testid="approve-why">
@@ -414,9 +416,9 @@ export function ReviewDraft({ id }: { id: string }) {
         <DialogContent closeLabel={tc("close")}>
           {dialog === "approve" ? (
             <>
-              <DialogTitle>{t("confirm.title")}</DialogTitle>
+              <DialogTitle>{t(reviewKey("confirm.title", HOSTED))}</DialogTitle>
               <DialogDescription>
-                {t("confirm.body", { recipient: msg.recipient ?? t("noRecipient"), channel: tch(msg.channel) })}
+                {t(reviewKey("confirm.body", HOSTED), { recipient: msg.recipient ?? t("noRecipient"), channel: tch(msg.channel) })}
               </DialogDescription>
               <ul className="mt-4 space-y-1 text-sm text-text-2">
                 {msg.recipient && <li>✓ {t("confirm.recipient", { recipient: msg.recipient })}</li>}
@@ -429,8 +431,8 @@ export function ReviewDraft({ id }: { id: string }) {
                   {tc("cancel")}
                 </Button>
                 <Button variant="lime" disabled={act.busy || approvingNow} onClick={approve} data-testid="confirm-approve">
-                  {act.busy ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />}
-                  {t("confirm.cta")}
+                  {act.busy ? <Loader2 className="animate-spin" aria-hidden /> : HOSTED ? <CheckCircle2 aria-hidden /> : <Send aria-hidden />}
+                  {t(reviewKey("confirm.cta", HOSTED))}
                 </Button>
               </div>
             </>

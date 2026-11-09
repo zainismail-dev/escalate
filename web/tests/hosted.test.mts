@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readFileSync } from "node:fs";
-import { errorBodyKey } from "../src/lib/hosted-copy.ts";
+import { errorBodyKey, reviewKey } from "../src/lib/hosted-copy.ts";
 import { letterText, mailtoHref } from "../src/lib/mailto.ts";
 import { WAKE_DELAYS_MS, isWakingResponse, withWakeRetries } from "../src/lib/waking.ts";
 
@@ -106,4 +106,23 @@ test("hosted copy: no local commands, encrypted on our server, the right EU regi
     assert.doesNotMatch(text, /Supabase[^.,]*Frankfurt/);
   }
   assert.match(en.hosted.account.where, /Ireland/);
+});
+
+// P2: the beta never sends, so its approve button and dialog never say "send".
+test("hosted review copy says Approve, never Approve & send", () => {
+  const at = (key: string): unknown =>
+    key.split(".").reduce<unknown>((o, k) => (o && typeof o === "object" ? (o as Record<string, unknown>)[k] : undefined), en.review);
+  for (const key of ["decision.title", "decision.body", "decision.approve", "confirm.title", "confirm.body", "confirm.cta"]) {
+    const hosted = at(reviewKey(key, true));
+    assert.equal(typeof hosted, "string", key);
+    assert.doesNotMatch(hosted as string, /send this|& send|and send\?|once sent/i, key);
+    assert.equal(reviewKey(key, false), key); // self-hosted wording unchanged
+  }
+  assert.equal(at(reviewKey("decision.approve", true)), "Approve");
+  assert.equal(at(reviewKey("confirm.cta", true)), "Approve");
+  assert.equal(at("decision.approve"), "Approve & send");
+  const src = readFileSync(new URL("../src/app/cases/[id]/review/view.tsx", import.meta.url), "utf8");
+  for (const key of ["decision.approve", "confirm.cta", "confirm.title", "confirm.body"]) {
+    assert.ok(src.includes(`reviewKey("${key}", HOSTED)`), key);
+  }
 });
