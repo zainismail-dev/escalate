@@ -1,6 +1,6 @@
 # Escalate API image. Tesseract (OCR) and Pango (WeasyPrint PDFs) included. Runs as a non-root
 # user; uid 1000 matches the usual owner of the ./data bind mount (override: --build-arg UID=).
-FROM python:3.12-slim
+FROM python:3.15-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
